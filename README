@@ -1,0 +1,79 @@
+The PlotLinear Widget
+----------------------
+Version 0.1.0, January 2011
+
+PlotLinear provides a widget for automated plotting of data on a linear-linear scale.
+This program is my first attempt to write an object in a non-object-oriented language using object-oriented libraries and coded in as unobject-oriented a fashion as possible.
+The program is coded preferentially to an in-line structure to maximise performance so my apologies to anyone that attempts to modify or understand it.
+As the code is quite long three other widgets "PlotLinearLines", "PlotLinearPoints" and "PlotLinearBoth" are included to reduce the amount of code that needs to be linked in if your application only requires one scenario for displaying data.
+
+Motivation; Technology; License
+-------------------------------
+PlotLinear builds upon GtkDrawingArea. It compiles & works under gtk+2. As drawing is performed using cairo graphics, upgrading to be compatible with gtk+3 in the future should be trivial.
+This code is released under the GNU GPL version 2 or (at your option) any later versions, making it suitable for free software development.
+
+Usage
+-----
+In the source code link to the header with:
+  #include "plotlinear0-1-0.h"
+To the compilation command line add...
+  plotlinear0-1-0.h pltlinear0-1-0.c
+e.g. the test program was compiled with gcc using the command:
+  gcc -o testplotlinear testplotlinear0-1-0.c `pkg-config --cflags --libs gtk+-2.0` plotlinear0-1-0.h plotlinear0-1-0.c
+A new plot can be made in gtk+2 using:
+  GtkWidget *plotname;
+  plotname=plot_linear_new();
+Data can be sent to the plot using GArray structures as:
+  PlotLinear *plot;
+  GArray *xarrayname, *yarrayname;
+  gint arraysize;
+  xarrayname=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), arraysize);
+  yarrayname=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), arraysize);
+  ...
+  plot=PlotLinear(plotname);
+  (plot->xdata)=xname;
+  (plot->ydata)=yname;
+  (plot->size)=arraysize;
+Redrawing the axes can be done by:
+  gdouble xmin, xmax, ymin, ymax;
+  plot_linear_update_scale(plotname, xmin, xmax, ymin, ymax);
+to get strict axis bounds or:
+  gdouble xmin, xmax, ymin, ymax;
+  plot_linear_update_scale_pretty(plotname, xmin, xmax, ymin, ymax);
+to get the best fit of six or less major tick divisions at multiples of 1, 2 or 5 times a power of 10.
+Properties can be changed or accessed using:
+  g_object_set(G_OBJECT(plotname), "propertyname", value, ..., NULL);
+  g_object_get(G_OBJECT(plotname), "propertyname", value, ..., NULL);
+respectively, where the propertyname's are explained in the _class_init function.
+Publically accessable variables described in the _PlotLinear struct in the plotlinear0-1-0.h header file can be accessed with:
+  PlotLinear *plot;
+  gchar *label;
+  guint mode;
+  ...
+  mode=2;
+  label="Frequency (Hz)";
+  plot=PlotLinear(plotname);
+  (plot->xlab)=g_strdup(label);
+  (plot->flagd)=mode;
+The widget also emits a signal "moved" when the mouse moves over it which is useful for getting the corresponding location in the graph as:
+  void pltmv(PlotLinear *plot, gpointer data)
+    {
+    gdouble x,y;
+    
+    x=(plot->xps);
+    y=(plot->yps);
+    }
+  ...
+  int main(int argc, char *argv[])
+    PlotLinear *plot;
+    ...
+    plot=PlotLinear(plotname);
+    g_signal_connect(plot, "moved", G_CALLBACK(pltmv), NULL);
+See the example file testplotlinear0-1-0.c for an example of interacting with the plotlinear widget.
+
+Known Bugs/Issues
+-----------------
+As g_snprintf truncates rather than rounds to nearest there is issues with axes that should be say "0.5" displaying as "0.4".
+Lack of unicode support for axis labels.
+
+----------------------- THE END --------------------------------
