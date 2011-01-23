@@ -31,12 +31,12 @@
 
 G_BEGIN_DECLS
 
-#define PLOT_TYPE_LINEAR_BOTH (plot_linear_both_get_type ())
+#define PLOT_TYPE_LINEAR_BOTH (plot_linear_both_get_type())
 #define PLOT_LINEAR_BOTH(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), PLOT_TYPE_LINEAR_BOTH, PlotLinearBoth))
 #define PLOT_IS_LINEAR_BOTH(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), PLOT_TYPE_LINEAR_BOTH))
 #define PLOT_LINEAR_BOTH_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), PLOT_LINEAR_BOTH, PlotLinearBothClass))
 #define PLOT_IS_LINEAR_BOTH_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), PLOT_TYPE_LINEAR_BOTH))
-#define PLOT_GET_LINEAR_BOTH_CLASS (G_TYPE_INSTANCE_GET_CLASS((obj), PLOT_TYPE_LINEAR_BOTH, PlotLinearBothClass))
+#define PLOT_GET_LINEAR_BOTH_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), PLOT_TYPE_LINEAR_BOTH, PlotLinearBothClass))
 
 typedef struct _PlotLinearBoth PlotLinearBoth;
 typedef struct _PlotLinearBothClass PlotLinearBothClass;

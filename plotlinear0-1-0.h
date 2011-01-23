@@ -31,12 +31,12 @@
 
 G_BEGIN_DECLS
 
-#define PLOT_TYPE_LINEAR (plot_linear_get_type ())
+#define PLOT_TYPE_LINEAR (plot_linear_get_type())
 #define PLOT_LINEAR(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), PLOT_TYPE_LINEAR, PlotLinear))
 #define PLOT_IS_LINEAR(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), PLOT_TYPE_LINEAR))
 #define PLOT_LINEAR_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), PLOT_LINEAR, PlotLinearClass))
 #define PLOT_IS_LINEAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), PLOT_TYPE_LINEAR))
-#define PLOT_GET_LINEAR_CLASS (G_TYPE_INSTANCE_GET_CLASS((obj), PLOT_TYPE_LINEAR, PlotLinearClass))
+#define PLOT_GET_LINEAR_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), PLOT_TYPE_LINEAR, PlotLinearClass))
 
 typedef struct _PlotLinear PlotLinear;
 typedef struct _PlotLinearClass PlotLinearClass;

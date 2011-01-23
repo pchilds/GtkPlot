@@ -31,12 +31,12 @@
 
 G_BEGIN_DECLS
 
-#define PLOT_TYPE_LINEAR_POINTS (plot_linear_points_get_type ())
+#define PLOT_TYPE_LINEAR_POINTS (plot_linear_points_get_type())
 #define PLOT_LINEAR_POINTS(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), PLOT_TYPE_LINEAR_POINTS, PlotLinearPoints))
 #define PLOT_IS_LINEAR_POINTS(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), PLOT_TYPE_LINEAR_POINTS))
 #define PLOT_LINEAR_POINTS_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), PLOT_LINEAR_POINTS, PlotLinearPointsClass))
 #define PLOT_IS_LINEAR_POINTS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), PLOT_TYPE_LINEAR_POINTS))
-#define PLOT_GET_LINEAR_POINTS_CLASS (G_TYPE_INSTANCE_GET_CLASS((obj), PLOT_TYPE_LINEAR_POINTS, PlotLinearPointsClass))
+#define PLOT_GET_LINEAR_POINTS_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), PLOT_TYPE_LINEAR_POINTS, PlotLinearPointsClass))
 
 typedef struct _PlotLinearPoints PlotLinearPoints;
 typedef struct _PlotLinearPointsClass PlotLinearPointsClass;
