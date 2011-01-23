@@ -1,20 +1,23 @@
-The PlotLinear Widget
+The Plot Widget Family
 ----------------------
 Version 0.1.0, January 2011
 
 PlotLinear provides a widget for automated plotting of data on a linear-linear scale.
+PlotLogLinear, PlotLinearLog provide similar functionality for plotting on a semilog scale.
+PlotLogLog provides similar functionality for plotting on a log-log scale.
+PlotPolar provides similar functionality for a polar scale.
 This program is my first attempt to write an object in a non-object-oriented language using object-oriented libraries and coded in as unobject-oriented a fashion as possible.
 The program is coded preferentially to an in-line structure to maximise performance so my apologies to anyone that attempts to modify or understand it.
-As the code is quite long three other widgets "PlotLinearLines", "PlotLinearPoints" and "PlotLinearBoth" are included to reduce the amount of code that needs to be linked in if your application only requires one scenario for displaying data.
+As the code is quite long three other widgets for each base plot (e.g. for PlotLinear they are: "PlotLinearLines", "PlotLinearPoints" and "PlotLinearBoth") are included to reduce the amount of code that needs to be linked in if your application only requires one scenario for displaying data.
 
 Motivation; Technology; License
 -------------------------------
-PlotLinear builds upon GtkDrawingArea. It compiles & works under gtk+2. As drawing is performed using cairo graphics, upgrading to be compatible with gtk+3 in the future should be trivial.
+Plot builds upon GtkDrawingArea. It compiles & works under gtk+2. As drawing is performed using cairo graphics, upgrading to be compatible with gtk+3 in the near future should be trivial.
 This code is released under the GNU GPL version 2 or (at your option) any later versions, making it suitable for free software development.
 
 Usage
 -----
-In the source code link to the header with:
+In the source code link to the headers with e.g.:
   #include "plotlinear0-1-0.h"
 To the compilation command line add...
   plotlinear0-1-0.h pltlinear0-1-0.c
@@ -34,6 +37,7 @@ Data can be sent to the plot using GArray structures as:
   (plot->xdata)=xname;
   (plot->ydata)=yname;
   (plot->size)=arraysize;
+(for polar plotting these are xdata and ydata are replaced by rdata and thdata with similar x,y -> r,th replacements throughout)
 Redrawing the axes can be done by:
   gdouble xmin, xmax, ymin, ymax;
   plot_linear_update_scale(plotname, xmin, xmax, ymin, ymax);
