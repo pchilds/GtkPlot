@@ -29,7 +29,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "plotlinear0-1-0.h"
 
-GtkWidget *plot, *statusbar;
+GtkWidget *window, *plot, *statusbar;
 
 void opd(GtkWidget *widget, gpointer data)
   {
@@ -43,8 +43,8 @@ void opd(GtkWidget *widget, gpointer data)
   gchar **strary, **strat;
   GError *Err;
 
-  wfile=gtk_file_chooser_dialog_new("Select Data File", GTK_WINDOW(widget), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
-  g_signal_connect(wfile, "destroy", G_CALLBACK(gtk_widget_destroy), wfile);
+  wfile=gtk_file_chooser_dialog_new("Select Data File", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+  g_signal_connect(G_OBJECT(wfile), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(wfile));
   if (gtk_dialog_run(GTK_DIALOG(wfile))==GTK_RESPONSE_ACCEPT)
     {
     fin=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(wfile));
@@ -52,8 +52,6 @@ void opd(GtkWidget *widget, gpointer data)
       {
       strary=g_strsplit_set(contents, "\r\n", 0);
       sal=g_strv_length(strary);
-      g_array_free(x, TRUE);
-      g_array_free(yb, TRUE);
       x=g_array_new(FALSE, FALSE, sizeof(gdouble));
       yb=g_array_new(FALSE, FALSE, sizeof(gdouble));
       k=0;
@@ -94,6 +92,8 @@ void opd(GtkWidget *widget, gpointer data)
       plt->ydata=yb;
       xi=g_array_index(x, gdouble, 0);
       xf=g_array_index(x, gdouble, (lc-1));
+      g_array_free(x, TRUE);
+      g_array_free(yb, TRUE);
       plot_linear_update_scale(plot, xi, xf, mny, mxy);
       }
     else
@@ -102,8 +102,10 @@ void opd(GtkWidget *widget, gpointer data)
       gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
       g_free(str);
       }
+    g_free(contents);
+    g_free(fin);
     }
-  gtk_widget_destroy (wfile);
+  gtk_widget_destroy(wfile);
   }
 
 void pltmv(PlotLinear *plt, gpointer data)
@@ -132,7 +134,7 @@ void upg(GtkWidget *widget, gpointer data)
 int main(int argc, char *argv[])
   {
   PlotLinear *plt;
-  GtkWidget *window, *vbox, *vbox2, *mnb, *mnu, *mni, *hpane, *butt;
+  GtkWidget *vbox, *vbox2, *mnb, *mnu, *mni, *hpane, *butt;
   GArray *x, *y;
   guint j;
   gdouble val;

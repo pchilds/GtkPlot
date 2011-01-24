@@ -2655,7 +2655,7 @@ static void plot_linear_lines_class_init(PlotLinearLinesClass *klass)
   g_object_class_install_property(obj_klass, PROP_YTN, g_param_spec_uint("ysmallticks", "Minor y ticks+1", "Number of unlabelled ticks divisions between major ticks for the vertical scale+1", 1, G_MAXINT, 5, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_XC, g_param_spec_uint("xchar", "x label characters", "Number of characters to store x label strings", 1, 10, 5, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_YC, g_param_spec_uint("ychar", "y label characters", "Number of characters to store y label strings", 1, 10, 5, G_PARAM_READWRITE));
-  g_object_class_install_property(obj_klass, PROP_FA, g_param_spec_flags("aflag", "Axis Flags", "Flags for axes behaviour: 32 = Labels right, 16 = Labels above, 8 = Wiggle on top, 4 = Wiggle underneath, 2 = Wiggle on Right, 1 = Wiggle on left", G_TYPE_UINT, 0, G_PARAM_READWRITE));
+  g_object_class_install_property(obj_klass, PROP_FA, g_param_spec_flags("aflag", "Axis Flags", "Flags for axes behaviour: 32 = Labels right, 16 = Labels above, 8 = Wiggle on top, 4 = Wiggle underneath, 2 = Wiggle on Right, 1 = Wiggle on left", G_TYPE_FLAGS, 0, G_PARAM_READWRITE));
   widget_klass=GTK_WIDGET_CLASS(klass);
   widget_klass->button_press_event=plot_linear_lines_button_press;
   widget_klass->motion_notify_event=plot_linear_lines_motion_notify;
