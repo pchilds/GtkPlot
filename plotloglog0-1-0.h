@@ -68,6 +68,7 @@ struct _PlotLoglogClass
 GType plot_loglog_get_type (void);
 gboolean plot_loglog_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 gboolean plot_loglog_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
+gboolean plot_loglog_print_eps(GtkWidget *widget, gchar *fout);
 GtkWidget *plot_loglog_new (void);
 
 G_END_DECLS

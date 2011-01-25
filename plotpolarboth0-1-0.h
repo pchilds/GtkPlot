@@ -67,6 +67,7 @@ struct _PlotPolarBothClass
 GType plot_polar_both_get_type (void);
 gboolean plot_polar_both_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 gboolean plot_polar_both_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
+gboolean plot_polar_both_print_eps(GtkWidget *widget, gchar *fout);
 GtkWidget *plot_polar_both_new (void);
 
 G_END_DECLS

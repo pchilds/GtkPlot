@@ -65,10 +65,11 @@ struct _PlotLinearClass
   void (*moved) (PlotLinear *plot);
   };
 
-GType plot_linear_get_type (void);
+GType plot_linear_get_type(void);
 gboolean plot_linear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 gboolean plot_linear_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
-GtkWidget *plot_linear_new (void);
+gboolean plot_linear_print_eps(GtkWidget *widget, gchar *fout);
+GtkWidget *plot_linear_new(void);
 
 G_END_DECLS
 

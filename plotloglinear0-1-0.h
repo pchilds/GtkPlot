@@ -68,6 +68,7 @@ struct _PlotLoglinearClass
 GType plot_loglinear_get_type (void);
 gboolean plot_loglinear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 gboolean plot_loglinear_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
+gboolean plot_loglinear_print_eps(GtkWidget *widget, gchar *fout);
 GtkWidget *plot_loglinear_new (void);
 
 G_END_DECLS

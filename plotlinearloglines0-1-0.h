@@ -66,6 +66,7 @@ struct _PlotLinearlogLinesClass
 GType plot_linearlog_lines_get_type (void);
 gboolean plot_linearlog_lines_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 gboolean plot_linearlog_lines_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
+gboolean plot_linearlog_lines_print_eps(GtkWidget *widget, gchar *fout);
 GtkWidget *plot_linearlog_lines_new (void);
 
 G_END_DECLS

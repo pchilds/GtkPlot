@@ -66,6 +66,7 @@ struct _PlotLinearPointsClass
 GType plot_linear_points_get_type (void);
 gboolean plot_linear_points_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 gboolean plot_linear_points_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
+gboolean plot_linear_points_print_eps(GtkWidget *widget, gchar *fout);
 GtkWidget *plot_linear_points_new (void);
 
 G_END_DECLS

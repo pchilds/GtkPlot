@@ -32,6 +32,7 @@
 
 #include <gtk/gtk.h>
 #include <math.h>
+#include <cairo-ps.h>
 #include "plotlinearboth0-1-0.h"
 
 #define PLOT_LINEAR_BOTH_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), PLOT_TYPE_LINEAR_BOTH, PlotLinearBothPrivate))
@@ -2489,6 +2490,23 @@ gboolean plot_linear_both_update_scale_pretty(GtkWidget *widget, gdouble xn, gdo
     }
   if ((priv->ycs)>10) (priv->ycs)=10;
   plot_linear_both_redraw(widget);
+  return FALSE;
+  }
+
+gboolean plot_linear_both_print_eps(GtkWidget *plot, gchar* fout)
+  {
+  cairo_t *cr;
+  cairo_surface_t *surface;
+
+  surface=cairo_ps_surface_create(fout, (gdouble) plot->allocation.width, (gdouble) plot->allocation.height);
+  cairo_ps_surface_set_eps(surface, TRUE);
+  cairo_ps_surface_restrict_to_level(surface, CAIRO_PS_LEVEL_2);
+  cr=cairo_create(surface);
+  draw(plot, cr);
+  cairo_surface_show_page(surface);
+  cairo_destroy(cr);
+  cairo_surface_finish(surface);
+  cairo_surface_destroy(surface);
   return FALSE;
   }
 

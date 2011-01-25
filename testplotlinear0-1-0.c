@@ -31,6 +31,28 @@
 
 GtkWidget *window, *plot, *statusbar;
 
+void prt(GtkWidget *widget, gpointer data)
+  {
+  GtkWidget *wfile;
+  GtkFileFilter *filter;
+  gchar *fout=NULL;
+
+  wfile=gtk_file_chooser_dialog_new("Select Image File", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+  g_signal_connect(G_OBJECT(wfile), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(wfile));
+  gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(wfile), TRUE);
+  filter=gtk_file_filter_new();
+  gtk_file_filter_set_name(filter, "Encapsulated Postscript (EPS)");
+  gtk_file_filter_add_pattern(filter, "*.eps");
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(wfile), filter);
+  if (gtk_dialog_run(GTK_DIALOG(wfile))==GTK_RESPONSE_ACCEPT)
+    {
+    fout=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(wfile));
+    plot_linear_print_eps(plot, fout);
+    g_free(fout);
+    }
+  gtk_widget_destroy(wfile);
+  }
+
 void opd(GtkWidget *widget, gpointer data)
   {
   PlotLinear *plt;
@@ -156,6 +178,11 @@ int main(int argc, char *argv[])
   mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
   gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_o, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
   g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(opd), NULL);
+  gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
+  gtk_widget_show(mni);
+  mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_PRINT, NULL);
+  gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_p, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+  g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(prt), NULL);
   gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
   gtk_widget_show(mni);
   mni=gtk_separator_menu_item_new();
