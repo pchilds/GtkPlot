@@ -24,19 +24,21 @@ it or regenerate `configure' using a newer version of `autoconf'.
 The simplest way to compile this package is:
 
   1. `cd' to the directory named according to the desired plotting
-     function (e.g. /PlotPolar) and type `./configure' to configure the
-     package for your system.  If you're using `csh' on an old version
-     of System V, you might need to type `sh ./configure' instead to
-     prevent `csh' from trying to execute `configure' itself.  While
-     running, configure prints some messages telling which features it
-     is checking for.
+     function (e.g. /PlotPolar) and type `autoreconf --install' to
+     create the configure and Makefile appropriate for your system.
 
-  2. Type `make' to compile the package.
+  2. Type `./configure' to configure the package for your system.  If
+     you're using `csh' on an old version of System V, you might need
+     to type `sh ./configure' instead to prevent `csh' from trying to
+     execute `configure' itself.  While running, configure prints some
+     messages telling which features it is checking for.
 
-  3. Optionally, type `make check' to run any self-tests that come with
+  3. Type `make' to compile the package.
+
+  4. Optionally, type `make check' to run any self-tests that come with
      the package.
 
-  4. You can remove the program binaries and object files from the
+  5. You can remove the program binaries and object files from the
      source code directory by typing `make clean'.  To also remove the
      files that `configure' created (so you can compile the package for
      a different kind of computer), type `make distclean'.  There is
