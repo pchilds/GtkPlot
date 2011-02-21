@@ -1,7 +1,7 @@
 /***************************************************************************
- *            plotlinear.c
+ *            plotlinearboth.c
  *
- *  A GTK+ widget that plots data
+ *  A GTK+ widget that plots data (points and lines)
  *  version 0.1.0
  *  Features:
  *            automatic wiggle insertion
@@ -10,7 +10,7 @@
  *            signal emission for mouse movement
  *
  *  Sat Dec  4 17:18:14 2010
- *  Copyright  2010  Paul Childs
+ *  Copyright  2011  Paul Childs
  *  <pchilds@physics.org>
  ****************************************************************************/
 
@@ -33,9 +33,9 @@
 #include <gtk/gtk.h>
 #include <math.h>
 #include <cairo-ps.h>
-#include "plotlinear0-1-0.h"
+#include "plotlinearboth0-1-0.h"
 
-#define PLOT_LINEAR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), PLOT_TYPE_LINEAR, PlotLinearPrivate))
+#define PLOT_LINEAR_BOTH_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), PLOT_TYPE_LINEAR_BOTH, PlotLinearBothPrivate))
 #define ARP 0.05 /* Proportion of the graph occupied by arrows */
 #define IRTR 0.577350269 /* 1/square root 3 */
 #define TPI 6.28318530718 /* 2pi */
@@ -52,7 +52,7 @@
 #define ZSC 0.5 /* 1 minus this */
 #define UZ 2 /* inverse of this */
 #define UZC 1 /* this minus 1 */
-G_DEFINE_TYPE (PlotLinear, plot_linear, GTK_TYPE_DRAWING_AREA);
+G_DEFINE_TYPE (PlotLinearBoth, plot_linear_both, GTK_TYPE_DRAWING_AREA);
 enum
   {
   PROP_0,
@@ -75,8 +75,8 @@ enum
   LAST_SIGNAL
   };
 
-static guint plot_linear_signals[LAST_SIGNAL]={0};
-typedef struct _PlotLinearPrivate PlotLinearPrivate;
+static guint plot_linear_both_signals[LAST_SIGNAL]={0};
+typedef struct _PlotLinearBothPrivate PlotLinearBothPrivate;
 
 struct xs
   {
@@ -88,7 +88,7 @@ struct tk
   guint xj, yj, xn, yn;
   };
 
-struct _PlotLinearPrivate
+struct _PlotLinearBothPrivate
   {
   struct xs bounds;
   struct tk ticks;
@@ -100,11 +100,11 @@ struct _PlotLinearPrivate
   struct xs rescale;
   };
 
-static void plot_linear_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+static void plot_linear_both_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
   {
-  PlotLinearPrivate *priv;
+  PlotLinearBothPrivate *priv;
 
-  priv=PLOT_LINEAR_GET_PRIVATE(object);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(object);
   switch (prop_id)
     {
     case PROP_BXN:
@@ -146,11 +146,11 @@ static void plot_linear_set_property(GObject *object, guint prop_id, const GValu
     }
   }
 
-static void plot_linear_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+static void plot_linear_both_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
   {
-  PlotLinearPrivate *priv;
+  PlotLinearBothPrivate *priv;
 
-  priv=PLOT_LINEAR_GET_PRIVATE(object);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(object);
   switch (prop_id)
     {
     case PROP_BXN:
@@ -192,21 +192,21 @@ static void plot_linear_get_property(GObject *object, guint prop_id, GValue *val
     }
   }
 
-static void plot_linear_finalise(PlotLinear *plot)
+static void plot_linear_both_finalise(PlotLinearBoth *plot)
   {
-  PlotLinearPrivate *priv;
+  PlotLinearBothPrivate *priv;
 
-  priv=PLOT_LINEAR_GET_PRIVATE(plot);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(plot);
   if (plot->xlab) g_free(plot->xlab);
   if (plot->ylab) g_free(plot->ylab);
   if (plot->xdata) g_free(plot->xdata);
   if (plot->ydata) g_free(plot->ydata);
   }
 
-static void draw(GtkWidget *widget, cairo_t *cr)
+static void draw_both(GtkWidget *widget, cairo_t *cr)
   {
-  PlotLinearPrivate *priv;
-  PlotLinear *plot;
+  PlotLinearBothPrivate *priv;
+  PlotLinearBoth *plot;
   guint xs;
   gint j, k, xw, yw, xr, xr2, yr, yr2, xa, ya, xl, yl, xu, yu, tf, tz, to, tn, tnn, xv, yv, xvn, yvn, dtt, tx;
   gdouble dt;
@@ -226,10 +226,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
   mtr3.xy=-1;
   mtr3.yx=1;
   mtr3.yy=0;
-  plot=PLOT_LINEAR(widget);
+  plot=PLOT_LINEAR_BOTH(widget);
   xw=widget->allocation.width;
   yw=widget->allocation.height;
-  priv=PLOT_LINEAR_GET_PRIVATE(plot);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(plot);
   priv->flaga&=48;
   dtt=(plot->afsize)+(plot->lfsize);
   xr=MIN(xw*ARP,dtt);
@@ -1706,485 +1706,31 @@ static void draw(GtkWidget *widget, cairo_t *cr)
     {
     xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, 0)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
     yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, 0)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-    if (((plot->flagd)&1)!=0)
+    if (((priv->flaga)&1)!=0)
       {
-      cairo_set_line_width(cr, (plot->linew));
-      if (((plot->flagd)&2)!=0) /* lines and points */
+      if (((priv->flaga)&4)!=0)
         {
-        if (((priv->flaga)&1)!=0)
+        if ((yv>=yu)&&(xv<=xu))
           {
-          if (((priv->flaga)&4)!=0)
-            {
-            if ((yv>=yu)&&(xv<=xu))
-              {
-              xs=0;
-              cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-              cairo_fill(cr);
-              cairo_move_to(cr, xv, yv);
-              }
-            else xs=1;
-            for (j=1; j<(plot->size); j++)
-              {
-              xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-              yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-              if ((yvn>=yu)&&(xvn<=xu))
-                {
-                if (xs==1)
-                  {
-                  tx=((xvn-xv)*(yu-yv))/(yvn-yv); /* divide by zero handling? */
-                  tx+=xv;
-                  if ((tx<=xu)&&(yvn>yv)) cairo_move_to(cr, tx, yu);
-                  else
-                    {
-                    tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                    tx+=yv;
-                    cairo_move_to(cr, xu, tx);
-                    }
-                  }
-                cairo_line_to(cr, xvn, yvn);
-                cairo_stroke(cr);
-                cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
-                cairo_fill(cr);
-                cairo_move_to(cr, xvn, yvn);
-                xs=0;
-                }
-              else if (xs==0)
-                {
-                tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-                tx+=xv;
-                if ((tx<=xu)&&(yvn<yv)) cairo_line_to(cr, tx, yu);
-                else
-                  {
-                  tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                  tx+=yv;
-                  cairo_line_to(cr, xu, tx);
-                  }
-                cairo_stroke(cr);
-                xs=1;
-                }
-              else if ((((xvn>=xu)&&(xu>=xv))||((xvn<=xu)&&(xu<=xv)))&&(((yvn>=yu)&&(yu>=yv))||((yvn<=yu)&&(yu<=yv))))
-                {
-                tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-                tx+=xv;
-                if (tx<=xu)
-                  {
-                  cairo_move_to(cr, tx, yu);
-                  tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                  tx+=yv;
-                  cairo_line_to(cr, xu, tx);
-                  }
-                xs=1;
-                }
-              else xs=1;
-              xv=xvn;
-              yv=yvn;
-              }
-            }
-          else if (((priv->flaga)&8)!=0)
-            {
-            if ((yv<=yl)&&(xv<=xu))
-              {
-              xs=0;
-              cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-              cairo_fill(cr);
-              cairo_move_to(cr, xv, yv);
-              }
-            else xs=1;
-            for (j=1; j<(plot->size); j++)
-              {
-              xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-              yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-              if ((yvn<=yl)&&(xvn<=xu))
-                {
-                if (xs==1)
-                  {
-                  tx=((xvn-xv)*(yv-yl))/(yv-yvn); /* divide by zero handling? */
-                  tx+=xv;
-                  if ((tx<=xu)&&(yvn<yv)) cairo_move_to(cr, tx, yl);
-                  else
-                    {
-                    tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                    tx+=yv;
-                    cairo_move_to(cr, xu, tx);
-                    }
-                  }
-                cairo_line_to(cr, xvn, yvn);
-                cairo_stroke(cr);
-                cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
-                cairo_fill(cr);
-                cairo_move_to(cr, xvn, yvn);
-                xs=0;
-                }
-              else if (xs==0)
-                {
-                tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-                tx+=xv;
-                if ((tx<=xu)&&(yvn>yv)) cairo_line_to(cr, tx, yl);
-                else
-                  {
-                  tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                  tx+=yv;
-                  cairo_line_to(cr, xu, tx);
-                  }
-                cairo_stroke(cr);
-                xs=1;
-                }
-              else if ((((xvn>=xu)&&(xu>=xv))||((xvn<=xu)&&(xu<=xv)))&&(((yvn>=yl)&&(yl>=yv))||((yvn<=yl)&&(yl<=yv))))
-                {
-                tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-                tx+=xv;
-                if (tx<=xu)
-                  {
-                  cairo_move_to(cr, tx, yl);
-                  tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                  tx+=yv;
-                  cairo_line_to(cr, xu, tx);
-                  }
-                xs=1;
-                }
-              else xs=1;
-              xv=xvn;
-              yv=yvn;
-              }
-            }
-          else
-            {
-            if (xv<=xu)
-              {
-              xs=0;
-              cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-              cairo_fill(cr);
-              cairo_move_to(cr, xv, yv);
-              }
-            else xs=1;
-            for (j=1; j<(plot->size); j++)
-              {
-              xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-              yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-              if (xvn<=xu)
-                {
-                if (xs==1)
-                  {
-                  tx=((yvn-yv)*(xu-xv))/(xvn-xv); /* divide by zero handling? */
-                  tx+=yv;
-                  cairo_move_to(cr, xu, tx);
-                  }
-                cairo_line_to(cr, xvn, yvn);
-                cairo_stroke(cr);
-                cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
-                cairo_fill(cr);
-                cairo_move_to(cr, xvn, yvn);
-                xs=0;
-                }
-              else if (xs==0)
-                {
-                tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                tx+=yv;
-                cairo_line_to(cr, xu, tx);
-                cairo_stroke(cr);
-                xs=1;
-                }
-              else xs=1;
-              xv=xvn;
-              yv=yvn;
-              }
-            }
-          }
-        else if (((priv->flaga)&2)!=0)
-          {
-          if (((priv->flaga)&4)!=0)
-            {
-            if ((yv>=yu)&&(xv>=xl))
-              {
-              xs=0;
-              cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-              cairo_fill(cr);
-              cairo_move_to(cr, xv, yv);
-              }
-            else xs=1;
-            for (j=1; j<(plot->size); j++)
-              {
-              xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-              yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-              if ((yvn>=yu)&&(xvn>=xl))
-                {
-                if (xs==1)
-                  {
-                  tx=((xvn-xv)*(yu-yv))/(yvn-yv); /* divide by zero handling? */
-                  tx+=xv;
-                  if ((tx>=xl)&&(yvn>yv)) cairo_move_to(cr, tx, yu);
-                  else
-                    {
-                    tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-                    tx+=yv;
-                    cairo_move_to(cr, xl, tx);
-                    }
-                  }
-                cairo_line_to(cr, xvn, yvn);
-                cairo_stroke(cr);
-                cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
-                cairo_fill(cr);
-                cairo_move_to(cr, xvn, yvn);
-                xs=0;
-                }
-              else if (xs==0)
-                {
-                tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-                tx+=xv;
-                if ((tx>=xl)&&(yvn<yv)) cairo_line_to(cr, tx, yu);
-                else
-                  {
-                  tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-                  tx+=yv;
-                  cairo_line_to(cr, xl, tx);
-                  }
-                cairo_stroke(cr);
-                xs=1;
-                }
-              else if ((((xvn>=xl)&&(xl>=xv))||((xvn<=xl)&&(xl<=xv)))&&(((yvn>=yu)&&(yu>=yv))||((yvn<=yu)&&(yu<=yv))))
-                {
-                tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-                tx+=xv;
-                if (tx>=xl)
-                  {
-                  cairo_move_to(cr, tx, yu);
-                  tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-                  tx+=yv;
-                  cairo_line_to(cr, xl, tx);
-                  }
-                xs=1;
-                }
-              else xs=1;
-              xv=xvn;
-              yv=yvn;
-              }
-            }
-          else if (((priv->flaga)&8)!=0)
-            {
-            if ((yv<=yl)&&(xv>=xl))
-              {
-              xs=0;
-              cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-              cairo_fill(cr);
-              cairo_move_to(cr, xv, yv);
-              }
-            else xs=1;
-            for (j=1; j<(plot->size); j++)
-              {
-              xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-              yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-              if ((yvn<=yl)&&(xvn>=xl))
-                {
-                if (xs==1)
-                  {
-                  tx=((xvn-xv)*(yv-yl))/(yv-yvn); /* divide by zero handling? */
-                  tx+=xv;
-                  if ((tx>=xl)&&(yvn<yv)) cairo_move_to(cr, tx, yl);
-                  else
-                    {
-                    tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-                    tx+=yv;
-                    cairo_move_to(cr, xl, tx);
-                    }
-                  }
-                cairo_line_to(cr, xvn, yvn);
-                cairo_stroke(cr);
-                cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
-                cairo_fill(cr);
-                cairo_move_to(cr, xvn, yvn);
-                xs=0;
-                }
-              else if (xs==0)
-                {
-                tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-                tx+=xv;
-                if ((tx>=xl)&&(yvn>yv)) cairo_line_to(cr, tx, yl);
-                else
-                  {
-                  tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-                  tx+=yv;
-                  cairo_line_to(cr, xl, tx);
-                  }
-                cairo_stroke(cr);
-                xs=1;
-                }
-              else if ((((xvn>=xl)&&(xl>=xv))||((xvn<=xl)&&(xl<=xv)))&&(((yvn>=yl)&&(yl>=yv))||((yvn<=yl)&&(yl<=yv))))
-                {
-                tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-                tx+=xv;
-                if (tx>=xl)
-                  {
-                  cairo_move_to(cr, tx, yl);
-                  tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-                  tx+=yv;
-                  cairo_line_to(cr, xu, tx);
-                  }
-                xs=1;
-                }
-              else xs=1;
-              xv=xvn;
-              yv=yvn;
-              }
-            }
-          else
-            {
-            if (xv>=xl)
-              {
-              xs=0;
-              cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-              cairo_fill(cr);
-              cairo_move_to(cr, xv, yv);
-              }
-            else xs=1;
-            for (j=1; j<(plot->size); j++)
-              {
-              xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-              yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-              if (xvn>=xl)
-                {
-                if (xs==1)
-                  {
-                  tx=((yvn-yv)*(xu-xv))/(xvn-xv); /* divide by zero handling? */
-                  tx+=yv;
-                  cairo_move_to(cr, xu, tx);
-                  }
-                cairo_line_to(cr, xvn, yvn);
-                cairo_stroke(cr);
-                cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
-                cairo_fill(cr);
-                cairo_move_to(cr, xvn, yvn);
-                xs=0;
-                }
-              else if (xs==0)
-                {
-                tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                tx+=yv;
-                cairo_line_to(cr, xu, tx);
-                cairo_stroke(cr);
-                xs=1;
-                }
-              else xs=1;
-              xv=xvn;
-              yv=yvn;
-              }
-            }
-          }
-        else if (((priv->flaga)&4)!=0)
-          {
-          if (yv>=yu)
-            {
-            xs=0;
-            cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-            cairo_fill(cr);
-            cairo_move_to(cr, xv, yv);
-            }
-          else xs=1;
-          for (j=1; j<(plot->size); j++)
-            {
-            xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if (yvn>=yu)
-              {
-              if (xs==1)
-                {
-                tx=((xvn-xv)*(yu-yv))/(yvn-yv); /* divide by zero handling? */
-                tx+=xv;
-                cairo_move_to(cr, tx, yu);
-                }
-              cairo_line_to(cr, xvn, yvn);
-              cairo_stroke(cr);
-              cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
-              cairo_fill(cr);
-              cairo_move_to(cr, xvn, yvn);
-              xs=0;
-              }
-            else if (xs==0)
-              {
-              tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-              tx+=xv;
-              cairo_line_to(cr, tx, yu);
-              cairo_stroke(cr);
-              xs=1;
-              }
-            else xs=1;
-            xv=xvn;
-            yv=yvn;
-            }
-          }
-        else if (((priv->flaga)&8)!=0)
-          {
-          if (yv<=yl)
-            {
-            xs=0;
-            cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-            cairo_fill(cr);
-            cairo_move_to(cr, xv, yv);
-            }
-          else xs=1;
-          for (j=1; j<(plot->size); j++)
-            {
-            xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if (yvn<=yl)
-              {
-              if (xs==1)
-                {
-                tx=((xvn-xv)*(yv-yl))/(yv-yvn); /* divide by zero handling? */
-                tx+=xv;
-                cairo_move_to(cr, tx, yl);
-                }
-              cairo_line_to(cr, xvn, yvn);
-              cairo_stroke(cr);
-              cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
-              cairo_fill(cr);
-              cairo_move_to(cr, xvn, yvn);
-              xs=0;
-              }
-            else if (xs==0)
-              {
-              tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-              tx+=xv;
-              cairo_line_to(cr, tx, yl);
-              cairo_stroke(cr);
-              xs=1;
-              }
-            else xs=1;
-            xv=xvn;
-            yv=yvn;
-            }
-          }
-        else
-          {
+          xs=0;
           cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
           cairo_fill(cr);
           cairo_move_to(cr, xv, yv);
-          for (j=1; j<(plot->size); j++)
-            {
-            xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            cairo_line_to(cr, xv, yv);
-            cairo_stroke(cr);
-            cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-            cairo_fill(cr);
-            cairo_move_to(cr, xv, yv);
-            }
           }
-        } /* lines only */
-      else if (((priv->flaga)&1)!=0)
-        {
-        if (((priv->flaga)&4)!=0)
+        else xs=1;
+        for (j=1; j<(plot->size); j++)
           {
-          if ((yv>=yu)&&(xv<=xu)) {xs=0; cairo_move_to(cr, xv, yv);}
-          else xs=1;
-          for (j=1; j<(plot->size); j++)
+          xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+          yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+          if ((yvn>=yu)&&(xvn<=xu))
             {
-            xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if ((yvn>=yu)&&(xvn<=xu))
+            if (xs==1)
               {
-              if (xs==1)
+              tx=yvn-yv;
+              if ((tx<DZE)&&(tx>NZE)) cairo_move_to(cr, xu, yv);
+              else
                 {
-                tx=((xvn-xv)*(yu-yv))/(yvn-yv); /* divide by zero handling? */
+                tx=((xvn-xv)*(yu-yv))/tx;
                 tx+=xv;
                 if ((tx<=xu)&&(yvn>yv)) cairo_move_to(cr, tx, yu);
                 else
@@ -2194,12 +1740,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
                   cairo_move_to(cr, xu, tx);
                   }
                 }
-              cairo_line_to(cr, xvn, yvn);
-              xs=0;
               }
-            else if (xs==0)
+            cairo_line_to(cr, xvn, yvn);
+            cairo_stroke(cr);
+            cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
+            cairo_fill(cr);
+            cairo_move_to(cr, xvn, yvn);
+            xs=0;
+            }
+          else if (xs==0)
+            {
+            tx=yvn-yv;
+            if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xu, yv);
+            else
               {
-              tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+              tx=((xvn-xv)*(yu-yv))/tx;
               tx+=xv;
               if ((tx<=xu)&&(yvn<yv)) cairo_line_to(cr, tx, yu);
               else
@@ -2208,40 +1763,51 @@ static void draw(GtkWidget *widget, cairo_t *cr)
                 tx+=yv;
                 cairo_line_to(cr, xu, tx);
                 }
-              xs=1;
               }
-            else if ((((xvn>=xu)&&(xu>=xv))||((xvn<=xu)&&(xu<=xv)))&&(((yvn>=yu)&&(yu>=yv))||((yvn<=yu)&&(yu<=yv))))
-              {
-              tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-              tx+=xv;
-              if (tx<=xu)
-                {
-                cairo_move_to(cr, tx, yu);
-                tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                tx+=yv;
-                cairo_line_to(cr, xu, tx);
-                }
-              xs=1;
-              }
-            else xs=1;
-            xv=xvn;
-            yv=yvn;
+            cairo_stroke(cr);
+            xs=1;
             }
-          cairo_stroke(cr);
-          }
-        else if (((priv->flaga)&8)!=0)
-          {
-          if ((yv<=yl)&&(xv<=xu)) {xs=0; cairo_move_to(cr, xv, yv);}
-          else xs=1;
-          for (j=1; j<(plot->size); j++)
+          else if ((((xvn>=xu)&&(xu>=xv))||((xvn<=xu)&&(xu<=xv)))&&(((yvn>=yu)&&(yu>=yv))||((yvn<=yu)&&(yu<=yv))))
             {
-            xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if ((yvn<=yl)&&(xvn<=xu))
+            tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+            tx+=xv;
+            if (tx<=xu)
               {
-              if (xs==1)
+              cairo_move_to(cr, tx, yu);
+              tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+              tx+=yv;
+              cairo_line_to(cr, xu, tx);
+              }
+            xs=1;
+            }
+          else xs=1;
+          xv=xvn;
+          yv=yvn;
+          }
+        }
+      else if (((priv->flaga)&8)!=0)
+        {
+        if ((yv<=yl)&&(xv<=xu))
+          {
+          xs=0;
+          cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
+          cairo_fill(cr);
+          cairo_move_to(cr, xv, yv);
+          }
+        else xs=1;
+        for (j=1; j<(plot->size); j++)
+          {
+          xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+          yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+          if ((yvn<=yl)&&(xvn<=xu))
+            {
+            if (xs==1)
+              {
+              tx=yvn-yv;
+              if ((tx<DZE)&&(tx>NZE)) cairo_move_to(cr, xu, yv);
+              else
                 {
-                tx=((xvn-xv)*(yv-yl))/(yv-yvn); /* divide by zero handling? */
+                tx=((xvn-xv)*(yv-yl))/tx;
                 tx+=xv;
                 if ((tx<=xu)&&(yvn<yv)) cairo_move_to(cr, tx, yl);
                 else
@@ -2251,12 +1817,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
                   cairo_move_to(cr, xu, tx);
                   }
                 }
-              cairo_line_to(cr, xvn, yvn);
-              xs=0;
               }
-            else if (xs==0)
+            cairo_line_to(cr, xvn, yvn);
+            cairo_stroke(cr);
+            cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
+            cairo_fill(cr);
+            cairo_move_to(cr, xvn, yvn);
+            xs=0;
+            }
+          else if (xs==0)
+            {
+            tx=yvn-yv;
+            if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xu, yv);
+            else
               {
-              tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+              tx=((xvn-xv)*(yl-yv))/tx;
               tx+=xv;
               if ((tx<=xu)&&(yvn>yv)) cairo_line_to(cr, tx, yl);
               else
@@ -2265,75 +1840,96 @@ static void draw(GtkWidget *widget, cairo_t *cr)
                 tx+=yv;
                 cairo_line_to(cr, xu, tx);
                 }
-              xs=1;
               }
-            else if ((((xvn>=xu)&&(xu>=xv))||((xvn<=xu)&&(xu<=xv)))&&(((yvn>=yl)&&(yl>=yv))||((yvn<=yl)&&(yl<=yv))))
-              {
-              tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-              tx+=xv;
-              if (tx<=xu)
-                {
-                cairo_move_to(cr, tx, yl);
-                tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-                tx+=yv;
-                cairo_line_to(cr, xu, tx);
-                }
-              xs=1;
-              }
-            else xs=1;
-            xv=xvn;
-            yv=yvn;
+            cairo_stroke(cr);
+            xs=1;
             }
-          cairo_stroke(cr);
-          }
-        else
-          {
-          if (xv<=xu) {xs=0; cairo_move_to(cr, xv, yv);}
-          else xs=1;
-          for (j=1; j<(plot->size); j++)
+          else if ((((xvn>=xu)&&(xu>=xv))||((xvn<=xu)&&(xu<=xv)))&&(((yvn>=yl)&&(yl>=yv))||((yvn<=yl)&&(yl<=yv))))
             {
-            xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if (xvn<=xu)
+            tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+            tx+=xv;
+            if (tx<=xu)
               {
-              if (xs==1)
-                {
-                tx=((yvn-yv)*(xu-xv))/(xvn-xv); /* divide by zero handling? */
-                tx+=yv;
-                cairo_move_to(cr, xu, tx);
-                }
-              cairo_line_to(cr, xvn, yvn);
-              xs=0;
-              }
-            else if (xs==0)
-              {
+              cairo_move_to(cr, tx, yl);
               tx=((yvn-yv)*(xu-xv))/(xvn-xv);
               tx+=yv;
               cairo_line_to(cr, xu, tx);
-              xs=1;
               }
-            else xs=1;
-            xv=xvn;
-            yv=yvn;
+            xs=1;
             }
-          cairo_stroke(cr);
+          else xs=1;
+          xv=xvn;
+          yv=yvn;
           }
         }
-      else if (((priv->flaga)&2)!=0)
+      else
         {
-        if (((priv->flaga)&4)!=0)
+        if (xv<=xu)
           {
-          if ((yv>=yu)&&(xv>=xl)) {xs=0; cairo_move_to(cr, xv, yv);}
-          else xs=1;
-          for (j=1; j<(plot->size); j++)
+          xs=0;
+          cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
+          cairo_fill(cr);
+          cairo_move_to(cr, xv, yv);
+          }
+        else xs=1;
+        for (j=1; j<(plot->size); j++)
+          {
+          xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+          yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+          if (xvn<=xu)
             {
-            xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if ((yvn>=yu)&&(xvn>=xl))
+            if (xs==1)
               {
-              if (xs==1)
+              tx=((yvn-yv)*(xu-xv))/(xvn-xv); /* divide by zero handling? */
+              tx+=yv;
+              cairo_move_to(cr, xu, tx);
+              }
+            cairo_line_to(cr, xvn, yvn);
+            cairo_stroke(cr);
+            cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
+            cairo_fill(cr);
+            cairo_move_to(cr, xvn, yvn);
+            xs=0;
+            }
+          else if (xs==0)
+            {
+            tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+            tx+=yv;
+            cairo_line_to(cr, xu, tx);
+            cairo_stroke(cr);
+            xs=1;
+            }
+          else xs=1;
+          xv=xvn;
+          yv=yvn;
+          }
+        }
+      }
+    else if (((priv->flaga)&2)!=0)
+      {
+      if (((priv->flaga)&4)!=0)
+        {
+        if ((yv>=yu)&&(xv>=xl))
+          {
+          xs=0;
+          cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
+          cairo_fill(cr);
+          cairo_move_to(cr, xv, yv);
+          }
+        else xs=1;
+        for (j=1; j<(plot->size); j++)
+          {
+          xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+          yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+          if ((yvn>=yu)&&(xvn>=xl))
+            {
+            if (xs==1)
+              {
+              tx=yvn-yv;
+              if ((tx<DZE)&&(tx>NZE)) cairo_move_to(cr, xl, yv);
+              else
                 {
-                tx=((xvn-xv)*(yu-yv))/(yvn-yv); /* divide by zero handling? */
+                tx=((xvn-xv)*(yu-yv))/tx;
                 tx+=xv;
                 if ((tx>=xl)&&(yvn>yv)) cairo_move_to(cr, tx, yu);
                 else
@@ -2343,12 +1939,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
                   cairo_move_to(cr, xl, tx);
                   }
                 }
-              cairo_line_to(cr, xvn, yvn);
-              xs=0;
               }
-            else if (xs==0)
+            cairo_line_to(cr, xvn, yvn);
+            cairo_stroke(cr);
+            cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
+            cairo_fill(cr);
+            cairo_move_to(cr, xvn, yvn);
+            xs=0;
+            }
+          else if (xs==0)
+            {
+            tx=yvn-yv;
+            if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xl, yv);
+            else
               {
-              tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+              tx=((xvn-xv)*(yu-yv))/tx;
               tx+=xv;
               if ((tx>=xl)&&(yvn<yv)) cairo_line_to(cr, tx, yu);
               else
@@ -2357,40 +1962,51 @@ static void draw(GtkWidget *widget, cairo_t *cr)
                 tx+=yv;
                 cairo_line_to(cr, xl, tx);
                 }
-              xs=1;
               }
-            else if ((((xvn>=xl)&&(xl>=xv))||((xvn<=xl)&&(xl<=xv)))&&(((yvn>=yu)&&(yu>=yv))||((yvn<=yu)&&(yu<=yv))))
-              {
-              tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-              tx+=xv;
-              if (tx>=xl)
-                {
-                cairo_move_to(cr, tx, yu);
-                tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-                tx+=yv;
-                cairo_line_to(cr, xl, tx);
-                }
-              xs=1;
-              }
-            else xs=1;
-            xv=xvn;
-            yv=yvn;
+            cairo_stroke(cr);
+            xs=1;
             }
-          cairo_stroke(cr);
-          }
-        else if (((priv->flaga)&8)!=0)
-          {
-          if ((yv<=yl)&&(xv>=xl)) {xs=0; cairo_move_to(cr, xv, yv);}
-          else xs=1;
-          for (j=1; j<(plot->size); j++)
+          else if ((((xvn>=xl)&&(xl>=xv))||((xvn<=xl)&&(xl<=xv)))&&(((yvn>=yu)&&(yu>=yv))||((yvn<=yu)&&(yu<=yv))))
             {
-            xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if ((yvn<=yl)&&(xvn>=xl))
+            tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+            tx+=xv;
+            if (tx>=xl)
               {
-              if (xs==1)
+              cairo_move_to(cr, tx, yu);
+              tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+              tx+=yv;
+              cairo_line_to(cr, xl, tx);
+              }
+            xs=1;
+            }
+          else xs=1;
+          xv=xvn;
+          yv=yvn;
+          }
+        }
+      else if (((priv->flaga)&8)!=0)
+        {
+        if ((yv<=yl)&&(xv>=xl))
+          {
+          xs=0;
+          cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
+          cairo_fill(cr);
+          cairo_move_to(cr, xv, yv);
+          }
+        else xs=1;
+        for (j=1; j<(plot->size); j++)
+          {
+          xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+          yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+          if ((yvn<=yl)&&(xvn>=xl))
+            {
+            if (xs==1)
+              {
+              tx=yvn-yv;
+              if ((tx<DZE)&&(tx>NZE)) cairo_move_to(cr, xl, yv);
+              else
                 {
-                tx=((xvn-xv)*(yv-yl))/(yv-yvn); /* divide by zero handling? */
+                tx=((xvn-xv)*(yv-yl))/tx;
                 tx+=xv;
                 if ((tx>=xl)&&(yvn<yv)) cairo_move_to(cr, tx, yl);
                 else
@@ -2400,12 +2016,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
                   cairo_move_to(cr, xl, tx);
                   }
                 }
-              cairo_line_to(cr, xvn, yvn);
-              xs=0;
               }
-            else if (xs==0)
+            cairo_line_to(cr, xvn, yvn);
+            cairo_stroke(cr);
+            cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
+            cairo_fill(cr);
+            cairo_move_to(cr, xvn, yvn);
+            xs=0;
+            }
+          else if (xs==0)
+            {
+            tx=yvn-yv;
+            if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xl, yv);
+            else
               {
-              tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+              tx=((xvn-xv)*(yl-yv))/tx;
               tx+=xv;
               if ((tx>=xl)&&(yvn>yv)) cairo_line_to(cr, tx, yl);
               else
@@ -2414,241 +2039,175 @@ static void draw(GtkWidget *widget, cairo_t *cr)
                 tx+=yv;
                 cairo_line_to(cr, xl, tx);
                 }
-              xs=1;
               }
-            else if ((((xvn>=xl)&&(xl>=xv))||((xvn<=xl)&&(xl<=xv)))&&(((yvn>=yl)&&(yl>=yv))||((yvn<=yl)&&(yl<=yv))))
-              {
-              tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-              tx+=xv;
-              if (tx>=xl)
-                {
-                cairo_move_to(cr, tx, yl);
-                tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-                tx+=yv;
-                cairo_line_to(cr, xu, tx);
-                }
-              xs=1;
-              }
-            else xs=1;
-            xv=xvn;
-            yv=yvn;
-            }
-          cairo_stroke(cr);
-          }
-        else
-          {
-          if (xv>=xl) {xs=0; cairo_move_to(cr, xv, yv);}
-          else xs=1;
-          for (j=1; j<(plot->size); j++)
-            {
-            xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if (xvn>=xl)
-              {
-              if (xs==1)
-                {
-                tx=((yvn-yv)*(xu-xv))/(xvn-xv); /* divide by zero handling? */
-                tx+=yv;
-                cairo_move_to(cr, xu, tx);
-                }
-              cairo_line_to(cr, xvn, yvn);
-              xs=0;
-              }
-            else if (xs==0)
-              {
-              tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-              tx+=yv;
-              cairo_line_to(cr, xu, tx);
-              xs=1;
-              }
-            else xs=1;
-            xv=xvn;
-            yv=yvn;
-            }
-          cairo_stroke(cr);
-          }
-        }
-      else if (((priv->flaga)&4)!=0)
-        {
-        if (yv>=yu) {xs=0; cairo_move_to(cr, xv, yv);}
-        else xs=1;
-        for (j=1; j<(plot->size); j++)
-          {
-          xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-          yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-          if (yvn>=yu)
-            {
-            if (xs==1)
-              {
-              tx=((xvn-xv)*(yu-yv))/(yvn-yv); /* divide by zero handling? */
-              tx+=xv;
-              cairo_move_to(cr, tx, yu);
-              }
-            cairo_line_to(cr, xvn, yvn);
-            xs=0;
-            }
-          else if (xs==0)
-            {
-            tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-            tx+=xv;
-            cairo_line_to(cr, tx, yu);
+            cairo_stroke(cr);
             xs=1;
             }
-          else xs=1;
-          xv=xvn;
-          yv=yvn;
-          }
-        cairo_stroke(cr);
-        }
-      else if (((priv->flaga)&8)!=0)
-        {
-        if (yv<=yl) {xs=0; cairo_move_to(cr, xv, yv);}
-        else xs=1;
-        for (j=1; j<(plot->size); j++)
-          {
-          xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-          yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-          if (yvn<=yl)
-            {
-            if (xs==1)
-              {
-              tx=((xvn-xv)*(yv-yl))/(yv-yvn); /* divide by zero handling? */
-              tx+=xv;
-              cairo_move_to(cr, tx, yl);
-              }
-            cairo_line_to(cr, xvn, yvn);
-            xs=0;
-            }
-          else if (xs==0)
+          else if ((((xvn>=xl)&&(xl>=xv))||((xvn<=xl)&&(xl<=xv)))&&(((yvn>=yl)&&(yl>=yv))||((yvn<=yl)&&(yl<=yv))))
             {
             tx=((xvn-xv)*(yl-yv))/(yvn-yv);
             tx+=xv;
-            cairo_line_to(cr, tx, yl);
+            if (tx>=xl)
+              {
+              cairo_move_to(cr, tx, yl);
+              tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+              tx+=yv;
+              cairo_line_to(cr, xu, tx);
+              }
             xs=1;
             }
           else xs=1;
           xv=xvn;
           yv=yvn;
           }
-        cairo_stroke(cr);
         }
       else
         {
-        cairo_move_to(cr, xv, yv);
-        for (j=1; j<(plot->size); j++)
+        if (xv>=xl)
           {
-          xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-          yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-          cairo_line_to(cr, xv, yv);
-          }
-        cairo_stroke(cr);
-        }
-      }
-    else if (((plot->flagd)&2)!=0) /* points only */
-      {
-      if (((priv->flaga)&1)!=0)
-        {
-        if (((priv->flaga)&4)!=0)
-          {
-          if ((yv>=yu)&&(xv<=xu)) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-          for (j=1; j<(plot->size); j++)
-            {
-            xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if ((yv>=yu)&&(xv<=xu)) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-            }
-          }
-        else if (((priv->flaga)&8)!=0)
-          {
-          if ((yv<=yl)&&(xv<=xu)) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-          for (j=1; j<(plot->size); j++)
-            {
-            xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if ((yv<=yl)&&(xv<=xu)) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-            }
-          }
-        else
-          {
-          if (xv<=xu) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-          for (j=1; j<(plot->size); j++)
-            {
-            xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if (xv<=xu) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-            }
-          }
-        }
-      else if (((priv->flaga)&2)!=0)
-        {
-        if (((priv->flaga)&4)!=0)
-          {
-          if ((yv>=yu)&&(xv>=xl)) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-          for (j=1; j<(plot->size); j++)
-            {
-            xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if ((yv>=yu)&&(xv>=xl)) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-            }
-          }
-        else if (((priv->flaga)&8)!=0)
-          {
-          if ((yv<=yl)&&(xv>=xl)) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-          for (j=1; j<(plot->size); j++)
-            {
-            xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if ((yv<=yl)&&(xv>=xl)) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-            }
-          }
-        else
-          {
-          if (xv>=xl) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-          for (j=1; j<(plot->size); j++)
-            {
-            xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-            yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-            if (xv>=xl) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-            }
-          }
-        }
-      else if (((priv->flaga)&4)!=0)
-        {
-        if (yv>=yu) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-        for (j=1; j<(plot->size); j++)
-          {
-          xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-          yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-          if (yv>=yu) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-          }
-        }
-      else if (((priv->flaga)&8)!=0)
-        {
-        if (yv<=yl) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-        for (j=1; j<(plot->size); j++)
-          {
-          xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-          yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-          if (yv<=yl) {cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI); cairo_fill(cr);}
-          }
-        }
-      else
-        {
-        cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
-        cairo_fill(cr);
-        for (j=1; j<(plot->size); j++)
-          {
-          xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-          yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+          xs=0;
           cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
           cairo_fill(cr);
+          cairo_move_to(cr, xv, yv);
           }
+        else xs=1;
+        for (j=1; j<(plot->size); j++)
+          {
+          xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+          yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+          if (xvn>=xl)
+            {
+            if (xs==1)
+              {
+              tx=((yvn-yv)*(xu-xv))/(xvn-xv); /* divide by zero handling? */
+              tx+=yv;
+              cairo_move_to(cr, xu, tx);
+              }
+            cairo_line_to(cr, xvn, yvn);
+            cairo_stroke(cr);
+            cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
+            cairo_fill(cr);
+            cairo_move_to(cr, xvn, yvn);
+            xs=0;
+            }
+          else if (xs==0)
+            {
+            tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+            tx+=yv;
+            cairo_line_to(cr, xu, tx);
+            cairo_stroke(cr);
+            xs=1;
+            }
+          else xs=1;
+          xv=xvn;
+          yv=yvn;
+          }
+        }
+      }
+    else if (((priv->flaga)&4)!=0)
+      {
+      if (yv>=yu)
+        {
+        xs=0;
+        cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
+        cairo_fill(cr);
+        cairo_move_to(cr, xv, yv);
+        }
+      else xs=1;
+      for (j=1; j<(plot->size); j++)
+        {
+        xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+        yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+        if (yvn>=yu)
+          {
+          if (xs==1)
+            {
+            tx=((xvn-xv)*(yu-yv))/(yvn-yv); /* divide by zero handling? */
+            tx+=xv;
+            cairo_move_to(cr, tx, yu);
+            }
+          cairo_line_to(cr, xvn, yvn);
+          cairo_stroke(cr);
+          cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
+          cairo_fill(cr);
+          cairo_move_to(cr, xvn, yvn);
+          xs=0;
+          }
+        else if (xs==0)
+          {
+          tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+          tx+=xv;
+          cairo_line_to(cr, tx, yu);
+          cairo_stroke(cr);
+          xs=1;
+          }
+        else xs=1;
+        xv=xvn;
+        yv=yvn;
+        }
+      }
+    else if (((priv->flaga)&8)!=0)
+      {
+      if (yv<=yl)
+        {
+        xs=0;
+        cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
+        cairo_fill(cr);
+        cairo_move_to(cr, xv, yv);
+        }
+      else xs=1;
+      for (j=1; j<(plot->size); j++)
+        {
+        xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+        yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+        if (yvn<=yl)
+          {
+          if (xs==1)
+            {
+            tx=((xvn-xv)*(yv-yl))/(yv-yvn); /* divide by zero handling? */
+            tx+=xv;
+            cairo_move_to(cr, tx, yl);
+            }
+          cairo_line_to(cr, xvn, yvn);
+          cairo_stroke(cr);
+          cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, TPI);
+          cairo_fill(cr);
+          cairo_move_to(cr, xvn, yvn);
+          xs=0;
+          }
+        else if (xs==0)
+          {
+          tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+          tx+=xv;
+          cairo_line_to(cr, tx, yl);
+          cairo_stroke(cr);
+          xs=1;
+          }
+        else xs=1;
+        xv=xvn;
+        yv=yvn;
+        }
+      }
+    else
+      {
+      cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
+      cairo_fill(cr);
+      cairo_move_to(cr, xv, yv);
+      for (j=1; j<(plot->size); j++)
+        {
+        xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+        yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+        cairo_line_to(cr, xv, yv);
+        cairo_stroke(cr);
+        cairo_arc(cr, xv, yv, (plot->ptsize), 0, TPI);
+        cairo_fill(cr);
+        cairo_move_to(cr, xv, yv);
         }
       }
     }
   }
 
-static void plot_linear_redraw(GtkWidget *widget)
+static void plot_linear_both_redraw(GtkWidget *widget)
   {
   GdkRegion *region;
 
@@ -2659,26 +2218,26 @@ static void plot_linear_redraw(GtkWidget *widget)
   gdk_region_destroy(region);
   }
 
-gboolean plot_linear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx)
+gboolean plot_linear_both_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx)
   {
-  PlotLinearPrivate *priv;
+  PlotLinearBothPrivate *priv;
 
-  priv=PLOT_LINEAR_GET_PRIVATE(widget);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(widget);
   priv->bounds.xmin=xn;
   priv->bounds.xmax=xx;
   priv->bounds.ymin=yn;
   priv->bounds.ymax=yx;
-  plot_linear_redraw(widget);
+  plot_linear_both_redraw(widget);
   return FALSE;
   }
 
-gboolean plot_linear_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx)
+gboolean plot_linear_both_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx)
   {
-  PlotLinearPrivate *priv;
+  PlotLinearBothPrivate *priv;
   gdouble num, num3;
   gint num2, lt, ut, tk;
 
-  priv=PLOT_LINEAR_GET_PRIVATE(widget);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(widget);
   (priv->xcs)=2;
   if (xn>0)
     {
@@ -2970,11 +2529,11 @@ gboolean plot_linear_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble 
     (priv->ycs)+=num2;
     }
   if ((priv->ycs)>10) (priv->ycs)=10;
-  plot_linear_redraw(widget);
+  plot_linear_both_redraw(widget);
   return FALSE;
   }
 
-gboolean plot_linear_print_eps(GtkWidget *plot, gchar* fout)
+gboolean plot_linear_both_print_eps(GtkWidget *plot, gchar* fout)
   {
   cairo_t *cr;
   cairo_surface_t *surface;
@@ -2991,14 +2550,14 @@ gboolean plot_linear_print_eps(GtkWidget *plot, gchar* fout)
   return FALSE;
   }
 
-static gboolean plot_linear_button_press(GtkWidget *widget, GdkEventButton *event)
+static gboolean plot_linear_both_button_press(GtkWidget *widget, GdkEventButton *event)
   {
-  PlotLinearPrivate *priv;
-  PlotLinear *plot;
+  PlotLinearBothPrivate *priv;
+  PlotLinearBoth *plot;
   gint d;
 
-  priv=PLOT_LINEAR_GET_PRIVATE(widget);
-  plot=PLOT_LINEAR(widget);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(widget);
+  plot=PLOT_LINEAR_BOTH(widget);
   if ((priv->flagr)==0)
     {
     (priv->rescale.xmin)=(priv->bounds.xmin);
@@ -3033,34 +2592,34 @@ static gboolean plot_linear_button_press(GtkWidget *widget, GdkEventButton *even
   return FALSE;
   }
 
-static gboolean plot_linear_motion_notify(GtkWidget *widget, GdkEventMotion *event)
+static gboolean plot_linear_both_motion_notify(GtkWidget *widget, GdkEventMotion *event)
   {
-  PlotLinearPrivate *priv;
-  PlotLinear *plot;
+  PlotLinearBothPrivate *priv;
+  PlotLinearBoth *plot;
   gdouble dx, dy;
 
-  priv=PLOT_LINEAR_GET_PRIVATE(widget);
-  plot=PLOT_LINEAR(widget);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(widget);
+  plot=PLOT_LINEAR_BOTH(widget);
   dx=((event->x)-(priv->range.xj))/((priv->range.xn)-(priv->range.xj));
   dy=((priv->range.yn)-(event->y))/((priv->range.yn)-(priv->range.yj));
   if ((dx>=0)&&(dy>=0)&&(dx<=1)&&(dy<=1))
     {
     (plot->xps)=((priv->bounds.xmax)*dx)+((priv->bounds.xmin)*(1-dx));
     (plot->yps)=((priv->bounds.ymax)*dy)+((priv->bounds.ymin)*(1-dy));
-    g_signal_emit(plot, plot_linear_signals[MOVED], 0);
+    g_signal_emit(plot, plot_linear_both_signals[MOVED], 0);
     }
   return FALSE;
   }
 
-static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *event)
+static gboolean plot_linear_both_button_release(GtkWidget *widget, GdkEventButton *event)
   {
-  PlotLinearPrivate *priv;
-  PlotLinear *plot;
+  PlotLinearBothPrivate *priv;
+  PlotLinearBoth *plot;
   gint d, xw;
   gdouble xn, xx, yn, yx, s;
 
-  priv=PLOT_LINEAR_GET_PRIVATE(widget);
-  plot=PLOT_LINEAR(widget);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(widget);
+  plot=PLOT_LINEAR_BOTH(widget);
   if ((priv->flagr)==1)
     {
     if (((plot->zmode)&8)==0)
@@ -3095,13 +2654,13 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
             {
             yn=(priv->rescale.ymin);
             yx=(priv->rescale.ymax);
-            plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+            plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
             }
           else if ((priv->rescale.ymax)<(priv->rescale.ymin))
             {
             yn=(priv->rescale.ymax);
             yx=(priv->rescale.ymin);
-            plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+            plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
             }
           }
         else if ((priv->rescale.xmax)<(priv->rescale.xmin))
@@ -3112,13 +2671,13 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
             {
             yn=(priv->rescale.ymin);
             yx=(priv->rescale.ymax);
-            plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+            plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
             }
           else if ((priv->rescale.ymax)<(priv->rescale.ymin))
             {
             yn=(priv->rescale.ymax);
             yx=(priv->rescale.ymin);
-            plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+            plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
             }
           }
         }
@@ -3138,7 +2697,7 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
             yn+=(priv->bounds.ymin);
             yx=((priv->bounds.ymax)-(priv->rescale.ymax))*s;
             yx+=(priv->bounds.ymax);
-            plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+            plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
             }
           else if (s<0)
             {
@@ -3146,7 +2705,7 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
             yn+=(priv->bounds.ymin);
             yx=((priv->rescale.ymin)-(priv->bounds.ymax))*s;
             yx+=(priv->bounds.ymax);
-            plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+            plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
             }
           }
         else if (s<0)
@@ -3162,7 +2721,7 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
             yn+=(priv->bounds.ymin);
             yx=((priv->bounds.ymax)-(priv->rescale.ymax))*s;
             yx+=(priv->bounds.ymax);
-            plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+            plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
             }
           else if (s<0)
             {
@@ -3170,7 +2729,7 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
             yn+=(priv->bounds.ymin);
             yx=((priv->rescale.ymin)-(priv->bounds.ymax))*s;
             yx+=(priv->bounds.ymax);
-            plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+            plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
             }
           }
         }
@@ -3181,7 +2740,7 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
       xx=((priv->rescale.xmin)*ZS)+(ZSC*(priv->bounds.xmax));
       yn=((priv->rescale.ymin)*ZS)+(ZSC*(priv->bounds.ymin));
       yx=((priv->rescale.ymin)*ZS)+(ZSC*(priv->bounds.ymax));
-      plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+      plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
       }
     else
       {
@@ -3189,7 +2748,7 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
       xx=((priv->bounds.xmax)*UZ)-(UZC*(priv->rescale.xmin));
       yn=((priv->bounds.ymin)*UZ)-(UZC*(priv->rescale.ymin));
       yx=((priv->bounds.ymax)*UZ)-(UZC*(priv->rescale.ymin));
-      plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
+      plot_linear_both_update_scale_pretty(widget, xn, xx, yn, yx);
       }
     (priv->flagr)=0;
     }
@@ -3198,36 +2757,36 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
     xw=widget->allocation.width;
     if ((event->x)>=xw-20)
       {
-      if ((event->x)>xw-10) {(plot->zmode)^=1; plot_linear_redraw(widget);}
-      else if (((plot->zmode)&8)!=0) {(plot->zmode)&=1; plot_linear_redraw(widget);}
-      else {(plot->zmode)++; (plot->zmode)++; plot_linear_redraw(widget);}
+      if ((event->x)>xw-10) {(plot->zmode)^=1; plot_linear_both_redraw(widget);}
+      else if (((plot->zmode)&8)!=0) {(plot->zmode)&=1; plot_linear_both_redraw(widget);}
+      else {(plot->zmode)++; (plot->zmode)++; plot_linear_both_redraw(widget);}
       }
     }
   return FALSE;
   }
 
-static gboolean plot_linear_expose(GtkWidget *plot, GdkEventExpose *event)
+static gboolean plot_linear_both_expose(GtkWidget *plot, GdkEventExpose *event)
   {
   cairo_t *cr;
 
   cr=gdk_cairo_create(plot->window);
   cairo_rectangle(cr, event->area.x, event->area.y, event->area.width, event->area.height);
   cairo_clip(cr);
-  draw(plot, cr);
+  draw_both(plot, cr);
   cairo_destroy(cr);
   return FALSE;
   }
 
-static void plot_linear_class_init(PlotLinearClass *klass)
+static void plot_linear_both_class_init(PlotLinearBothClass *klass)
   {
   GObjectClass *obj_klass;
   GtkWidgetClass *widget_klass;
 
   obj_klass=G_OBJECT_CLASS(klass);
-  g_type_class_add_private(obj_klass, sizeof(PlotLinearPrivate));
-  obj_klass->finalize=(GObjectFinalizeFunc) plot_linear_finalise;
-  obj_klass->set_property=plot_linear_set_property;
-  obj_klass->get_property=plot_linear_get_property;
+  g_type_class_add_private(obj_klass, sizeof(PlotLinearBothPrivate));
+  obj_klass->finalize=(GObjectFinalizeFunc) plot_linear_both_finalise;
+  obj_klass->set_property=plot_linear_both_set_property;
+  obj_klass->get_property=plot_linear_both_get_property;
   g_object_class_install_property(obj_klass, PROP_BXN, g_param_spec_double("xmin", "Minimum x value", "Minimum value for the horizontal scale", G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_BXX, g_param_spec_double("xmax", "Maximum x value", "Maximum value for the horizontal scale", G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_BYN, g_param_spec_double("ymin", "Minimum y value", "Minimum value for the vertical scale", G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
@@ -3240,19 +2799,19 @@ static void plot_linear_class_init(PlotLinearClass *klass)
   g_object_class_install_property(obj_klass, PROP_YC, g_param_spec_uint("ychar", "y label characters", "Number of characters to store y label strings", 1, 10, 5, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_FA, g_param_spec_flags("aflag", "Axis Flags", "Flags for axes behaviour: 32 = Labels right, 16 = Labels above, 8 = Wiggle on top, 4 = Wiggle underneath, 2 = Wiggle on Right, 1 = Wiggle on left", G_TYPE_FLAGS, 0, G_PARAM_READWRITE));
   widget_klass=GTK_WIDGET_CLASS(klass);
-  widget_klass->button_press_event=plot_linear_button_press;
-  widget_klass->motion_notify_event=plot_linear_motion_notify;
-  widget_klass->button_release_event=plot_linear_button_release;
-  widget_klass->expose_event=plot_linear_expose;
-  plot_linear_signals[MOVED]=g_signal_new("moved", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET (PlotLinearClass, moved), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+  widget_klass->button_press_event=plot_linear_both_button_press;
+  widget_klass->motion_notify_event=plot_linear_both_motion_notify;
+  widget_klass->button_release_event=plot_linear_both_button_release;
+  widget_klass->expose_event=plot_linear_both_expose;
+  plot_linear_both_signals[MOVED]=g_signal_new("moved", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET (PlotLinearBothClass, moved), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
   }
 
-static void plot_linear_init(PlotLinear *plot)
+static void plot_linear_both_init(PlotLinearBoth *plot)
   {
-  PlotLinearPrivate *priv;
+  PlotLinearBothPrivate *priv;
 
   gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_RELEASE_MASK);
-  priv=PLOT_LINEAR_GET_PRIVATE(plot);
+  priv=PLOT_LINEAR_BOTH_GET_PRIVATE(plot);
   priv->bounds.xmin=0;
   priv->bounds.xmax=1;
   priv->bounds.ymin=0;
@@ -3281,10 +2840,9 @@ static void plot_linear_init(PlotLinear *plot)
   plot->zmode=6;
   plot->xps=0;
   plot->yps=0;
-  plot->flagd=1;
   }
 
-GtkWidget *plot_linear_new(void)
+GtkWidget *plot_linear_both_new(void)
   {
-  return g_object_new(PLOT_TYPE_LINEAR, NULL);
+  return g_object_new(PLOT_TYPE_LINEAR_BOTH, NULL);
   }

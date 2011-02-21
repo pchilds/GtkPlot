@@ -1,0 +1,16 @@
+Known Bugs/Issues
+-----------------
+* As g_snprintf truncates rather than rounds to nearest (axes that should say "0.5" display "0.4").
+* Migrate from cairo text based functions for labels to glyphs based functions.
+* Polar plot axes labelling and zoom box images.
+
+Future Proposals
+----------------
+* Print to tiff.
+* Multiple plots.
+* Multiple wiggle separated regions.
+* click and drag.
+* Improved curved fonts on azimuthal labels and polar interpolation.
+* Log and Semilog programs.
+
+

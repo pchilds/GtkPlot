@@ -44,18 +44,13 @@ typedef struct _PlotPolarBothClass PlotPolarBothClass;
 struct _PlotPolarBoth
   {
   GtkDrawingArea parent;
-  GArray *rdata; /* radial data values */
-  GArray *thdata; /* azimuthal data values */
-  gint size; /* number of data points to display */
-  gchar *rlab; /* label for the r axis */
-  gchar *thlab; /* label for the theta axis */
-  guint afsize; /* font size for the tick mark labels */
-  guint lfsize; /* font size for the axis labels */
-  guint ptsize; /* radii of the points */
-  guint linew; /* line width of the plot line */
+  GArray *rdata, *thdata; /* radial and azimuthal data values */
+  gchar *rlab, *thlab; /* labels for the radial and azimuthal axis */
+  gdouble rps, thps; /* radial and azimuthal position of mouse */
+  guint afsize, lfsize, ptsize, linew; /* font size for the tick mark and axis labels, the point radii and line width */
   gint zmode; /* zoom mode flags xxxx0b/xxxx1b = zoom in/out,1001xb = zoom radial only, 1010xb = zoom azimuthal only, 1011xb = zoom both, 0xxxxb = cartesian shift mode, x1xxxb = single click zoom */
-  gdouble rps; /* radial position of mouse */
-  gdouble thps; /* azimuthal position of mouse */
+  gint size; /* number of data points to display */
+  gint flags; /* flags: 1 = Removed Centre */
   };
 
 struct _PlotPolarBothClass
@@ -67,7 +62,6 @@ struct _PlotPolarBothClass
 GType plot_polar_both_get_type (void);
 gboolean plot_polar_both_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 gboolean plot_polar_both_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
-gboolean plot_polar_both_print_eps(GtkWidget *widget, gchar *fout);
 GtkWidget *plot_polar_both_new (void);
 
 G_END_DECLS

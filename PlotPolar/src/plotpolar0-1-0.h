@@ -44,19 +44,13 @@ typedef struct _PlotPolarClass PlotPolarClass;
 struct _PlotPolar
   {
   GtkDrawingArea parent;
-  GArray *rdata; /* radial data values */
-  GArray *thdata; /* azimuthal data values */
-  gint size; /* number of data points to display */
-  gchar *rlab; /* label for the r axis */
-  gchar *thlab; /* label for the theta axis */
-  guint afsize; /* font size for the tick mark labels */
-  guint lfsize; /* font size for the axis labels */
-  guint ptsize; /* radii of the points */
-  guint linew; /* line width of the plot line */
+  GArray *rdata, *thdata; /* radial and azimuthal data values */
+  gchar *rlab, *thlab; /* labels for the radial and azimuthal axis */
+  gdouble rps, thps; /* radial and azimuthal position of mouse */
+  guint afsize, lfsize, ptsize, linew; /* font size for the tick mark and axis labels, the point radii and line width */
   gint zmode; /* zoom mode flags xxxx0b/xxxx1b = zoom in/out,1001xb = zoom radial only, 1010xb = zoom azimuthal only, 1011xb = zoom both, 0xxxxb = cartesian shift mode, x1xxxb = single click zoom */
-  gdouble rps; /* radial position of mouse */
-  gdouble thps; /* azimuthal position of mouse */
-  guint flagd; /* data display flags 1=lines only, 2=points only, 3=both */
+  gint size; /* number of data points to display */
+  gint flags; /* flags: 01xb = lines only, 10xb = points only, 11x = both, xx0b/xx1b = Degrees/Radians */
   };
 
 struct _PlotPolarClass
@@ -66,7 +60,7 @@ struct _PlotPolarClass
   };
 
 GType plot_polar_get_type (void);
-gboolean plot_polar_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
+gboolean plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, gdouble thn, gdouble thx, gdouble tcn, gdouble thc);
 gboolean plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 gboolean plot_polar_print_eps(GtkWidget *widget, gchar *fout);
 GtkWidget *plot_polar_new (void);
