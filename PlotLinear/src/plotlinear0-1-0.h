@@ -42,32 +42,32 @@ typedef struct _PlotLinear PlotLinear;
 typedef struct _PlotLinearClass PlotLinearClass;
 
 struct _PlotLinear
-  {
-  GtkDrawingArea parent;
-  GArray *xdata; /* x data set */
-  GArray *ydata; /* y data set */
-  gint size; /* number of data points to display */
-  gchar *xlab; /* label for the x axis */
-  gchar *ylab; /* label for the y axis */
-  guint afsize; /* font size for the tick mark labels */
-  guint lfsize; /* font size for the axis labels */
-  guint ptsize; /* radii of the points */
-  guint linew; /* line width of the plot line */
-  gint zmode; /* zoom mode flags xxx0b/xxx1b = zoom in/out, 001xb = zoom horizontal only, 010xb = zoom vertical only, 011xb = zoom both, 1xxxb = single click zoom */
-  gdouble xps; /* x position of mouse */
-  gdouble yps; /* y position of mouse */
-  guint flagd; /* data display flags 1=lines only, 2=points only, 3=both */
-  };
+{
+	GtkDrawingArea parent;
+	GArray *xdata; /* x data set */
+	GArray *ydata; /* y data set */
+	gint size; /* number of data points to display */
+	gchar *xlab; /* label for the x axis */
+	gchar *ylab; /* label for the y axis */
+	guint afsize; /* font size for the tick mark labels */
+	guint lfsize; /* font size for the axis labels */
+	guint ptsize; /* radii of the points */
+	guint linew; /* line width of the plot line */
+	gint zmode; /* zoom mode flags xxx0b/xxx1b = zoom in/out, 001xb = zoom horizontal only, 010xb = zoom vertical only, 011xb = zoom both, 1xxxb = single click zoom */
+	gdouble xps; /* x position of mouse */
+	gdouble yps; /* y position of mouse */
+	guint flagd; /* data display flags 1=lines only, 2=points only, 3=both */
+};
 
 struct _PlotLinearClass
-  {
-  GtkDrawingAreaClass parent_class;
-  void (*moved) (PlotLinear *plot);
-  };
+{
+	GtkDrawingAreaClass parent_class;
+	void (*moved) (PlotLinear *plot);
+};
 
 GType plot_linear_get_type(void);
 gboolean plot_linear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
-gboolean plot_linear_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
+gboolean plot_linear_update_scale_pretty(GtkWidget *widget, gdouble xl, gdouble xu, gdouble yl, gdouble yu);
 gboolean plot_linear_print_eps(GtkWidget *widget, gchar *fout);
 GtkWidget *plot_linear_new(void);
 
