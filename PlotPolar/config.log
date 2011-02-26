@@ -143,6 +143,7 @@ on bubbles-nb
 config.status:845: creating Makefile
 config.status:845: creating src/Makefile
 config.status:845: creating config.h
+config.status:1017: config.h is unchanged
 config.status:1065: executing depfiles commands
 
 ## ---------------- ##

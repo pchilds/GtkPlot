@@ -91,7 +91,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	xw=(widget->allocation.width);
 	yw=(widget->allocation.height);
 	priv=PLOT_LINEAR_GET_PRIVATE(plot);
-	priv->flaga&=48;
+	(priv->flaga)&=48;
 	dtt=(plot->afsize)+(plot->lfsize);
 	xr=MIN(xw*ARP,dtt);
 	xr2=(xr-2)*IRTR;
@@ -99,41 +99,41 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	yr2=(yr-2)*IRTR;
 	dtt+=JTI;
 	cairo_set_line_width(cr, 1); /* draw zoom boxes */
-	cairo_rectangle(cr, xw-20, 0, 10, 10);
-	cairo_rectangle(cr, xw-10, 0, 10, 10);
-	cairo_move_to(cr, xw-8, 5);
-	cairo_line_to(cr, xw-2, 5);
-	cairo_move_to(cr, xw-5, 2);
-	cairo_line_to(cr, xw-5, 8);
+	cairo_rectangle(cr, xw-21.5, 0.5, 10, 10);
+	cairo_rectangle(cr, xw-10.5, 0.5, 10, 10);
+	cairo_move_to(cr, xw-9, 5.5);
+	cairo_line_to(cr, xw-2, 5.5);
+	cairo_move_to(cr, xw-5.5, 2);
+	cairo_line_to(cr, xw-5.5, 9);
 	if (((plot->zmode)&1)==0)
 	{
-		cairo_move_to(cr, xw-6, 2);
-		cairo_line_to(cr, xw-5, 1);
-		cairo_line_to(cr, xw-4, 2);
-		cairo_move_to(cr, xw-2, 4);
-		cairo_line_to(cr, xw-1, 5);
-		cairo_line_to(cr, xw-2, 6);
-		cairo_move_to(cr, xw-6, 8);
-		cairo_line_to(cr, xw-5, 9);
-		cairo_line_to(cr, xw-4, 8);
-		cairo_move_to(cr, xw-8, 4);
-		cairo_line_to(cr, xw-9, 5);
-		cairo_line_to(cr, xw-8, 6);
+		cairo_move_to(cr, xw-6.5, 2.5);
+		cairo_line_to(cr, xw-5.5, 2);
+		cairo_line_to(cr, xw-4.5, 2.5);
+		cairo_move_to(cr, xw-2.5, 4.5);
+		cairo_line_to(cr, xw-2, 5.5);
+		cairo_line_to(cr, xw-2.5, 6.5);
+		cairo_move_to(cr, xw-6.5, 8.5);
+		cairo_line_to(cr, xw-5.5, 9);
+		cairo_line_to(cr, xw-4.5, 8.5);
+		cairo_move_to(cr, xw-8.5, 4.5);
+		cairo_line_to(cr, xw-9, 5.5);
+		cairo_line_to(cr, xw-8.5, 6.5);
 	}
 	else
 	{
-		cairo_move_to(cr, xw-7, 3);
-		cairo_line_to(cr, xw-3, 7);
-		cairo_move_to(cr, xw-7, 7);
-		cairo_line_to(cr, xw-3, 3);
+		cairo_move_to(cr, xw-7.5, 3.5);
+		cairo_line_to(cr, xw-3.5, 7.5);
+		cairo_move_to(cr, xw-7.5, 7.5);
+		cairo_line_to(cr, xw-3.5, 3.5);
 	}
 	cairo_stroke(cr);
 	if (((plot->zmode)&8)!=0)
 	{
-		cairo_move_to(cr, xw-19, 1);
-		cairo_line_to(cr, xw-11, 9);
-		cairo_move_to(cr, xw-19, 9);
-		cairo_line_to(cr, xw-11, 1);
+		cairo_move_to(cr, xw-20, 2);
+		cairo_line_to(cr, xw-13, 9);
+		cairo_move_to(cr, xw-20, 9);
+		cairo_line_to(cr, xw-13, 2);
 		cairo_stroke(cr);
 	}
 	else
@@ -143,18 +143,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		cairo_set_dash(cr, &dt, 1, 0);
 		if (((plot->zmode)&4)!=0)
 		{
-			cairo_move_to(cr, xw-18, 3);
-			cairo_line_to(cr, xw-12, 3);
-			cairo_move_to(cr, xw-18, 7);
-			cairo_line_to(cr, xw-12, 7);
+			cairo_move_to(cr, xw-20, 2.5);
+			cairo_line_to(cr, xw-13, 2.5);
+			cairo_move_to(cr, xw-20, 8.5);
+			cairo_line_to(cr, xw-13, 8.5);
 			cairo_stroke(cr);
 		}
 		if (((plot->zmode)&2)!=0)
 		{
-			cairo_move_to(cr, xw-17, 2);
-			cairo_line_to(cr, xw-17, 8);
-			cairo_move_to(cr, xw-13, 2);
-			cairo_line_to(cr, xw-13, 8);
+			cairo_move_to(cr, xw-19.5, 2);
+			cairo_line_to(cr, xw-19.5, 9);
+			cairo_move_to(cr, xw-13.5, 2);
+			cairo_line_to(cr, xw-13.5, 9);
 			cairo_stroke(cr);
 		}
 		cairo_restore(cr);
@@ -3666,12 +3666,12 @@ static gboolean plot_linear_button_release(GtkWidget *widget, GdkEventButton *ev
 		}
 		(priv->flagr)=0;
 	}
-	else if ((event->y)<=10)
+	else if ((event->y)<=11)
 	{
 		xw=(widget->allocation.width);
-		if ((event->x)>=xw-20)
+		if ((event->x)>=xw-22)
 		{
-			if ((event->x)>xw-10)
+			if ((event->x)>=xw-11)
 			{
 				(plot->zmode)^=1;
 				plot_linear_redraw(widget);

@@ -1,7 +1,7 @@
 Known Bugs/Issues
 -----------------
-* Migrate from cairo text based functions for labels to glyphs based functions.
-* Polar plot axes labelling and zoom box images.
+* Azimuthal wrapping about pi, -pi.
+* Update pretty scales an order of magnitude out.
 
 Future Proposals
 ----------------
