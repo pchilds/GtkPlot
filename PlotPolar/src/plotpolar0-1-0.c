@@ -33,9 +33,10 @@
  * curved azimuthal axis label
  * splines in drawn lines
  * ensure new wrapping handling implemented in draw (e.g. labelling based on sx=thn)
- * lines connecting points across the rmin rmax boundary should be drawn
+ * lines connecting points across the rmin-rmax boundary should be drawn
  * BUGS:
- * when centre outside of min to max, they are swapped but radial lines are still inside
+ * positioning not centred well (bad centre values?)
+ * +ve half of plot missing when zooming on LHS
  */
 
 #include <gtk/gtk.h>
@@ -889,7 +890,8 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		(priv->y0)=(yw/2)+(drs*(priv->s))+(wr*sin(priv->centre.th));
 		sx=thn;
 		kx=1<<(priv->ticks.z2m);
-		dz=dt/(kx*(priv->ticks.zin));
+		if (dt<0) dz=(dt+MY_2PI)/(kx*(priv->ticks.zin));
+		else dz=dt/(kx*(priv->ticks.zin));
 		cairo_move_to(cr, (priv->x0)+(wr*ctn), (priv->y0)-(wr*stn));
 		cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*ctn), (priv->y0)-((wr+((priv->s)*dr1))*stn));
 		if (((plot->flags)&1)==0)
@@ -919,7 +921,8 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		}
 		else
 		{
-			dwr=(priv->ticks.zin)*G_PI/dt;
+			if (dt<0) dwr=(priv->ticks.zin)/(2+(I_MY_PI*dt));
+			else dwr=(priv->ticks.zin)*G_PI/dt;
 			csx=fmod(dwr,1);
 			if ((csx<DZE)||((1-csx)<DZE)) /* check if angles can be rationalised */
 			{

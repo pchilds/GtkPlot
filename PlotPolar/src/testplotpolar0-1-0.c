@@ -242,7 +242,6 @@ int main(int argc, char *argv[])
   gtk_box_pack_start(GTK_BOX(vbox), statusbar, FALSE, FALSE, 2);
   gtk_widget_show(statusbar);
   gtk_widget_show(window);
-  /*plot_polar_update_scale_pretty(plot, 0, 1, -1, 2);*/
   gtk_main();
   return 0;
   }
