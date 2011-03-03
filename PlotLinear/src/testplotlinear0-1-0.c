@@ -30,7 +30,63 @@
 #include <math.h>
 #include "plotlinear0-1-0.h"
 
-GtkWidget *window, *plot, *statusbar;
+GtkWidget *window, *plot, *statusbar, *jind, *label;
+GArray *x, *y, *sz, *nx;
+
+void dpr(GtkWidget *widget, gpointer data)
+{
+	GtkWidget *helpwin, *content, *table, *entry1, *entry2, *label, *spin1, *spin2;
+	GtkAdjustment *adj1, *adj2;
+	PlotLinear *plt;
+	gdouble xi, xf, mny, mxy;
+	
+	helpwin=gtk_dialog_new_with_buttons("Dsiplay Properties", GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL, GTK_STOCK_APPLY, GTK_RESPONSE_APPLY, NULL);
+	g_signal_connect_swapped(G_OBJECT(helpwin), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(helpwin));
+	gtk_widget_show(helpwin);
+	content=gtk_dialog_get_content_area(GTK_DIALOG(helpwin));
+	table=gtk_table_new(4, 2, FALSE);
+	gtk_widget_show(table);
+	label=gtk_label_new("X axis text:");
+	gtk_widget_show(label);
+	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	label=gtk_label_new("Text size:");
+	gtk_widget_show(label);
+	gtk_table_attach(GTK_TABLE(table), label, 1, 2, 0, 1, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	label=gtk_label_new("Y axis text:");
+	gtk_widget_show(label);
+	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	label=gtk_label_new("Tick label size:");
+	gtk_widget_show(label);
+	gtk_table_attach(GTK_TABLE(table), label, 1, 2, 2, 3, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	entry1=gtk_entry_new();
+	entry2=gtk_entry_new();
+	plt=PLOT_LINEAR(plot);
+	gtk_entry_set_text(GTK_ENTRY(entry1), g_strdup(plt->xlab));
+	gtk_entry_set_text(GTK_ENTRY(entry2), g_strdup(plt->ylab));
+	adj1=(GtkAdjustment *) gtk_adjustment_new((plt->lfsize), 8, 64, 1.0, 5.0, 0.0);
+	adj2=(GtkAdjustment *) gtk_adjustment_new((plt->afsize), 8, 64, 1.0, 5.0, 0.0);
+	spin1=gtk_spin_button_new(adj1, 0, 0);
+	spin2=gtk_spin_button_new(adj2, 0, 0);
+	gtk_widget_show(entry1);
+	gtk_widget_show(entry2);
+	gtk_widget_show(spin1);
+	gtk_widget_show(spin2);
+	gtk_table_attach(GTK_TABLE(table), entry1, 0, 1, 1, 2, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	gtk_table_attach(GTK_TABLE(table), entry2, 0, 1, 3, 4, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	gtk_table_attach(GTK_TABLE(table), spin1, 1, 2, 1, 2, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	gtk_table_attach(GTK_TABLE(table), spin2, 1, 2, 3, 4, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	gtk_container_add(GTK_CONTAINER(content), table);
+	if (gtk_dialog_run(GTK_DIALOG(helpwin))==GTK_RESPONSE_APPLY)
+	{
+		(plt->xlab)=g_strdup(gtk_entry_get_text(GTK_ENTRY(entry1)));
+		(plt->ylab)=g_strdup(gtk_entry_get_text(GTK_ENTRY(entry2)));
+		(plt->lfsize)=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin1));
+		(plt->afsize)=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spin2));
+		g_object_get(G_OBJECT(plot), "xmin", &xi, "xmax", &xf, "ymin", &mny, "ymax", &mxy, NULL);
+		plot_linear_update_scale(plot, xi, xf, mny, mxy);
+	}
+	gtk_widget_destroy(helpwin);
+}
 
 void prt(GtkWidget *widget, gpointer data)
 {
@@ -58,7 +114,6 @@ void opd(GtkWidget *widget, gpointer data)
 {
 	PlotLinear *plt;
 	GtkWidget *wfile;
-	GArray *x, *yb, *sz, *nx;
 	gdouble xi, xf, lcl, mny, mxy;
 	guint k, sal;
 	gint lc;
@@ -75,11 +130,16 @@ void opd(GtkWidget *widget, gpointer data)
 		{
 			strary=g_strsplit_set(contents, "\r\n", 0);
 			sal=g_strv_length(strary);
+			g_array_free(x, TRUE);
+			g_array_free(y, TRUE);
+			g_array_free(sz, TRUE);
+			g_array_free(nx, TRUE);
 			x=g_array_new(FALSE, FALSE, sizeof(gdouble));
-			yb=g_array_new(FALSE, FALSE, sizeof(gdouble));
-			k=0;
+			y=g_array_new(FALSE, FALSE, sizeof(gdouble));
+			sz=g_array_new(FALSE, FALSE, sizeof(gint));
+			nx=g_array_new(FALSE, FALSE, sizeof(gint));
 			lc=0;
-			for (k=0; k<sal; k++)
+			for (k=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jind)); k<sal; k++)
 			{
 				if (!strary[k]) continue;
 				if (!g_strcmp0("", strary[k])) continue;
@@ -87,13 +147,9 @@ void opd(GtkWidget *widget, gpointer data)
 				strat=g_strsplit_set(strary[k], "\t,", 0);
 				lcl=g_ascii_strtod(g_strstrip(strat[0]), NULL);
 				g_array_append_val(x, lcl);
-				if (lc==0)
-				{
-					if (!strat[1]) lcl=0;
-					else lcl=g_ascii_strtod(g_strstrip(strat[1]), NULL);
-					mny=lcl;
-					mxy=lcl;
-				}
+				if (!strat[1]) lcl=0;
+				else lcl=g_ascii_strtod(g_strstrip(strat[1]), NULL);
+				if (lc==0) {mny=lcl; mxy=lcl;}
 				else
 				{
 					if (!strat[1]) lcl=0;
@@ -101,7 +157,7 @@ void opd(GtkWidget *widget, gpointer data)
 					if (lcl<mny) mny=lcl;
 					else if (lcl>mxy) mxy=lcl;
 				}
-				g_array_append_val(yb, lcl);
+				g_array_append_val(y, lcl);
 				g_strfreev(strat);
 				lc++;
 			}
@@ -110,19 +166,83 @@ void opd(GtkWidget *widget, gpointer data)
 			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
 			g_free(str);
 			plt=PLOT_LINEAR(plot);
-			sz=g_array_new(FALSE, FALSE, sizeof(gint));
-			nx=g_array_new(FALSE, FALSE, sizeof(gint));
 			g_array_append_val(sz, lc);
 			(plt->sizes)=sz;
 			k=0;
 			g_array_append_val(nx, k);
 			(plt->ind)=nx;
 			(plt->xdata)=x;
-			(plt->ydata)=yb;
+			(plt->ydata)=y;
 			xi=g_array_index(x, gdouble, 0);
 			xf=g_array_index(x, gdouble, (lc-1));
-			g_array_free(x, TRUE);
-			g_array_free(yb, TRUE);
+			plot_linear_update_scale(plot, xi, xf, mny, mxy);
+		}
+		else
+		{
+			str=g_strdup_printf("Loading failed for file: %s", fin);
+			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+			g_free(str);
+		}
+		g_free(contents);
+		g_free(fin);
+	}
+  gtk_widget_destroy(wfile);
+  }
+
+void ad(GtkWidget *widget, gpointer data)
+{
+	PlotLinear *plt;
+	GtkWidget *wfile;
+	gdouble xi, xf, lcl, mny, mxy;
+	guint k, sal;
+	gint lc;
+	gchar *contents, *str, *fin=NULL;
+	gchar **strary, **strat;
+	GError *Err;
+
+	wfile=gtk_file_chooser_dialog_new("Select Data File", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	g_signal_connect(G_OBJECT(wfile), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(wfile));
+	if (gtk_dialog_run(GTK_DIALOG(wfile))==GTK_RESPONSE_ACCEPT)
+	{
+		fin=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(wfile));
+		if (g_file_get_contents(fin, &contents, NULL, &Err))
+		{
+			plt=PLOT_LINEAR(plot);
+			g_object_get(G_OBJECT(plot), "xmin", &xi, "xmax", &xf, "ymin", &mny, "ymax", &mxy, NULL);
+			k=(x->len);
+			g_array_append_val(nx, k);
+			strary=g_strsplit_set(contents, "\r\n", 0);
+			sal=g_strv_length(strary);
+			lc=0;
+			for (k=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jind)); k<sal; k++)
+			{
+				if (!strary[k]) continue;
+				if (!g_strcmp0("", strary[k])) continue;
+				if (!(g_ascii_isdigit(strary[k][0])|(g_str_has_prefix(strary[k],"-")))) continue;
+				strat=g_strsplit_set(strary[k], "\t,", 0);
+				if (!strat[1]) lcl=0;
+				else lcl=g_ascii_strtod(g_strstrip(strat[1]), NULL);
+				if (lcl<mny) mny=lcl;
+				else if (lcl>mxy) mxy=lcl;
+				g_array_append_val(y, lcl);
+				lcl=g_ascii_strtod(g_strstrip(strat[0]), NULL);
+				if ((lc==0)&&(lcl<xi)) xi=lcl;
+				g_array_append_val(x, lcl);
+				g_strfreev(strat);
+				lc++;
+			}
+			if (lcl>xf) xf=lcl;
+			g_strfreev(strary);
+			str=g_strdup_printf("File: %s successfully loaded", fin);
+			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+			g_free(str);
+			g_array_append_val(sz, lc);
+			(plt->sizes)=sz;
+			(plt->ind)=nx;
+			(plt->xdata)=x;
+			(plt->ydata)=y;
+			xi=g_array_index(x, gdouble, 0);
+			xf=g_array_index(x, gdouble, (lc-1));
 			plot_linear_update_scale(plot, xi, xf, mny, mxy);
 		}
 		else
@@ -164,7 +284,7 @@ int main(int argc, char *argv[])
 {
 	PlotLinear *plt;
 	GtkWidget *vbox, *vbox2, *mnb, *mnu, *mni, *hpane, *butt;
-	GArray *x, *y, *sz, *nx;
+	GtkAdjustment *adj;
 	guint j;
 	gdouble val;
 	GtkAccelGroup *accel_group=NULL;
@@ -187,6 +307,11 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(opd), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
 	gtk_widget_show(mni);
+	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
+	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_a, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(ad), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
+	gtk_widget_show(mni);
 	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_PRINT, NULL);
 	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_p, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(prt), NULL);
@@ -204,6 +329,16 @@ int main(int argc, char *argv[])
 	gtk_widget_show(mni);
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(mni), mnu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnb), mni);
+	mnu=gtk_menu_new();
+	mni=gtk_menu_item_new_with_label("Display Properties:");
+	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_F2, 0, GTK_ACCEL_VISIBLE);
+	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(dpr), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
+	gtk_widget_show(mni);
+	mni=gtk_menu_item_new_with_mnemonic("_Properties");
+	gtk_widget_show(mni);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(mni), mnu);
+	gtk_menu_shell_append(GTK_MENU_SHELL(mnb), mni);
 	hpane=gtk_hpaned_new();
 	gtk_widget_show(hpane);
 	gtk_container_add(GTK_CONTAINER(vbox), hpane);
@@ -216,6 +351,13 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(butt), "changed", G_CALLBACK(upg), NULL);
 	gtk_box_pack_start(GTK_BOX(vbox2), butt, FALSE, FALSE, 2);
 	gtk_widget_show(butt);
+	label=gtk_label_new("Header Lines:");
+	gtk_box_pack_start(GTK_BOX(vbox2), label, FALSE, FALSE, 2);
+	gtk_widget_show(label);
+	adj=(GtkAdjustment *) gtk_adjustment_new(5, 0, G_MAXINT, 1.0, 5.0, 0.0);
+	jind=gtk_spin_button_new(adj, 0, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), jind, FALSE, FALSE, 2);
+	gtk_widget_show(jind);
 	gtk_paned_add1(GTK_PANED(hpane), vbox2);
 	plot=plot_linear_new();
 	g_signal_connect(plot, "moved", G_CALLBACK(pltmv), NULL);
