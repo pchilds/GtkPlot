@@ -17,15 +17,18 @@ to figure out how `configure' could check whether to do them, and mail
 diffs or instructions to the address given in the `README' so they can
 be considered for the next release.
 
-   The file `configure.in' is used to create `configure' by a program
-called `autoconf'.  You only need `configure.in' if you want to change
-it or regenerate `configure' using a newer version of `autoconf'.
+   The file `configure.ac' is used to create `configure' by a program
+called `autoconf'.  You only need `configure.ac' if you want to change
+it or regenerate `configure' using a newer version of `autoconf' (see
+the optional part of step 1 below).
 
 The simplest way to compile this package is:
 
   1. `cd' to the directory named according to the desired plotting
-     function (e.g. `cd PlotPolar') and type `autoreconf --install' to
-     create the configure and Makefile appropriate for your system.
+     function (e.g. `cd PlotPolar') and (optionally) type
+     `autoreconf --install' to create the appropriate scripts and
+     convert the configure and Makefile to something appropriate for
+     your system.
 
   2. Type `./configure' to configure the package for your system.  If
      you're using `csh' on an old version of System V, you might need

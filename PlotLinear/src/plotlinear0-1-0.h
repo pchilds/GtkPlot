@@ -46,7 +46,8 @@ struct _PlotLinear
 	GtkDrawingArea parent;
 	GArray *xdata; /* x data set */
 	GArray *ydata; /* y data set */
-	gint size; /* number of data points to display */
+	GArray *ind; /* indices of first elements for each trace */
+	GArray *sizes; /* number of elements for each trace */
 	gchar *xlab; /* label for the x axis */
 	gchar *ylab; /* label for the y axis */
 	guint afsize; /* font size for the tick mark labels */

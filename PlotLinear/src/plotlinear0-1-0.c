@@ -66,7 +66,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	PlotLinearPrivate *priv;
 	PlotLinear *plot;
 	guint xs;
-	gint j, k, xw, yw, xr, xr2, yr, yr2, xa, ya, xl, yl, xu, yu, tf, tz, to, tn, tnn, xv, yv, xvn, yvn, dtt, tx, wd, hg;
+	gint j, k, xw, yw, xr, xr2, yr, yr2, xa, ya, xl, yl, xu, yu, tf, tz, to, tn, tnn, xv, yv, xvn, yvn, dtt, tx, wd, hg, ft, lt;
 	gdouble dt, lr1, lr2, lr3;
 	gchar *str1=NULL, *str2=".", *str3=NULL;
 	gchar lbl[10];
@@ -2448,383 +2448,49 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	pango_font_description_free(dscr);
 	if ((plot->xdata)&&(plot->ydata)) /* plot data */
 	{
-		xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, 0)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-		yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, 0)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
 		if (((plot->flagd)&1)!=0)
 		{
 			cairo_set_line_width(cr, (plot->linew));
 			if (((plot->flagd)&2)!=0) /* lines and points */
 			{
-				if (xv<xl)
+				for (k=0;k<(plot->ind->len);k++)
 				{
-					if (yv>yl) xs=5;
-					else if (yv<yu) xs=9;
-					else xs=1;
-				}
-				else if (xv>xu)
-				{
-					if (yv>yl) xs=6;
-					else if (yv<yu) xs=10;
-					else xs=2;
-				}
-				else if (yv>yl)xs=4;
-				else if (yv<yu) xs=8;
-				else
-				{
-					xs=0;
-					cairo_arc(cr, xv, yv, (plot->ptsize), 0, MY_2PI);
-					cairo_fill(cr);
-					cairo_move_to(cr, xv, yv);
-				}
-				for (j=1; j<(plot->size); j++)
-				{
-					xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-					yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-					if (xvn<xl)
+					ft=g_array_index((plot->ind), gint, k);
+					lt=g_array_index((plot->sizes), gint, k)+ft;
+					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+					yv=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+					if (xv<xl)
 					{
-						if (yvn>yl)
-						{
-							if (xs==0)
-							{
-								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
-								tx+=yvn;
-								if (tx>yl)
-								{
-									tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
-									tx+=xvn;
-									cairo_line_to(cr, tx, yl);
-								}
-								else cairo_line_to(cr, xl, tx);
-								cairo_stroke(cr);
-							}
-							xs=5;
-						}
-						else if (yvn<yu)
-						{
-							if (xs==0)
-							{
-								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
-								tx+=yvn;
-								if (tx<yu)
-								{
-									tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
-									tx+=xvn;
-									cairo_line_to(cr, tx, yu);									
-								}
-								else cairo_line_to(cr, xl, tx);
-								cairo_stroke(cr);
-							}
-							xs=9;
-						}
-						else if (xs==0)
-						{
-							tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
-							tx+=yvn;
-							cairo_line_to(cr, xl, tx);
-							cairo_stroke(cr);
-							xs=1;
-						}
-						else if (xs==4)
-						{
-							tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
-							tx+=yvn;
-							if (tx>yl)
-							{
-								cairo_move_to(cr, xl, tx);
-								tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-								tx+=xv;
-								cairo_line_to(cr, tx, yl);
-								cairo_stroke(cr);
-							}
-							xs=1;
-						}
-						else if (xs==8)
-						{
-							tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
-							tx+=yvn;
-							if (tx<yu)
-							{
-								cairo_move_to(cr, xl, tx);
-								tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-								tx+=xv;
-								cairo_line_to(cr, tx, yu);
-								cairo_stroke(cr);
-							}
-							xs=1;
-						}
+						if (yv>yl) xs=5;
+						else if (yv<yu) xs=9;
 						else xs=1;
 					}
-					else if (xvn>xu)
+					else if (xv>xu)
 					{
-						if (yvn>yl)
-						{
-							if (xs==0)
-							{
-								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-								tx+=yv;
-								if (tx>yl)
-								{
-									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-									tx+=xv;
-									cairo_line_to(cr, tx, yl);
-								}
-								else cairo_line_to(cr, xu, tx);
-								cairo_stroke(cr);
-							}
-							xs=6;
-						}
-						else if (yvn<yu)
-						{
-							if (xs==0)
-							{
-								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-								tx+=yv;
-								if (tx<yu)
-								{
-									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-									tx+=xv;
-									cairo_line_to(cr, tx, yu);									
-								}
-								else cairo_line_to(cr, xu, tx);
-								cairo_stroke(cr);
-							}
-							xs=10;
-						}
-						if (xs==0)
-						{
-							tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-							tx+=yv;
-							cairo_line_to(cr, xu, tx);
-							cairo_stroke(cr);
-							xs=2;
-						}
-						else if (xs==4)
-						{
-							tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-							tx+=yv;
-							if (tx>yl)
-							{
-								cairo_move_to(cr, xu, tx);
-								tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-								tx+=xv;
-								cairo_line_to(cr, tx, yl);
-								cairo_stroke(cr);
-							}
-							xs=2;
-						}
-						else if (xs==8)
-						{
-							tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-							tx+=yv;
-							if (tx>yu)
-							{
-								cairo_move_to(cr, xu, tx);
-								tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-								tx+=xv;
-								cairo_line_to(cr, tx, yu);
-								cairo_stroke(cr);
-							}
-							xs=2;
-						}
+						if (yv>yl) xs=6;
+						else if (yv<yu) xs=10;
 						else xs=2;
 					}
-					else if (yvn>yl)
+					else if (yv>yl)xs=4;
+					else if (yv<yu) xs=8;
+					else
 					{
-						if (xs==0)
-						{
-							tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
-							tx+=xvn;
-							cairo_line_to(cr, tx, yl);							
-							cairo_stroke(cr);
-						}
-						else if (xs==1)
-						{
-							tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
-							tx+=xvn;
-							if (tx<xl)
-							{
-								cairo_move_to(cr, tx, yl);
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
-								cairo_line_to(cr, xl, tx);
-								cairo_stroke(cr);
-							}
-						}
-						else if (xs==2)
-						{
-							tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
-							tx+=xvn;
-							if (tx>xu)
-							{
-								cairo_move_to(cr, tx, yl);
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
-								tx+=yvn;
-								cairo_line_to(cr, xu, tx);
-								cairo_stroke(cr);
-							}
-						}
-						xs=4;
-					}
-					else if (yvn<yu)
-					{
-						if (xs==0)
-						{
-							tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
-							tx+=xvn;
-							cairo_line_to(cr, tx, yu);	
-							cairo_stroke(cr);
-						}
-						else if (xs==1)
-						{
-							tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
-							tx+=xvn;
-							if (tx<xl)
-							{
-								cairo_move_to(cr, tx, yu);
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
-								cairo_line_to(cr, xl, tx);
-								cairo_stroke(cr);
-							}
-						}
-						else if (xs==2)
-						{
-							tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
-							tx+=xvn;
-							if (tx>xu)
-							{
-								cairo_move_to(cr, tx, yu);
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
-								tx+=yvn;
-								cairo_line_to(cr, xu, tx);
-								cairo_stroke(cr);
-							}
-						}
-						xs=8;
-					}
-					else /* within range */
-					{
-						if ((xs&1)!=0)
-						{
-							if ((xs&4)!=0)
-							{
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
-								if (tx>yl)
-								{
-									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-									tx+=xv;
-									cairo_move_to(cr, tx, yl);
-								}
-								else cairo_move_to(cr, xl, tx);
-							}
-							else if ((xs&8)!=0)
-							{
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
-								if (tx<yu)
-								{
-									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-									tx+=xv;
-									cairo_move_to(cr, tx, yu);
-								}
-								else cairo_move_to(cr, xl, tx);
-							}
-							else
-							{
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
-								cairo_move_to(cr, xl, tx);
-							}
-						}
-						else if ((xs&2)!=0)
-						{
-							if ((xs&4)!=0)
-							{
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
-								tx+=yvn;
-								if (tx>yl)
-								{
-									tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
-									tx+=xvn;
-									cairo_move_to(cr, tx, yl);
-								}
-								else cairo_move_to(cr, xl, tx);
-							}
-							else if ((xs&8)!=0)
-							{
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
-								tx+=yvn;
-								if (tx<yu)
-								{
-									tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
-									tx+=xvn;
-									cairo_move_to(cr, tx, yu);
-								}
-								else cairo_move_to(cr, xl, tx);
-							}
-							else
-							{
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
-								tx+=yvn;
-								cairo_move_to(cr, xu, tx);
-							}
-						}
-						else if ((xs&4)!=0)
-						{
-							tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-							tx+=xv;
-							cairo_move_to(cr, tx, yl);
-						}
-						else if ((xs&8)!=0)
-						{
-							tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-							tx+=xv;
-							cairo_move_to(cr, tx, yu);
-						}
-						cairo_line_to(cr, xvn, yvn);
-						cairo_stroke(cr);
-						cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, MY_2PI);
-						cairo_fill(cr);
-						cairo_move_to(cr, xvn, yvn);
 						xs=0;
+						cairo_arc(cr, xv, yv, (plot->ptsize), 0, MY_2PI);
+						cairo_fill(cr);
+						cairo_move_to(cr, xv, yv);
 					}
-					xv=xvn;
-					yv=yvn;
-				}
-			}
-			else /* lines only */
-			{
-				if (xv<xl)
-				{
-					if (yv>yl) xs=5;
-					else if (yv<yu) xs=9;
-					else xs=1;
-				}
-				else if (xv>xu)
-				{
-					if (yv>yl) xs=6;
-					else if (yv<yu) xs=10;
-					else xs=2;
-				}
-				else if (yv>yl)xs=4;
-				else if (yv<yu) xs=8;
-				else {xs=0; cairo_move_to(cr, xv, yv);}
-				for (j=1; j<(plot->size); j++)
-				{
-					xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-					yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-					if (xvn<xl)
+					for (j=1+ft; j<lt; j++)
 					{
-						if (yvn>yl)
+						xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+						yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+						if (xvn<xl)
 						{
-							if (xs==0)
+							if (yvn>yl)
 							{
-								tx=xvn-xv;
-								if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xvn, yl);
-								else
+								if (xs==0)
 								{
-									tx=((yvn-yv)*(xl-xvn))/tx;
+									tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
 									tx+=yvn;
 									if (tx>yl)
 									{
@@ -2833,20 +2499,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, tx, yl);
 									}
 									else cairo_line_to(cr, xl, tx);
+									cairo_stroke(cr);
 								}
-								cairo_stroke(cr);
+								xs=5;
 							}
-							xs=5;
-						}
-						else if (yvn<yu)
-						{
-							if (xs==0)
+							else if (yvn<yu)
 							{
-								tx=xvn-xv;
-								if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xvn, yu);
-								else
+								if (xs==0)
 								{
-									tx=((yvn-yv)*(xl-xvn))/tx;
+									tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
 									tx+=yvn;
 									if (tx<yu)
 									{
@@ -2855,306 +2516,664 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, tx, yu);									
 									}
 									else cairo_line_to(cr, xl, tx);
+									cairo_stroke(cr);
 								}
-								cairo_stroke(cr);
+								xs=9;
 							}
-							xs=9;
-						}
-						else if (xs==0)
-						{
-							tx=xvn-xv;
-							if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xl, yvn);
-							else
+							else if (xs==0)
 							{
-								tx=((yvn-yv)*(xl-xvn))/tx;
+								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
 								tx+=yvn;
 								cairo_line_to(cr, xl, tx);
-							}
-							cairo_stroke(cr);
-							xs=1;
-						}
-						else if (xs==4)
-						{
-							tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
-							tx+=yvn;
-							if (tx>yl)
-							{
-								cairo_move_to(cr, xl, tx);
-								tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-								tx+=xv;
-								cairo_line_to(cr, tx, yl);
 								cairo_stroke(cr);
+								xs=1;
 							}
-							xs=1;
-						}
-						else if (xs==8)
-						{
-							tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
-							tx+=yvn;
-							if (tx<yu)
+							else if (xs==4)
 							{
-								cairo_move_to(cr, xl, tx);
-								tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-								tx+=xv;
-								cairo_line_to(cr, tx, yu);
-								cairo_stroke(cr);
+								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+								tx+=yvn;
+								if (tx>yl)
+								{
+									cairo_move_to(cr, xl, tx);
+									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+									tx+=xv;
+									cairo_line_to(cr, tx, yl);
+									cairo_stroke(cr);
+								}
+								xs=1;
 							}
-							xs=1;
+							else if (xs==8)
+							{
+								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+								tx+=yvn;
+								if (tx<yu)
+								{
+									cairo_move_to(cr, xl, tx);
+									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+									tx+=xv;
+									cairo_line_to(cr, tx, yu);
+									cairo_stroke(cr);
+								}
+								xs=1;
+							}
+							else xs=1;
 						}
-						else xs=1;
-					}
-					else if (xvn>xu)
-					{
-						if (yvn>yl)
+						else if (xvn>xu)
 						{
+							if (yvn>yl)
+							{
+								if (xs==0)
+								{
+									tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+									tx+=yv;
+									if (tx>yl)
+									{
+										tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+										tx+=xv;
+										cairo_line_to(cr, tx, yl);
+									}
+									else cairo_line_to(cr, xu, tx);
+									cairo_stroke(cr);
+								}
+								xs=6;
+							}
+							else if (yvn<yu)
+							{
+								if (xs==0)
+								{
+									tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+									tx+=yv;
+									if (tx<yu)
+									{
+										tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+										tx+=xv;
+										cairo_line_to(cr, tx, yu);									
+									}
+									else cairo_line_to(cr, xu, tx);
+									cairo_stroke(cr);
+								}
+								xs=10;
+							}
 							if (xs==0)
+							{
+								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx+=yv;
+								cairo_line_to(cr, xu, tx);
+								cairo_stroke(cr);
+								xs=2;
+							}
+							else if (xs==4)
 							{
 								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
 								tx+=yv;
 								if (tx>yl)
 								{
+									cairo_move_to(cr, xu, tx);
 									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
 									tx+=xv;
 									cairo_line_to(cr, tx, yl);
+									cairo_stroke(cr);
 								}
-								else cairo_line_to(cr, xu, tx);
+								xs=2;
+							}
+							else if (xs==8)
+							{
+								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx+=yv;
+								if (tx>yu)
+								{
+									cairo_move_to(cr, xu, tx);
+									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+									tx+=xv;
+									cairo_line_to(cr, tx, yu);
+									cairo_stroke(cr);
+								}
+								xs=2;
+							}
+							else xs=2;
+						}
+						else if (yvn>yl)
+						{
+							if (xs==0)
+							{
+								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx+=xvn;
+								cairo_line_to(cr, tx, yl);							
 								cairo_stroke(cr);
 							}
-							xs=6;
+							else if (xs==1)
+							{
+								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx+=xvn;
+								if (tx<xl)
+								{
+									cairo_move_to(cr, tx, yl);
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									cairo_line_to(cr, xl, tx);
+									cairo_stroke(cr);
+								}
+							}
+							else if (xs==2)
+							{
+								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx+=xvn;
+								if (tx>xu)
+								{
+									cairo_move_to(cr, tx, yl);
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									cairo_line_to(cr, xu, tx);
+									cairo_stroke(cr);
+								}
+							}
+							xs=4;
 						}
 						else if (yvn<yu)
 						{
 							if (xs==0)
 							{
-								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-								tx+=yv;
-								if (tx<yu)
-								{
-									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-									tx+=xv;
-									cairo_line_to(cr, tx, yu);									
-								}
-								else cairo_line_to(cr, xu, tx);
+								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx+=xvn;
+								cairo_line_to(cr, tx, yu);	
 								cairo_stroke(cr);
 							}
-							xs=10;
-						}
-						if (xs==0)
-						{
-							tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-							tx+=yv;
-							cairo_line_to(cr, xu, tx);
-							cairo_stroke(cr);
-							xs=2;
-						}
-						else if (xs==4)
-						{
-							tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-							tx+=yv;
-							if (tx>yl)
+							else if (xs==1)
 							{
-								cairo_move_to(cr, xu, tx);
+								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx+=xvn;
+								if (tx<xl)
+								{
+									cairo_move_to(cr, tx, yu);
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									cairo_line_to(cr, xl, tx);
+									cairo_stroke(cr);
+								}
+							}
+							else if (xs==2)
+							{
+								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx+=xvn;
+								if (tx>xu)
+								{
+									cairo_move_to(cr, tx, yu);
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									cairo_line_to(cr, xu, tx);
+									cairo_stroke(cr);
+								}
+							}
+							xs=8;
+						}
+						else /* within range */
+						{
+							if ((xs&1)!=0)
+							{
+								if ((xs&4)!=0)
+								{
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									if (tx>yl)
+									{
+										tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+										tx+=xv;
+										cairo_move_to(cr, tx, yl);
+									}
+									else cairo_move_to(cr, xl, tx);
+								}
+								else if ((xs&8)!=0)
+								{
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									if (tx<yu)
+									{
+										tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+										tx+=xv;
+										cairo_move_to(cr, tx, yu);
+									}
+									else cairo_move_to(cr, xl, tx);
+								}
+								else
+									{
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									cairo_move_to(cr, xl, tx);
+								}
+							}
+							else if ((xs&2)!=0)
+							{
+								if ((xs&4)!=0)
+								{
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									if (tx>yl)
+									{
+										tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+										tx+=xvn;
+										cairo_move_to(cr, tx, yl);
+									}
+									else cairo_move_to(cr, xl, tx);
+								}
+								else if ((xs&8)!=0)
+								{
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									if (tx<yu)
+									{
+										tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+										tx+=xvn;
+										cairo_move_to(cr, tx, yu);
+									}
+									else cairo_move_to(cr, xl, tx);
+								}
+								else
+								{
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									cairo_move_to(cr, xu, tx);
+								}
+							}
+							else if ((xs&4)!=0)
+							{
 								tx=((xvn-xv)*(yl-yv))/(yvn-yv);
 								tx+=xv;
-								cairo_line_to(cr, tx, yl);
-								cairo_stroke(cr);
+								cairo_move_to(cr, tx, yl);
 							}
-							xs=2;
-						}
-						else if (xs==8)
-						{
-							tx=((yvn-yv)*(xu-xv))/(xvn-xv);
-							tx+=yv;
-							if (tx>yu)
+							else if ((xs&8)!=0)
 							{
-								cairo_move_to(cr, xu, tx);
 								tx=((xvn-xv)*(yu-yv))/(yvn-yv);
 								tx+=xv;
-								cairo_line_to(cr, tx, yu);
-								cairo_stroke(cr);
+								cairo_move_to(cr, tx, yu);
 							}
-							xs=2;
+							cairo_line_to(cr, xvn, yvn);
+							cairo_stroke(cr);
+							cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, MY_2PI);
+							cairo_fill(cr);
+							cairo_move_to(cr, xvn, yvn);
+							xs=0;
 						}
+						xv=xvn;
+						yv=yvn;
+					}
+				}
+			}
+			else /* lines only */
+			{
+				for (k=0;k<(plot->ind->len);k++)
+				{
+					ft=g_array_index((plot->ind), gint, k);
+					lt=g_array_index((plot->sizes), gint, k)+ft;
+					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+					yv=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+					if (xv<xl)
+					{
+						if (yv>yl) xs=5;
+						else if (yv<yu) xs=9;
+						else xs=1;
+					}
+					else if (xv>xu)
+					{
+						if (yv>yl) xs=6;
+						else if (yv<yu) xs=10;
 						else xs=2;
 					}
-					else if (yvn>yl)
+					else if (yv>yl)xs=4;
+					else if (yv<yu) xs=8;
+					else {xs=0; cairo_move_to(cr, xv, yv);}
+					for (j=1+ft; j<lt; j++)
 					{
-						if (xs==0)
+						xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+						yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+						if (xvn<xl)
 						{
-							tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
-							tx+=xvn;
-							cairo_line_to(cr, tx, yl);							
-							cairo_stroke(cr);
-						}
-						else if (xs==1)
-						{
-							tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
-							tx+=xvn;
-							if (tx<xl)
+							if (yvn>yl)
 							{
-								cairo_move_to(cr, tx, yl);
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
-								cairo_line_to(cr, xl, tx);
-								cairo_stroke(cr);
+								if (xs==0)
+								{
+									tx=xvn-xv;
+									if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xvn, yl);
+									else
+									{
+										tx=((yvn-yv)*(xl-xvn))/tx;
+										tx+=yvn;
+										if (tx>yl)
+										{
+											tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+											tx+=xvn;
+											cairo_line_to(cr, tx, yl);
+										}
+										else cairo_line_to(cr, xl, tx);
+									}
+									cairo_stroke(cr);
+								}
+								xs=5;
 							}
-						}
-						else if (xs==2)
-						{
-							tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
-							tx+=xvn;
-							if (tx>xu)
+							else if (yvn<yu)
 							{
-								cairo_move_to(cr, tx, yl);
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+								if (xs==0)
+								{
+									tx=xvn-xv;
+									if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xvn, yu);
+									else
+									{
+										tx=((yvn-yv)*(xl-xvn))/tx;
+										tx+=yvn;
+										if (tx<yu)
+										{
+											tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+											tx+=xvn;
+											cairo_line_to(cr, tx, yu);									
+										}
+										else cairo_line_to(cr, xl, tx);
+									}
+									cairo_stroke(cr);
+								}
+								xs=9;
+							}
+							else if (xs==0)
+							{
+								tx=xvn-xv;
+								if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xl, yvn);
+								else
+								{
+									tx=((yvn-yv)*(xl-xvn))/tx;
+									tx+=yvn;
+									cairo_line_to(cr, xl, tx);
+								}
+								cairo_stroke(cr);
+								xs=1;
+							}
+							else if (xs==4)
+							{
+								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
 								tx+=yvn;
-								cairo_line_to(cr, xu, tx);
-								cairo_stroke(cr);
-							}
-						}
-						xs=4;
-					}
-					else if (yvn<yu)
-					{
-						if (xs==0)
-						{
-							tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
-							tx+=xvn;
-							cairo_line_to(cr, tx, yu);	
-							cairo_stroke(cr);
-						}
-						else if (xs==1)
-						{
-							tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
-							tx+=xvn;
-							if (tx<xl)
-							{
-								cairo_move_to(cr, tx, yu);
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
-								cairo_line_to(cr, xl, tx);
-								cairo_stroke(cr);
-							}
-						}
-						else if (xs==2)
-						{
-							tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
-							tx+=xvn;
-							if (tx>xu)
-							{
-								cairo_move_to(cr, tx, yu);
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
-								tx+=yvn;
-								cairo_line_to(cr, xu, tx);
-								cairo_stroke(cr);
-							}
-						}
-						xs=8;
-					}
-					else /* within range */
-					{
-						if ((xs&1)!=0)
-						{
-							if ((xs&4)!=0)
-							{
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
 								if (tx>yl)
 								{
+									cairo_move_to(cr, xl, tx);
 									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
 									tx+=xv;
-									cairo_move_to(cr, tx, yl);
+									cairo_line_to(cr, tx, yl);
+									cairo_stroke(cr);
 								}
-								else cairo_move_to(cr, xl, tx);
+								xs=1;
 							}
-							else if ((xs&8)!=0)
+							else if (xs==8)
 							{
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
+								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+								tx+=yvn;
 								if (tx<yu)
 								{
+									cairo_move_to(cr, xl, tx);
 									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
 									tx+=xv;
-									cairo_move_to(cr, tx, yu);
+									cairo_line_to(cr, tx, yu);
+									cairo_stroke(cr);
 								}
-								else cairo_move_to(cr, xl, tx);
+								xs=1;
 							}
-							else
-							{
-								tx=((yvn-yv)*(xl-xv))/(xvn-xv);
-								tx+=yv;
-								cairo_move_to(cr, xl, tx);
-							}
+							else xs=1;
 						}
-						else if ((xs&2)!=0)
+						else if (xvn>xu)
 						{
-							if ((xs&4)!=0)
+							if (yvn>yl)
 							{
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
-								tx+=yvn;
+								if (xs==0)
+								{
+									tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+									tx+=yv;
+									if (tx>yl)
+									{
+										tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+										tx+=xv;
+										cairo_line_to(cr, tx, yl);
+									}
+									else cairo_line_to(cr, xu, tx);
+									cairo_stroke(cr);
+								}
+								xs=6;
+							}
+							else if (yvn<yu)
+							{
+								if (xs==0)
+								{
+									tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+									tx+=yv;
+									if (tx<yu)
+									{
+										tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+										tx+=xv;
+										cairo_line_to(cr, tx, yu);									
+									}
+									else cairo_line_to(cr, xu, tx);
+									cairo_stroke(cr);
+								}
+								xs=10;
+							}
+							if (xs==0)
+							{
+								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx+=yv;
+								cairo_line_to(cr, xu, tx);
+								cairo_stroke(cr);
+								xs=2;
+							}
+							else if (xs==4)
+							{
+								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx+=yv;
 								if (tx>yl)
 								{
-									tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
-									tx+=xvn;
-									cairo_move_to(cr, tx, yl);
+									cairo_move_to(cr, xu, tx);
+									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+									tx+=xv;
+									cairo_line_to(cr, tx, yl);
+									cairo_stroke(cr);
 								}
-								else cairo_move_to(cr, xl, tx);
+								xs=2;
+							}
+							else if (xs==8)
+							{
+								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx+=yv;
+								if (tx>yu)
+								{
+									cairo_move_to(cr, xu, tx);
+									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+									tx+=xv;
+									cairo_line_to(cr, tx, yu);
+									cairo_stroke(cr);
+								}
+								xs=2;
+							}
+							else xs=2;
+						}
+						else if (yvn>yl)
+						{
+							if (xs==0)
+							{
+								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx+=xvn;
+								cairo_line_to(cr, tx, yl);							
+								cairo_stroke(cr);
+							}
+							else if (xs==1)
+							{
+								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx+=xvn;
+								if (tx<xl)
+								{
+									cairo_move_to(cr, tx, yl);
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									cairo_line_to(cr, xl, tx);
+									cairo_stroke(cr);
+								}
+							}
+							else if (xs==2)
+							{
+								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx+=xvn;
+								if (tx>xu)
+								{
+									cairo_move_to(cr, tx, yl);
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									cairo_line_to(cr, xu, tx);
+									cairo_stroke(cr);
+								}
+							}
+							xs=4;
+						}
+						else if (yvn<yu)
+						{
+							if (xs==0)
+							{
+								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx+=xvn;
+								cairo_line_to(cr, tx, yu);	
+								cairo_stroke(cr);
+							}
+							else if (xs==1)
+							{
+								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx+=xvn;
+								if (tx<xl)
+								{
+									cairo_move_to(cr, tx, yu);
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									cairo_line_to(cr, xl, tx);
+									cairo_stroke(cr);
+								}
+							}
+							else if (xs==2)
+							{
+								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx+=xvn;
+								if (tx>xu)
+								{
+									cairo_move_to(cr, tx, yu);
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									cairo_line_to(cr, xu, tx);
+									cairo_stroke(cr);
+								}
+							}
+							xs=8;
+						}
+						else /* within range */
+						{
+							if ((xs&1)!=0)
+							{
+								if ((xs&4)!=0)
+								{
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									if (tx>yl)
+									{
+										tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+										tx+=xv;
+										cairo_move_to(cr, tx, yl);
+									}
+									else cairo_move_to(cr, xl, tx);
+								}
+								else if ((xs&8)!=0)
+								{
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									if (tx<yu)
+									{
+										tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+										tx+=xv;
+										cairo_move_to(cr, tx, yu);
+									}
+									else cairo_move_to(cr, xl, tx);
+								}
+								else
+								{
+									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx+=yv;
+									cairo_move_to(cr, xl, tx);
+								}
+							}
+							else if ((xs&2)!=0)
+							{
+								if ((xs&4)!=0)
+								{
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									if (tx>yl)
+									{
+										tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+										tx+=xvn;
+										cairo_move_to(cr, tx, yl);
+									}
+									else cairo_move_to(cr, xl, tx);
+								}
+								else if ((xs&8)!=0)
+								{
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									if (tx<yu)
+									{
+										tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+										tx+=xvn;
+										cairo_move_to(cr, tx, yu);
+									}
+									else cairo_move_to(cr, xl, tx);
+								}
+								else
+								{
+									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx+=yvn;
+									cairo_move_to(cr, xu, tx);
+								}
+							}
+							else if ((xs&4)!=0)
+							{
+								tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+								tx+=xv;
+								cairo_move_to(cr, tx, yl);
 							}
 							else if ((xs&8)!=0)
 							{
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
-								tx+=yvn;
-								if (tx<yu)
-								{
-									tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
-									tx+=xvn;
-									cairo_move_to(cr, tx, yu);
-								}
-								else cairo_move_to(cr, xl, tx);
+								tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+								tx+=xv;
+								cairo_move_to(cr, tx, yu);
 							}
-							else
-							{
-								tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
-								tx+=yvn;
-								cairo_move_to(cr, xu, tx);
-							}
+							cairo_line_to(cr, xvn, yvn);
+							xs=0;
 						}
-						else if ((xs&4)!=0)
-						{
-							tx=((xvn-xv)*(yl-yv))/(yvn-yv);
-							tx+=xv;
-							cairo_move_to(cr, tx, yl);
-						}
-						else if ((xs&8)!=0)
-						{
-							tx=((xvn-xv)*(yu-yv))/(yvn-yv);
-							tx+=xv;
-							cairo_move_to(cr, tx, yu);
-						}
-						cairo_line_to(cr, xvn, yvn);
-						xs=0;
+						xv=xvn;
+						yv=yvn;
 					}
-					xv=xvn;
-					yv=yvn;
+					cairo_stroke(cr);
 				}
-				cairo_stroke(cr);
 			}
 		}
 		else if (((plot->flagd)&2)!=0) /* points only */
 		{
-			if ((yv<=yl)&&(yv>=yu)&&(xv>=xl)&&(xv<=xu))
+			for (k=0;k<(plot->ind->len);k++)
 			{
-				cairo_arc(cr, xv, yv, (plot->ptsize), 0, MY_2PI);
-				cairo_fill(cr);
-			}
-			for (j=1; j<(plot->size); j++)
-			{
-				xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-				yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+				ft=g_array_index((plot->ind), gint, k);
+				lt=g_array_index((plot->sizes), gint, k)+ft;
+				xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+				yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
 				if ((yv<=yl)&&(yv>=yu)&&(xv>=xl)&&(xv<=xu))
 				{
 					cairo_arc(cr, xv, yv, (plot->ptsize), 0, MY_2PI);
 					cairo_fill(cr);
+				}
+				for (j=1+ft; j<lt; j++)
+				{
+					xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+					yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+					if ((yv<=yl)&&(yv>=yu)&&(xv>=xl)&&(xv<=xu))
+					{
+						cairo_arc(cr, xv, yv, (plot->ptsize), 0, MY_2PI);
+						cairo_fill(cr);
+					}
 				}
 			}
 		}
@@ -3700,6 +3719,8 @@ static void plot_linear_finalise(PlotLinear *plot)
 	if (plot->ylab) g_free(plot->ylab);
 	if (plot->xdata) g_free(plot->xdata);
 	if (plot->ydata) g_free(plot->ydata);
+	if (plot->ind) g_free(plot->ind);
+	if (plot->sizes) g_free(plot->sizes);
 }
 
 static void plot_linear_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -3798,10 +3819,10 @@ static void plot_linear_init(PlotLinear *plot)
 	{(priv->range.xj)=0; (priv->range.yj)=0; (priv->range.xn)=1; (priv->range.yn)=1;}
 	{(priv->xcs)=5; (priv->ycs)=5;}
 	{(priv->flaga)=0; (priv->flagr)=0;}
-	{(plot->xdata)=NULL; (plot->ydata)=NULL;}
+	{(plot->xdata)=NULL; (plot->ydata)=NULL; (plot->ind)=NULL;(plot->sizes)=NULL;}
 	{(plot->xlab)=g_strdup("Domain"); (plot->ylab)=g_strdup("Amplitude");}
 	{(plot->afsize)=12; (plot->lfsize)=12;}
-	{(plot->size)=0; (plot->flagd)=1; (plot->ptsize)=5; (plot->linew)=2;}
+	{(plot->flagd)=1; (plot->ptsize)=5; (plot->linew)=2;}
 	(plot->zmode)=6;
 	{(plot->xps)=0; (plot->yps)=0;}
 }
