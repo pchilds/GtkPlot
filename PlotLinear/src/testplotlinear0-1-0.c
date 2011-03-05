@@ -30,34 +30,41 @@
 #include <math.h>
 #include "plotlinear0-1-0.h"
 
+#define CM 65535
+#define CMI 0.000015259021897
+#define HM 32767
+
 GtkWidget *window, *plot, *statusbar, *jind, *label;
 GArray *x, *y, *sz, *nx;
 
 void dpr(GtkWidget *widget, gpointer data)
 {
-	GtkWidget *helpwin, *content, *table, *entry1, *entry2, *label, *spin1, *spin2;
+	GtkWidget *helpwin, *content, *table, *entry1, *entry2, *label, *spin1, *spin2, *colour;
 	GtkAdjustment *adj1, *adj2;
+	GdkColor cl;
 	PlotLinear *plt;
+	gdouble *ptr;
+	gint j;
 	gdouble xi, xf, mny, mxy;
 	
 	helpwin=gtk_dialog_new_with_buttons("Dsiplay Properties", GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL, GTK_STOCK_APPLY, GTK_RESPONSE_APPLY, NULL);
 	g_signal_connect_swapped(G_OBJECT(helpwin), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(helpwin));
 	gtk_widget_show(helpwin);
 	content=gtk_dialog_get_content_area(GTK_DIALOG(helpwin));
-	table=gtk_table_new(4, 2, FALSE);
+	table=gtk_table_new(8, 2, FALSE);
 	gtk_widget_show(table);
 	label=gtk_label_new("X axis text:");
 	gtk_widget_show(label);
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
-	label=gtk_label_new("Text size:");
-	gtk_widget_show(label);
-	gtk_table_attach(GTK_TABLE(table), label, 1, 2, 0, 1, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
 	label=gtk_label_new("Y axis text:");
 	gtk_widget_show(label);
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	label=gtk_label_new("Text size:");
+	gtk_widget_show(label);
+	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 4, 5, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
 	label=gtk_label_new("Tick label size:");
 	gtk_widget_show(label);
-	gtk_table_attach(GTK_TABLE(table), label, 1, 2, 2, 3, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 6, 7, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
 	entry1=gtk_entry_new();
 	entry2=gtk_entry_new();
 	plt=PLOT_LINEAR(plot);
@@ -73,8 +80,12 @@ void dpr(GtkWidget *widget, gpointer data)
 	gtk_widget_show(spin2);
 	gtk_table_attach(GTK_TABLE(table), entry1, 0, 1, 1, 2, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
 	gtk_table_attach(GTK_TABLE(table), entry2, 0, 1, 3, 4, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
-	gtk_table_attach(GTK_TABLE(table), spin1, 1, 2, 1, 2, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
-	gtk_table_attach(GTK_TABLE(table), spin2, 1, 2, 3, 4, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	gtk_table_attach(GTK_TABLE(table), spin1, 0, 1, 5, 6, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	gtk_table_attach(GTK_TABLE(table), spin2, 0, 1, 7, 8, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
+	colour=gtk_color_selection_new();
+	gtk_color_selection_set_has_opacity_control(GTK_COLOR_SELECTION(colour), TRUE);
+	gtk_widget_show(colour);
+	gtk_table_attach(GTK_TABLE(table), colour, 1, 2, 0, 7, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
 	gtk_container_add(GTK_CONTAINER(content), table);
 	if (gtk_dialog_run(GTK_DIALOG(helpwin))==GTK_RESPONSE_APPLY)
 	{
@@ -142,6 +153,7 @@ void opd(GtkWidget *widget, gpointer data)
 			for (k=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jind)); k<sal; k++)
 			{
 				if (!strary[k]) continue;
+				g_strchug(strary[k]);
 				if (!g_strcmp0("", strary[k])) continue;
 				if (!(g_ascii_isdigit(strary[k][0])|(g_str_has_prefix(strary[k],"-")))) continue;
 				strat=g_strsplit_set(strary[k], "\t,", 0);
@@ -170,9 +182,9 @@ void opd(GtkWidget *widget, gpointer data)
 			(plt->sizes)=sz;
 			k=0;
 			g_array_append_val(nx, k);
-			(plt->ind)=nx;
 			(plt->xdata)=x;
 			(plt->ydata)=y;
+			(plt->ind)=nx;
 			xi=g_array_index(x, gdouble, 0);
 			xf=g_array_index(x, gdouble, (lc-1));
 			plot_linear_update_scale(plot, xi, xf, mny, mxy);
@@ -217,6 +229,7 @@ void ad(GtkWidget *widget, gpointer data)
 			for (k=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jind)); k<sal; k++)
 			{
 				if (!strary[k]) continue;
+				g_strchug(strary[k]);
 				if (!g_strcmp0("", strary[k])) continue;
 				if (!(g_ascii_isdigit(strary[k][0])|(g_str_has_prefix(strary[k],"-")))) continue;
 				strat=g_strsplit_set(strary[k], "\t,", 0);
@@ -241,8 +254,6 @@ void ad(GtkWidget *widget, gpointer data)
 			(plt->ind)=nx;
 			(plt->xdata)=x;
 			(plt->ydata)=y;
-			xi=g_array_index(x, gdouble, 0);
-			xf=g_array_index(x, gdouble, (lc-1));
 			plot_linear_update_scale(plot, xi, xf, mny, mxy);
 		}
 		else
