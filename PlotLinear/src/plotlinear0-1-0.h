@@ -46,8 +46,9 @@ struct _PlotLinear
 	GtkDrawingArea parent;
 	GArray *xdata, *ydata; /* x and y data sets */
 	GArray *ind, *sizes; /* indices of first element and number of elements for each trace */
+	GArray *rd, *gr, *bl, *al; /* colour and alpha of the plots */
 	gchar *xlab, *ylab; /* labels for the x and y axes */
-	guint afsize, lfsize; /* font size for the tick mark and axis labels */
+	PangoFontDescription *afont, *lfont; /* font descriptions for the tick mark and axis labels */
 	guint ptsize, linew; /* radii of the points and line width of the plot line */
 	gint zmode; /* zoom mode flags xxx0b/xxx1b = zoom in/out, 001xb = zoom horizontal only, 010xb = zoom vertical only, 011xb = zoom both, 1xxxb = single click zoom */
 	gdouble xps, yps; /* x and y position of mouse */

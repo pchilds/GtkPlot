@@ -60,38 +60,18 @@ static guint plot_linear_signals[LAST_SIGNAL]={0};
 typedef struct _PlotLinearPrivate PlotLinearPrivate;
 struct xs {gdouble xmin, ymin, xmax, ymax;};
 struct tk {guint xj, yj, xn, yn;};
-struct _PlotLinearPrivate {struct xs bounds, rescale; struct tk ticks, range; GArray *rd, *gr, *bl, *al; guint xcs, ycs, flaga, flagr;};
+struct _PlotLinearPrivate {struct xs bounds, rescale; struct tk ticks, range; guint xcs, ycs, flaga, flagr;};
 
-static void draw(GtkWidget *widget, cairo_t *cr)
+static void drawz(GtkWidget *widget, cairo_t *cr)
 {
-	PlotLinearPrivate *priv;
+	gint xw;
+	gdouble dt;
 	PlotLinear *plot;
-	guint xs;
-	gint j, k, xw, yw, xr, xr2, yr, yr2, xa, ya, xl, yl, xu, yu, tf, tz, to, tn, tnn, xv, yv, xvn, yvn, dtt, tx, wd, hg, ft, lt;
-	gdouble dt, lr1, lr2, lr3;
-	gchar *str1=NULL, *str2=".", *str3=NULL;
-	gchar lbl[10];
-	cairo_text_extents_t extents;
-	PangoLayout *lyt;
-	PangoFontDescription *dscr;
-	cairo_matrix_t mtr, mtr2, mtr3;
 
-	{mtr.xx=1; mtr.xy=0; mtr.yx=0; mtr.yy=1;}/* initialise */
-	{mtr2.xx=0; mtr2.xy=1; mtr2.yx=-1; mtr2.yy=0;}
-	{mtr3.xx=0; mtr3.xy=-1; mtr3.yx=1; mtr3.yy=0;}
-	plot=PLOT_LINEAR(widget);
 	xw=(widget->allocation.width);
-	yw=(widget->allocation.height);
-	priv=PLOT_LINEAR_GET_PRIVATE(plot);
-	(priv->flaga)&=48;
-	dtt=(plot->afsize)+(plot->lfsize);
-	xr=MIN(xw*ARP,dtt);
-	xr2=(xr-2)*IRTR;
-	yr=MIN(yw*ARP,dtt);
-	yr2=(yr-2)*IRTR;
-	dtt+=JTI;
+	plot=PLOT_LINEAR(widget);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-	cairo_set_line_width(cr, 1); /* draw zoom boxes */
+	cairo_set_line_width(cr, 1);
 	cairo_rectangle(cr, xw-21.5, 0.5, 10, 10);
 	cairo_rectangle(cr, xw-10.5, 0.5, 10, 10);
 	cairo_move_to(cr, xw-9, 5.5);
@@ -152,20 +132,62 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		}
 		cairo_restore(cr);
 	}
-	cairo_select_font_face(cr, "sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size(cr, (plot->afsize));
-	if (priv->bounds.ymax<=DZE) /* determine positions of axes */
+}
+
+static void draw(GtkWidget *widget, cairo_t *cr)
+{
+	PlotLinearPrivate *priv;
+	PlotLinear *plot;
+	guint xs;
+	gint j, k, xw, yw, xr, xr2, yr, yr2, xa, ya, xl, yl, xu, yu, tf, tz, to, tn, tnn, xv, yv, xvn, yvn, dtt, tx, wd, hg, ft, lt;
+	gdouble vv, wv, zv, av, dt, lr1, lr2, lr3;
+	gchar *str1=NULL, *str2=".", *str3=NULL;
+	gchar lbl[10];
+	PangoLayout *lyt;
+	cairo_matrix_t mtr2, mtr3;
+
+	{mtr2.xx=0; mtr2.xy=1; mtr2.yx=-1; mtr2.yy=0;}/* initialise */
+	{mtr3.xx=0; mtr3.xy=-1; mtr3.yx=1; mtr3.yy=0;}
+	plot=PLOT_LINEAR(widget);
+	xw=(widget->allocation.width);
+	yw=(widget->allocation.height);
+	priv=PLOT_LINEAR_GET_PRIVATE(plot);
+	(priv->flaga)&=48;
+	lyt=pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(lyt, (plot->lfont));
+	str1=g_strconcat((plot->xlab), (plot->ylab), NULL);
+	pango_layout_set_text(lyt, str1, -1);
+	pango_layout_get_pixel_size(lyt, &wd, &dtt);
+	g_free(str1);
+	g_object_unref(lyt);
+	lyt=pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(lyt, (plot->afont));
+	str1=g_strdup("27");
+	pango_layout_set_text(lyt, str1, -1);
+	pango_layout_get_pixel_size(lyt, &wd, &hg);
+	dtt+=hg;
+	g_free(str1);
+	g_object_unref(lyt);
+	xr=MIN(xw*ARP,dtt);
+	xr2=(xr-2)*IRTR;
+	yr=MIN(yw*ARP,dtt);
+	yr2=(yr-2)*IRTR;
+	dtt+=JTI;
+	lyt=pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(lyt, (plot->afont));
+	if ((priv->bounds.ymax)<=DZE) /* determine positions of axes */
 	{
 		(priv->flaga)|=32;
-		g_snprintf(lbl, (priv->ycs), "%f", lr1);
-		cairo_text_extents(cr, lbl, &extents);
-		yl=yw-((extents.width)/2)-1; /* allow space for lower label */
+		g_snprintf(lbl, (priv->ycs), "%f", (priv->bounds.ymin));
+		pango_layout_set_text(lyt, lbl, -1);
+		pango_layout_get_pixel_size(lyt, &wd, &hg);
+		yl=yw-(wd/2)-1; /* allow space for lower label */
 		ya=dtt;
 		yu=(yl-ya)*((priv->bounds.ymax)/(priv->bounds.ymin));
 		if (yu>(yw*WGP)) {(priv->flaga)|=4; yu=yw*WGP;}
 		yu+=ya;
 	}
-	else if (priv->bounds.ymin>=NZE)
+	else if ((priv->bounds.ymin)>=NZE)
 	{
 		yu=yr;
 		ya=yw-dtt;
@@ -179,8 +201,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		if ((priv->bounds.ymin)+(priv->bounds.ymax)<=0)
 		{
 			g_snprintf(lbl, (priv->ycs), "%f", (priv->bounds.ymin));
-			cairo_text_extents(cr, lbl, &extents);
-			yl=yw-((extents.width)/2)-1; /* allow space for lower label */
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			yl=yw-(wd/2)-1; /* allow space for lower label */
 			yu=(yl-dtt)*((priv->bounds.ymax)/(priv->bounds.ymin));
 			yu+=dtt;
 			if (yu<yr) {yu=yr; ya=((yl*(priv->bounds.ymax))-(yr*(priv->bounds.ymin)))/((priv->bounds.ymax)-(priv->bounds.ymin));}
@@ -210,19 +233,24 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			if ((priv->bounds.ymin)+(priv->bounds.ymax)<=0)
 			{
 				g_snprintf(lbl, (priv->ycs), "%f", (priv->bounds.ymin));
-				cairo_text_extents(cr, lbl, &extents);
-				yl+=(extents.width)/2;
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				yl+=wd/2;
 				yl--; /* allow space for lower label */
 			}
 			ya=((yl*(priv->bounds.ymax))-(yu*(priv->bounds.ymin)))/((priv->bounds.ymax)-(priv->bounds.ymin));
 		}
 	}
+	g_object_unref(lyt);
+	lyt=pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(lyt, (plot->afont));
 	if (priv->bounds.xmax<=DZE)
 	{
 		(priv->flaga)|=16;
 		g_snprintf(lbl, (priv->xcs), "%f", (priv->bounds.xmin));
-		cairo_text_extents(cr, lbl, &extents);
-		xl=(extents.width)/2; /* allow space for left label */
+		pango_layout_set_text(lyt, lbl, -1);
+		pango_layout_get_pixel_size(lyt, &wd, &hg);
+		xl=wd/2; /* allow space for left label */
 		xa=xw-dtt;
 		xu=(xa-xl)*((priv->bounds.xmax)/(priv->bounds.xmin));
 		if (xu>(xw*WGP)) {(priv->flaga)|=1; xu=xw*WGP;}
@@ -242,8 +270,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		if ((priv->bounds.xmin)+(priv->bounds.xmax)<=0)
 		{
 			g_snprintf(lbl, (priv->xcs), "%f", (priv->bounds.xmin));
-			cairo_text_extents(cr, lbl, &extents);
-			xl=(extents.width)/2; /* allow space for left label */
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			xl=wd/2; /* allow space for left label */
 			xa=xw-dtt;
 			xu=(xa-xl)*((priv->bounds.xmax)/(priv->bounds.xmin));
 			xu+=dtt;
@@ -266,7 +295,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			else xl=0;
 		}
 	}
-	else 
+	else
 	{
 		xu=xw-xr;
 		xa=dtt;
@@ -277,18 +306,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			if ((priv->bounds.xmin)+(priv->bounds.xmax)<=0)
 			{
 				g_snprintf(lbl, (priv->xcs), "%f", (priv->bounds.xmin));
-				cairo_text_extents(cr, lbl, &extents);
-				xl=(extents.width)/2; /* allow space for left label */
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				xl=wd/2; /* allow space for left label */
 				xa=((xl*(priv->bounds.xmax))-(xu*(priv->bounds.xmin)))/((priv->bounds.xmax)-(priv->bounds.xmin));
 			}
 			else {xl=0; xa=-xu*((priv->bounds.xmin)/((priv->bounds.xmax)-(priv->bounds.xmin)));}
 		}
 	}
+	g_object_unref(lyt);
 	(priv->range.xj)=xl;
 	(priv->range.yj)=yu;
 	(priv->range.xn)=xu;
 	(priv->range.yn)=yl;
-	cairo_set_source_rgb(cr, 0, 0, 0);
+	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_set_line_width(cr, 2);
 	cairo_move_to(cr, 0, ya);
 	if (((priv->flaga)&1)!=0) /* draw x wiggles */
@@ -318,19 +349,14 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		cairo_line_to(cr, xa, ya-(WFP*yw));
 		cairo_curve_to(cr, xa-(WHP*yw), ya-(WMP*yw), xa+(WHP*yw), ya-(WMP*yw), xa, ya-(WGP*yw));
 	}
-	yr--;
-	yr--;
+	{yr--; yr--;}
 	cairo_line_to(cr, xa, 0); /* draw y axis */
 	cairo_line_to(cr, xa-yr2, yr); /* draw y arrow */
 	cairo_move_to(cr, xa, 0);
 	cairo_line_to(cr, xa+yr2, yr);
 	cairo_stroke(cr);
-	dscr=pango_font_description_new(); /* draw ticks, grid and labels */
-	pango_font_description_set_family(dscr, "sans");
-	pango_font_description_set_weight(dscr, PANGO_WEIGHT_NORMAL);
-	pango_font_description_set_absolute_size(dscr, (plot->lfsize)*PANGO_SCALE);
-	lyt=pango_cairo_create_layout(cr);
-	pango_layout_set_font_description(lyt, dscr);
+	lyt=pango_cairo_create_layout(cr); /* draw ticks, grid and labels */
+	pango_layout_set_font_description(lyt, (plot->lfont));
 	pango_layout_set_text(lyt, (plot->xlab), -1);
 	pango_layout_get_pixel_size(lyt, &wd, &hg);
 	dt=5;
@@ -342,13 +368,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_move_to(cr, (xu+xl-wd)/2, ya-dtt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_font_size(cr, (plot->afsize));
 			cairo_move_to(cr, to, ya);
 			cairo_line_to(cr, to, ya-JT);
 			cairo_stroke(cr);
 			if ((priv->bounds.xmin)>=10)
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-2);
+				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-1);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -367,14 +392,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-3);
+				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-2);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->xcs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, (to-((extents.width)/2))-(extents.x_bearing), ya-JTI-(extents.height)-(extents.y_bearing));
-			cairo_show_text(cr, lbl);
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, to-(wd/2), ya-JTI-hg);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
 			cairo_set_line_width(cr, 1);
 			cairo_save(cr);
 			cairo_set_dash(cr, &dt, 1, 0);
@@ -399,7 +428,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmin)+((j*((priv->bounds.xmax)-(priv->bounds.xmin)))/(priv->ticks.xj));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -418,14 +447,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya-JTI-(extents.height)-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya-JTI-hg);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -441,13 +474,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_move_to(cr, (xu+xl-wd)/2, ya+dtt-hg);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_font_size(cr, (plot->afsize));
 			cairo_move_to(cr, to, ya);
 			cairo_line_to(cr, to, ya+JT);
 			cairo_stroke(cr);
 			if ((priv->bounds.xmin)>=10)
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-2);
+				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-1);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -466,14 +498,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-3);
+				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-2);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->xcs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, (to-((extents.width)/2))-(extents.x_bearing), ya+JTI-(extents.y_bearing));
-			cairo_show_text(cr, lbl);
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, to-(wd/2), ya+JTI);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
 			cairo_set_line_width(cr, 1);
 			cairo_save(cr);
 			cairo_set_dash(cr, &dt, 1, 0);
@@ -498,7 +534,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmin)+((j*((priv->bounds.xmax)-(priv->bounds.xmin)))/(priv->ticks.xj));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -517,14 +553,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya+JTI-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya+JTI);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -544,13 +584,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_move_to(cr, (xu+xl-wd)/2, ya-dtt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_font_size(cr, (plot->afsize));
 			cairo_move_to(cr, to, ya);
 			cairo_line_to(cr, to, ya-JT);
 			cairo_stroke(cr);
 			if ((priv->bounds.xmin)>=10)
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-2);
+				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-1);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -569,14 +608,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-3);
+				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-2);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->xcs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, (to-((extents.width)/2))-(extents.x_bearing), ya-JTI-(extents.height)-(extents.y_bearing));
-			cairo_show_text(cr, lbl);
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, to-(wd/2), ya-JTI-hg);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
 			cairo_set_line_width(cr, 1);
 			cairo_save(cr);
 			cairo_set_dash(cr, &dt, 1, 0);
@@ -601,7 +644,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmin)+((j*((priv->bounds.xmax)-(priv->bounds.xmin)))/(priv->ticks.xj));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -620,14 +663,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya-JTI-(extents.height)-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya-JTI-hg);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -661,13 +708,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_move_to(cr, (xu+xl-wd)/2, ya+dtt-hg);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_font_size(cr, (plot->afsize));
 			cairo_move_to(cr, to, ya);
 			cairo_line_to(cr, to, ya+JT);
 			cairo_stroke(cr);
 			if ((priv->bounds.xmin)>=10)
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-2);
+				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-1);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -686,14 +732,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-3);
+				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-2);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->xcs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, (to-((extents.width)/2))-(extents.x_bearing), ya+JTI-(extents.y_bearing));
-			cairo_show_text(cr, lbl);
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, to-(wd/2), ya+JTI);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
 			cairo_set_line_width(cr, 1);
 			cairo_save(cr);
 			cairo_set_dash(cr, &dt, 1, 0);
@@ -718,7 +768,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmin)+((j*((priv->bounds.xmax)-(priv->bounds.xmin)))/(priv->ticks.xj));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -737,14 +787,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya+JTI-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya+JTI);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -785,7 +839,6 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_move_to(cr, (xu+xa-wd)/2, ya-dtt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_font_size(cr, (plot->afsize));
 			cairo_move_to(cr, to, ya);
 			cairo_line_to(cr, to, ya-JT);
 			cairo_stroke(cr);
@@ -813,7 +866,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmax)-((j*((priv->bounds.xmax)-(priv->bounds.xmin))*(xu-tf))/((xu-xl)*(priv->ticks.xj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -832,14 +885,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya-JTI-(extents.height)-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya-JTI-hg);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -875,7 +932,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmax)-((j*((priv->bounds.xmax)-(priv->bounds.xmin))*(xu-tf))/((xu-xl)*(priv->ticks.xj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -894,14 +951,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya-JTI-(extents.height)-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya-JTI-hg);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -924,7 +985,6 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_move_to(cr, (xu+xa-wd)/2, ya+dtt-hg);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_font_size(cr, (plot->afsize));
 			cairo_move_to(cr, to, ya);
 			cairo_line_to(cr, to, ya+JT);
 			cairo_stroke(cr);
@@ -952,7 +1012,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmax)-((j*((priv->bounds.xmax)-(priv->bounds.xmin))*(xu-tf))/((xu-xl)*(priv->ticks.xj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -971,14 +1031,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya+JTI-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya+JTI);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1014,7 +1078,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmax)-((j*((priv->bounds.xmax)-(priv->bounds.xmin))*(xu-tf))/((xu-xl)*(priv->ticks.xj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1033,14 +1097,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya+JTI-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya+JTI);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1070,13 +1138,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_move_to(cr, (xa+xl-wd)/2, ya-dtt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_font_size(cr, (plot->afsize));
 			cairo_move_to(cr, to, ya);
 			cairo_line_to(cr, to, ya-JT);
 			cairo_stroke(cr);
 			if ((priv->bounds.xmin)>=10)
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-2);
+				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-1);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -1095,14 +1162,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-3);
+				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-2);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->xcs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, (to-((extents.width)/2))-(extents.x_bearing), ya-JTI-(extents.height)-(extents.y_bearing));
-			cairo_show_text(cr, lbl);
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, to-(wd/2), ya-JTI-hg);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
 			cairo_set_line_width(cr, 1);
 			cairo_save(cr);
 			cairo_set_dash(cr, &dt, 1, 0);
@@ -1127,7 +1198,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmin)+((j*((priv->bounds.xmax)-(priv->bounds.xmin))*(tf-xl))/((xu-xl)*(priv->ticks.xj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1146,14 +1217,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya-JTI-(extents.height)-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya-JTI-hg);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1189,7 +1264,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmin)+((j*((priv->bounds.xmax)-(priv->bounds.xmin))*(tf-xl))/((xu-xl)*(priv->ticks.xj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1208,14 +1283,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya-JTI-(extents.height)-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya-JTI-hg);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1238,13 +1317,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_move_to(cr, (xa+xl-wd)/2, ya+dtt-hg);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_font_size(cr, (plot->afsize));
 			cairo_move_to(cr, to, ya);
 			cairo_line_to(cr, to, ya+JT);
 			cairo_stroke(cr);
 			if ((priv->bounds.xmin)>=10)
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-2);
+				lr1=G_LN10*((priv->xcs)-floor(log10(priv->bounds.xmin))-1);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -1263,14 +1341,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-3);
+				lr1=G_LN10*((priv->xcs)-floor(log10(-(priv->bounds.xmin)))-2);
 				lr2=(priv->bounds.xmin)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->xcs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, (to-((extents.width)/2))-(extents.x_bearing), ya+JTI-(extents.y_bearing));
-			cairo_show_text(cr, lbl);
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, to-(wd/2), ya+JTI);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
 			cairo_set_line_width(cr, 1);
 			cairo_save(cr);
 			cairo_set_dash(cr, &dt, 1, 0);
@@ -1295,7 +1377,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmin)+((j*((priv->bounds.xmax)-(priv->bounds.xmin))*(tf-xl))/((xu-xl)*(priv->ticks.xj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1314,14 +1396,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya+JTI-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya+JTI);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1357,7 +1443,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.xmin)+((j*((priv->bounds.xmax)-(priv->bounds.xmin))*(tf-xl))/((xu-xl)*(priv->ticks.xj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->xcs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1376,14 +1462,18 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->xcs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->xcs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, (tn-((extents.width)/2))-(extents.x_bearing), ya+JTI-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, tn-(wd/2), ya+JTI);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1404,7 +1494,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	}
 	cairo_stroke(cr);
 	lyt=pango_cairo_create_layout(cr);
-	pango_layout_set_font_description(lyt, dscr);
+	pango_layout_set_font_description(lyt, (plot->lfont));
 	pango_layout_set_text(lyt, (plot->ylab), -1);
 	pango_layout_get_pixel_size(lyt, &wd, &hg);
 	if (((priv->flaga)&4)!=0)
@@ -1417,11 +1507,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
-			cairo_set_font_size(cr, (plot->afsize));
+			cairo_identity_matrix(cr);
 			if ((priv->bounds.ymax)>=10)
 			{
-				lr1=G_LN10*((priv->ycs)-floor(log10(priv->bounds.ymax))-2);
+				lr1=G_LN10*((priv->ycs)-floor(log10(priv->bounds.ymax))-1);
 				lr2=(priv->bounds.ymax)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -1440,16 +1529,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->ycs)-floor(log10(-(priv->bounds.ymax)))-3);
+				lr1=G_LN10*((priv->ycs)-floor(log10(-(priv->bounds.ymax)))-2);
 				lr2=(priv->bounds.ymax)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->ycs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, xa+JTI+(extents.y_bearing)+(extents.height), to-((extents.width)/2)+(extents.x_bearing));
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, xa+JTI+hg, to-(wd/2));
 			cairo_set_matrix(cr, &mtr3);
-			cairo_show_text(cr, lbl);
-			cairo_set_matrix(cr, &mtr);
+			pango_cairo_update_layout(cr, lyt);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
+			cairo_identity_matrix(cr);
 			cairo_move_to(cr, xa, to);
 			cairo_line_to(cr, xa+JT, to);
 			cairo_stroke(cr);
@@ -1477,7 +1571,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymax)-((j*((priv->bounds.ymax)-(priv->bounds.ymin)))/(priv->ticks.yj));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1496,16 +1590,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa+JTI+(extents.y_bearing)+(extents.height), tn-((extents.width)/2)+(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa+JTI+hg, tn-(wd/2));
 				cairo_set_matrix(cr, &mtr3);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1523,11 +1622,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
-			cairo_set_font_size(cr, (plot->afsize));
+			cairo_identity_matrix(cr);
 			if ((priv->bounds.ymax)>=10)
 			{
-				lr1=G_LN10*((priv->ycs)-floor(log10(priv->bounds.ymax))-2);
+				lr1=G_LN10*((priv->ycs)-floor(log10(priv->bounds.ymax))-1);
 				lr2=(priv->bounds.ymax)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -1546,16 +1644,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->ycs)-floor(log10(-(priv->bounds.ymax)))-3);
+				lr1=G_LN10*((priv->ycs)-floor(log10(-(priv->bounds.ymax)))-2);
 				lr2=(priv->bounds.ymax)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->ycs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, xa-JTI-(extents.y_bearing)-(extents.height), to+((extents.width)/2)-(extents.x_bearing));
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, xa-JTI-hg, to+(wd/2));
 			cairo_set_matrix(cr, &mtr2);
-			cairo_show_text(cr, lbl);
-			cairo_set_matrix(cr, &mtr);
+			pango_cairo_update_layout(cr, lyt);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
+			cairo_identity_matrix(cr);
 			cairo_move_to(cr, xa, to);
 			cairo_line_to(cr, xa-JT, to);
 			cairo_stroke(cr);
@@ -1583,7 +1686,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymax)-((j*((priv->bounds.ymax)-(priv->bounds.ymin)))/(priv->ticks.yj));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1602,16 +1705,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa-JTI-(extents.y_bearing)-(extents.height), tn+((extents.width)/2)-(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa-JTI-hg, tn+(wd/2));
 				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1633,8 +1741,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
-			cairo_set_font_size(cr, (plot->afsize));
+			cairo_identity_matrix(cr);
 			cairo_move_to(cr, xa, to);
 			cairo_line_to(cr, xa+JT, to);
 			cairo_stroke(cr);
@@ -1662,7 +1769,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymax)-((j*((priv->bounds.ymax)-(priv->bounds.ymin)))/(priv->ticks.yj));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1681,16 +1788,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa+JTI+(extents.y_bearing)+(extents.height), tn-((extents.width)/2)+(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa+JTI+hg, tn-(wd/2));
 				cairo_set_matrix(cr, &mtr3);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1708,8 +1820,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
-			cairo_set_font_size(cr, (plot->afsize));
+			cairo_identity_matrix(cr);
 			cairo_move_to(cr, xa, to);
 			cairo_line_to(cr, xa-JT, to);
 			cairo_stroke(cr);
@@ -1737,7 +1848,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymax)-((j*((priv->bounds.ymax)-(priv->bounds.ymin)))/(priv->ticks.yj));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1756,16 +1867,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa-JTI-(extents.y_bearing)-(extents.height), tn+((extents.width)/2)-(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa-JTI-hg, tn+(wd/2));
 				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1790,8 +1906,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
-			cairo_set_font_size(cr, (plot->afsize));
+			cairo_identity_matrix(cr);
 			cairo_move_to(cr, xa, to);
 			cairo_line_to(cr, xa+JT, to);
 			cairo_stroke(cr);
@@ -1819,7 +1934,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymax)-((j*((priv->bounds.ymax)-(priv->bounds.ymin))*(tf-yu))/((yl-yu)*(priv->ticks.yj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1838,16 +1953,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa+JTI+(extents.y_bearing)+(extents.height), tn-((extents.width)/2)+(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa+JTI+hg, tn-(wd/2));
 				cairo_set_matrix(cr, &mtr3);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1883,7 +2003,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymax)-((j*((priv->bounds.ymax)-(priv->bounds.ymin))*(tf-yu))/((yl-yu)*(priv->ticks.yj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1902,16 +2022,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa+JTI+(extents.y_bearing)+(extents.height), tn-((extents.width)/2)+(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa+JTI+hg, tn-(wd/2));
 				cairo_set_matrix(cr, &mtr3);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -1936,8 +2061,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
-			cairo_set_font_size(cr, (plot->afsize));
+			cairo_identity_matrix(cr);
 			cairo_move_to(cr, xa, to);
 			cairo_line_to(cr, xa-JT, to);
 			cairo_stroke(cr);
@@ -1965,7 +2089,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymax)-((j*((priv->bounds.ymax)-(priv->bounds.ymin))*(tf-yu))/((yl-yu)*(priv->ticks.yj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -1984,16 +2108,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa-JTI-(extents.y_bearing)-(extents.height), tn+((extents.width)/2)-(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa-JTI-hg, tn+(wd/2));
 				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -2029,7 +2158,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymax)-((j*((priv->bounds.ymax)-(priv->bounds.ymin))*(tf-yu))/((yl-yu)*(priv->ticks.yj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -2048,16 +2177,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa-JTI-(extents.y_bearing)-(extents.height), tn+((extents.width)/2)-(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa-JTI-hg, tn+(wd/2));
 				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -2089,11 +2223,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
-			cairo_set_font_size(cr, (plot->afsize));
+			cairo_identity_matrix(cr);
 			if ((priv->bounds.ymin)>=10)
 			{
-				lr1=G_LN10*((priv->ycs)-floor(log10(priv->bounds.ymin))-2);
+				lr1=G_LN10*((priv->ycs)-floor(log10(priv->bounds.ymin))-1);
 				lr2=(priv->bounds.ymin)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -2112,16 +2245,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->ycs)-floor(log10(-(priv->bounds.ymin)))-3);
+				lr1=G_LN10*((priv->ycs)-floor(log10(-(priv->bounds.ymin)))-2);
 				lr2=(priv->bounds.ymin)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->ycs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, xa+JTI+(extents.y_bearing)+(extents.height), to-((extents.width)/2)+(extents.x_bearing));
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, xa+JTI+hg, to-(wd/2));
 			cairo_set_matrix(cr, &mtr3);
-			cairo_show_text(cr, lbl);
-			cairo_set_matrix(cr, &mtr);
+			pango_cairo_update_layout(cr, lyt);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
+			cairo_identity_matrix(cr);
 			cairo_move_to(cr, xa, to);
 			cairo_line_to(cr, xa+JT, to);
 			cairo_stroke(cr);
@@ -2149,7 +2287,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymin)+((j*((priv->bounds.ymax)-(priv->bounds.ymin))*(yl-tf))/((yl-yu)*(priv->ticks.yj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -2168,16 +2306,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa+JTI+(extents.y_bearing)+(extents.height), tn-((extents.width)/2)+(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa+JTI+hg, tn-(wd/2));
 				cairo_set_matrix(cr, &mtr3);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -2213,7 +2356,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymin)+((j*((priv->bounds.ymax)-(priv->bounds.ymin))*(yl-tf))/((yl-yu)*(priv->ticks.yj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -2232,16 +2375,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa+JTI+(extents.y_bearing)+(extents.height), tn-((extents.width)/2)+(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa+JTI+hg, tn-(wd/2));
 				cairo_set_matrix(cr, &mtr3);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -2266,11 +2414,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
-			cairo_set_font_size(cr, (plot->afsize));
+			cairo_identity_matrix(cr);
 			if ((priv->bounds.ymin)>=10)
 			{
-				lr1=G_LN10*((priv->ycs)-floor(log10(priv->bounds.ymin))-2);
+				lr1=G_LN10*((priv->ycs)-floor(log10(priv->bounds.ymin))-1);
 				lr2=(priv->bounds.ymin)*exp(lr1);
 				lr1=(++lr2)*exp(-lr1);
 			}
@@ -2289,16 +2436,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{
-				lr1=G_LN10*((priv->ycs)-floor(log10(-(priv->bounds.ymin)))-3);
+				lr1=G_LN10*((priv->ycs)-floor(log10(-(priv->bounds.ymin)))-2);
 				lr2=(priv->bounds.ymin)*exp(lr1);
 				lr1=(--lr2)*exp(-lr1);
 			}
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->ycs), "%f", lr1);
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, xa-JTI-(extents.y_bearing)-(extents.height), to+((extents.width)/2)-(extents.x_bearing));
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, xa-JTI-hg, to+(wd/2));
 			cairo_set_matrix(cr, &mtr2);
-			cairo_show_text(cr, lbl);
-			cairo_set_matrix(cr, &mtr);
+			pango_cairo_update_layout(cr, lyt);
+			pango_cairo_show_layout(cr, lyt);
+			g_object_unref(lyt);
+			cairo_identity_matrix(cr);
 			cairo_move_to(cr, xa, to);
 			cairo_line_to(cr, xa-JT, to);
 			cairo_stroke(cr);
@@ -2326,7 +2478,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymin)+((j*((priv->bounds.ymax)-(priv->bounds.ymin))*(yl-tf))/((yl-yu)*(priv->ticks.yj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -2345,16 +2497,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa-JTI-(extents.y_bearing)-(extents.height), tn+((extents.width)/2)-(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa-JTI-hg, tn-(wd/2));
 				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -2390,7 +2547,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr3=(priv->bounds.ymin)+((j*((priv->bounds.ymax)-(priv->bounds.ymin))*(yl-tf))/((yl-yu)*(priv->ticks.yj)));
 				if (lr3>=10)
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-2);
+					lr1=G_LN10*((priv->ycs)-floor(log10(lr3))-1);
 					lr2=lr3*exp(lr1);
 					lr1=(++lr2)*exp(-lr1);
 				}
@@ -2409,16 +2566,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{
-					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-3);
+					lr1=G_LN10*((priv->ycs)-floor(log10(-lr3))-2);
 					lr2=lr3*exp(lr1);
 					lr1=(--lr2)*exp(-lr1);
 				}
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->ycs), "%f", lr1);
-				cairo_text_extents(cr, lbl, &extents);
-				cairo_move_to(cr, xa-JTI-(extents.y_bearing)-(extents.height), tn+((extents.width)/2)-(extents.x_bearing));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				cairo_move_to(cr, xa-JTI-hg, tn-(wd/2));
 				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);
-				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 				cairo_set_line_width(cr, 1);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
@@ -2438,7 +2600,6 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		}
 	}
 	cairo_stroke(cr);
-	pango_font_description_free(dscr);
 	if ((plot->xdata)&&(plot->ydata)) /* plot data */
 	{
 		if (((plot->flagd)&1)!=0)
@@ -2446,14 +2607,14 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_set_line_width(cr, (plot->linew));
 			if (((plot->flagd)&2)!=0) /* lines and points */
 			{
-				for (k=0;k<(plot->ind->len);k++)
+				for (k=0; k<(plot->ind->len); k++)
 				{
-					dtt=fmod(k,(priv->rd->len));
-					ft=g_array_index((priv->rd), gdouble, dtt);
-					lt=g_array_index((priv->gr), gdouble, dtt);
-					xv=g_array_index((priv->bl), gdouble, dtt);
-					yv=g_array_index((priv->al), gdouble, dtt);
-					cairo_set_source_rgba(cr, ft, lt, xv, 1);
+					dtt=fmod(k,(plot->rd->len));
+					vv=g_array_index((plot->rd), gdouble, dtt);
+					wv=g_array_index((plot->gr), gdouble, dtt);
+					zv=g_array_index((plot->bl), gdouble, dtt);
+					av=g_array_index((plot->al), gdouble, dtt);
+					cairo_set_source_rgba(cr, vv, wv, zv, av);
 					ft=g_array_index((plot->ind), gint, k);
 					lt=g_array_index((plot->sizes), gint, k)+ft;
 					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
@@ -2801,12 +2962,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				for (k=0;k<(plot->ind->len);k++)
 				{
-					dtt=fmod(k,(priv->rd->len));
-					ft=g_array_index((priv->rd), gdouble, dtt);
-					lt=g_array_index((priv->gr), gdouble, dtt);
-					xv=g_array_index((priv->bl), gdouble, dtt);
-					yv=g_array_index((priv->al), gdouble, dtt);
-					cairo_set_source_rgba(cr, ft, lt, xv, 1);
+					dtt=fmod(k,(plot->rd->len));
+					vv=g_array_index((plot->rd), gdouble, dtt);
+					wv=g_array_index((plot->gr), gdouble, dtt);
+					zv=g_array_index((plot->bl), gdouble, dtt);
+					av=g_array_index((plot->al), gdouble, dtt);
+					cairo_set_source_rgba(cr, vv, wv, zv, av);
 					ft=g_array_index((plot->ind), gint, k);
 					lt=g_array_index((plot->sizes), gint, k)+ft;
 					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
@@ -3161,12 +3322,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		{
 			for (k=0;k<(plot->ind->len);k++)
 			{
-				dtt=fmod(k,(priv->rd->len));
-				ft=g_array_index((priv->rd), gdouble, dtt);
-				lt=g_array_index((priv->gr), gdouble, dtt);
-				xv=g_array_index((priv->bl), gdouble, dtt);
-				yv=g_array_index((priv->al), gdouble, dtt);
-				cairo_set_source_rgba(cr, ft, lt, xv, 1);
+				dtt=fmod(k,(plot->rd->len));
+				vv=g_array_index((plot->rd), gdouble, dtt);
+				wv=g_array_index((plot->gr), gdouble, dtt);
+				zv=g_array_index((plot->bl), gdouble, dtt);
+				av=g_array_index((plot->al), gdouble, dtt);
+				cairo_set_source_rgba(cr, vv, wv, zv, av);
 				ft=g_array_index((plot->ind), gint, k);
 				lt=g_array_index((plot->sizes), gint, k)+ft;
 				xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
@@ -3195,10 +3356,10 @@ static void plot_linear_redraw(GtkWidget *widget)
 {
 	GdkRegion *region;
 
-	if (!widget->window) return;
+	if (!(widget->window)) return;
 	region=gdk_drawable_get_clip_region(widget->window);
-	gdk_window_invalidate_region(widget->window, region, TRUE);
-	gdk_window_process_updates(widget->window, TRUE);
+	gdk_window_invalidate_region((widget->window), region, TRUE);
+	gdk_window_process_updates((widget->window), TRUE);
 	gdk_region_destroy(region);
 }
 
@@ -3207,10 +3368,10 @@ gboolean plot_linear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdo
 	PlotLinearPrivate *priv;
 
 	priv=PLOT_LINEAR_GET_PRIVATE(widget);
-	priv->bounds.xmin=xn;
-	priv->bounds.xmax=xx;
-	priv->bounds.ymin=yn;
-	priv->bounds.ymax=yx;
+	(priv->bounds.xmin)=xn;
+	(priv->bounds.xmax)=xx;
+	(priv->bounds.ymin)=yn;
+	(priv->bounds.ymax)=yx;
 	plot_linear_redraw(widget);
 	return FALSE;
 }
@@ -3733,14 +3894,16 @@ static void plot_linear_finalise(PlotLinear *plot)
 	priv=PLOT_LINEAR_GET_PRIVATE(plot);
 	if (plot->xlab) g_free(plot->xlab);
 	if (plot->ylab) g_free(plot->ylab);
+	if (plot->afont) pango_font_description_free(plot->afont);
+	if (plot->lfont) pango_font_description_free(plot->lfont);
 	if (plot->xdata) g_array_free((plot->xdata), FALSE);
 	if (plot->ydata) g_array_free((plot->ydata), FALSE);
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	if (priv->rd) g_array_free((priv->rd), FALSE);
-	if (priv->gr) g_array_free((priv->gr), FALSE);
-	if (priv->bl) g_array_free((priv->bl), FALSE);
-	if (priv->al) g_array_free((priv->al), FALSE);
+	if (plot->rd) g_array_free((plot->rd), FALSE);
+	if (plot->gr) g_array_free((plot->gr), FALSE);
+	if (plot->bl) g_array_free((plot->bl), FALSE);
+	if (plot->al) g_array_free((plot->al), FALSE);
 }
 
 static void plot_linear_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -3787,14 +3950,15 @@ static void plot_linear_get_property(GObject *object, guint prop_id, GValue *val
 	}
 }
 
-static gboolean plot_linear_expose(GtkWidget *plot, GdkEventExpose *event)
+static gboolean plot_linear_expose(GtkWidget *widget, GdkEventExpose *event)
 {
 	cairo_t *cr;
 
-	cr=gdk_cairo_create(plot->window);
+	cr=gdk_cairo_create(widget->window);
 	cairo_rectangle(cr, event->area.x, event->area.y, event->area.width, event->area.height);
 	cairo_clip(cr);
-	draw(plot, cr);
+	draw(widget, cr);
+	drawz(widget, cr);
 	cairo_destroy(cr);
 	return FALSE;
 }
@@ -3842,49 +4006,52 @@ static void plot_linear_init(PlotLinear *plot)
 	{(priv->flaga)=0; (priv->flagr)=0;}
 	{(plot->xdata)=NULL; (plot->ydata)=NULL; (plot->ind)=NULL; (plot->sizes)=NULL;}
 	{(plot->xlab)=g_strdup("Domain"); (plot->ylab)=g_strdup("Amplitude");}
-	{(plot->afsize)=12; (plot->lfsize)=12;}
 	{(plot->flagd)=1; (plot->ptsize)=5; (plot->linew)=2;}
 	(plot->zmode)=6;
 	{(plot->xps)=0; (plot->yps)=0;}
-	(priv->rd)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
-	(priv->gr)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
-	(priv->bl)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
-	(priv->al)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
+	{(plot->afont)=pango_font_description_new(); (plot->lfont)=pango_font_description_new();}
+	{pango_font_description_set_family((plot->afont), "sans"); pango_font_description_set_family((plot->lfont), "sans");}
+	{pango_font_description_set_style((plot->afont), PANGO_STYLE_NORMAL); pango_font_description_set_style((plot->lfont), PANGO_STYLE_NORMAL);}
+	{pango_font_description_set_size((plot->afont), 12*PANGO_SCALE); pango_font_description_set_size((plot->lfont), 12*PANGO_SCALE);}
+	(plot->rd)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 7);
+	(plot->gr)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 7);
+	(plot->bl)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 7);
+	(plot->al)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 7);
 	val=0;
-	g_array_append_val((priv->rd), val);
-	g_array_append_val((priv->gr), val);
-	g_array_append_val((priv->bl), val);
-	g_array_append_val((priv->gr), val);
-	g_array_append_val((priv->bl), val);
-	g_array_append_val((priv->bl), val);
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	g_array_append_val((plot->bl), val);
 	val=1;
-	g_array_append_val((priv->rd), val);
-	g_array_append_val((priv->gr), val);
-	g_array_append_val((priv->bl), val);
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
 	val=0;
-	g_array_append_val((priv->rd), val);
-	g_array_append_val((priv->gr), val);
-	g_array_append_val((priv->bl), val);
-	g_array_append_val((priv->rd), val);
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	g_array_append_val((plot->rd), val);
 	val=1.0;
-	g_array_append_val((priv->gr), val);
-	g_array_append_val((priv->bl), val);
-	g_array_append_val((priv->rd), val);
-	g_array_append_val((priv->gr), val);
-	g_array_append_val((priv->bl), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
 	val=0;
-	g_array_append_val((priv->rd), val);
-	g_array_append_val((priv->gr), val);
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
 	val=1;
-	g_array_append_val((priv->rd), val);
+	g_array_append_val((plot->rd), val);
 	val=0.8;
-	g_array_append_val((priv->al), val);
-	g_array_append_val((priv->al), val);
-	g_array_append_val((priv->al), val);
-	g_array_append_val((priv->al), val);
-	g_array_append_val((priv->al), val);
-	g_array_append_val((priv->al), val);
-	g_array_append_val((priv->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
 }
 
 GtkWidget *plot_linear_new(void) {return g_object_new(PLOT_TYPE_LINEAR, NULL);}
