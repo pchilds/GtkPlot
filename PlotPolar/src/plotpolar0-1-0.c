@@ -79,6 +79,19 @@
 #define I_MY_2_PI 0.1591549430918953357688837633725143620344596457405
 #define L10_2PT5 0.3979400086720376095725222105510139464636202370758
 #define L10_5 0.6989700043360188047862611052755069732318101185379
+typedef enum
+{
+	PLOT_POLAR_BORDERS_IN = 1 << 0,
+	PLOT_POLAR_BORDERS_OUT = 1 << 1,
+	PLOT_POLAR_BORDERS_CW = 1 << 2,
+	PLOT_POLAR_BORDERS_CCW = 1 << 3
+} PlotPolarBorders;
+typedef enum
+{
+	PLOT_POLAR_AXES_CW = 1 << 0,
+	PLOT_POLAR_AXES_DN = 1 << 1,
+	PLOT_POLAR_AXES_NL = 1 << 2
+} PlotPolarAxes;
 G_DEFINE_TYPE (PlotPolar, plot_polar, GTK_TYPE_DRAWING_AREA);
 enum {PROP_0, PROP_BRN, PROP_BRX, PROP_BTN, PROP_BTX, PROP_CR, PROP_CT, PROP_RT, PROP_ZIT, PROP_ZTM, PROP_ZC, PROP_RC, PROP_TC};
 enum {MOVED, LAST_SIGNAL};
@@ -89,30 +102,23 @@ struct pt {gdouble r, th;};
 typedef struct _PlotPolarPrivate PlotPolarPrivate;
 struct _PlotPolarPrivate {struct xs bounds, rescale; struct pt centre; struct tk ticks; gint x0, y0; gdouble s, wr; guint rcs, thcs, flaga, flagr;};
 
-static void draw(GtkWidget *widget, cairo_t *cr)
+static void drawz(GtkWidget *widget, cairo_t *cr)
 {
-	PlotPolarPrivate *priv;
 	PlotPolar *plot;
-	gint j, k, xw, yw, kx, j0, jl, xs, wd, hg;
-	gdouble dtt, tt, dtr, thx, thn, dt, sx, csx, ssx, dr1, drs, drc, dz, rt, dwr, rl, ctx, ctn, stx, stn, r, th, rn, tn, x, y;
-	gchar lbl[10];
-	gchar *str1=NULL, *str2=NULL, *str3;
-	cairo_text_extents_t extents;
-	PangoLayout *lyt;
-	PangoFontDescription *dscr1, *dscr2;
-	cairo_matrix_t mtr, mtr2;
+	gint xw;
+	gdouble dt;
 
 	xw=(widget->allocation.width);
-	yw=(widget->allocation.height);
 	plot=PLOT_POLAR(widget);
-	cairo_set_line_width(cr, 1); /* draw zoom boxes */
+	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	cairo_set_line_width(cr, 1);
 	cairo_rectangle(cr, xw-21.5, 0.5, 10, 10);
 	cairo_rectangle(cr, xw-10.5, 0.5, 10, 10);
 	cairo_move_to(cr, xw-9, 5.5);
 	cairo_line_to(cr, xw-2, 5.5);
 	cairo_move_to(cr, xw-5.5, 2);
 	cairo_line_to(cr, xw-5.5, 9);
-	if (((plot->zmode)&1)==0)
+	if (((plot->zmode)&PLOT_POLAR_ZOOM_OUT)==0)
 	{
 		cairo_move_to(cr, xw-6.5, 2.5);
 		cairo_line_to(cr, xw-5.5, 2);
@@ -135,7 +141,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		cairo_line_to(cr, xw-3.5, 3.5);
 	}
 	cairo_stroke(cr);
-	if (((plot->zmode)&8)!=0)
+	if (((plot->zmode)&PLOT_POLAR_ZOOM_SGL)!=0)
 	{
 		cairo_move_to(cr, xw-20, 2);
 		cairo_line_to(cr, xw-13, 9);
@@ -148,7 +154,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		cairo_save(cr);
 		dt=1;
 		cairo_set_dash(cr, &dt, 1, 0);
-		if (((plot->zmode)&4)!=0)
+		if (((plot->zmode)&PLOT_POLAR_ZOOM_AZM)!=0)
 		{
 			cairo_move_to(cr, xw-19.5, 3);
 			cairo_line_to(cr, xw-17.5, 9);
@@ -156,7 +162,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_line_to(cr, xw-15.5, 9);
 			cairo_stroke(cr);
 		}
-		if (((plot->zmode)&2)!=0)
+		if (((plot->zmode)&PLOT_POLAR_ZOOM_RDL)!=0)
 		{
 			cairo_move_to(cr, xw-20, 3.5);
 			cairo_curve_to(cr, xw-16.5, 2, xw-16.5, 2, xw-13, 3.5);
@@ -166,6 +172,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		}
 		cairo_restore(cr);
 	}
+}
+
+static void draw(GtkWidget *widget, cairo_t *cr)
+{
+	PlotPolarPrivate *priv;
+	PlotPolar *plot;
+	gint j, k, xw, yw, kx, j0, jl, xt, wd, hg, ft, lt;
+	gdouble dtt, tt, dtr, thx, thn, dt, sx, csx, ssx, dr1, drs, drc, dz, rt, dwr, rl, ctx, ctn, stx, stn, r, th, rn, tn, x, y, vv, wv, xv, yv;
+	gchar lbl[10];
+	gchar *str1=NULL, *str2=NULL, *str3;
+	PangoLayout *lyt;
+	cairo_matrix_t mtr;
+
+	xw=(widget->allocation.width);
+	yw=(widget->allocation.height);
+	plot=PLOT_POLAR(widget);
 	priv=PLOT_POLAR_GET_PRIVATE(plot);/* determine scale and fit for graph */
 	if ((priv->bounds.rmax)<0) {(priv->bounds.rmax)=-(priv->bounds.rmax); (priv->bounds.rmin)=-(priv->bounds.rmin);}
 	if ((priv->bounds.rmax)<(priv->bounds.rmin))
@@ -178,25 +200,34 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	else (priv->wr)=WGP*sqrt(xw*yw);
 	if ((priv->centre.r)<=0) (priv->centre.r)=0;
 	else if ((priv->centre.r)<(priv->bounds.rmax)) (priv->centre.r)=(priv->bounds.rmax);
-	cairo_set_source_rgb(cr, 0, 0, 0);
+	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_set_line_width(cr, 2);
-	cairo_select_font_face(cr, "sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size(cr, plot->afsize);
-	cairo_text_extents(cr, "8", &extents);
-	ctx=(extents.width)*((priv->thcs)-1);
+	lyt=pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(lyt, (plot->afont));
+	str1=g_strdup("8");
+	pango_layout_set_text(lyt, str1, -1);
+	pango_layout_get_pixel_size(lyt, &wd, &hg);
+	ctx=wd;
+	g_free(str1);
+	g_object_unref(lyt);
+	ctx*=((priv->thcs)-1);
 	ctx*=ctx;
-	tt=(plot->afsize);
-	tt*=tt;
+	tt=hg*hg;
 	tt+=ctx;
 	tt=sqrt(tt);
-	dtr=(plot->lfsize)+JTI;
+	lyt=pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(lyt, (plot->lfont));
+	str1=g_strdup("8");
+	pango_layout_set_text(lyt, str1, -1);
+	pango_layout_get_pixel_size(lyt, &wd, &hg);
+	dtr=hg;
+	g_free(str1);
+	dtr=hg;
+	g_object_unref(lyt);
+	dtr+=JTI;
 	dtt=tt+dtr;
-	dtr+=(plot->afsize);
+	dtr+=hg;
 	tt=(tt/2)+JTI;
-	mtr.xx=1;
-	mtr.xy=0;
-	mtr.yx=0;
-	mtr.yy=1;
 	dr1=(priv->bounds.rmax)-(priv->bounds.rmin);
 	drs=((priv->centre.r)-(priv->bounds.rmin))*sin(priv->centre.th);
 	drc=((priv->centre.r)-(priv->bounds.rmin))*cos(priv->centre.th);
@@ -207,10 +238,6 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	while (thn>G_PI) thn-=MY_2PI;
 	while (thn<NMY_PI) thn+=MY_2PI;
 	dt=thx-thn;
-	dscr1=pango_font_description_new();
-	pango_font_description_set_family(dscr1, "sans");
-	pango_font_description_set_weight(dscr1, PANGO_WEIGHT_NORMAL);
-	pango_font_description_set_absolute_size(dscr1, (plot->lfsize)*PANGO_SCALE);
 	if (((dt>DZE)||(dt<NZE))&&(((dt+MY_2PI)>DZE)||((dt+MY_2PI)<NZE))&&(((dt-MY_2PI)>DZE)||((dt-MY_2PI)<NZE)))
 	{
 		if (((priv->centre.th)>(priv->bounds.thmax))||((priv->centre.th)<(priv->bounds.thmin)))
@@ -231,7 +258,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			else (priv->s)=((xw/2)-((priv->wr)*(1-cos(priv->centre.th))))/(priv->s); /* check x0 to xw radial to get maximum scale */
 			if ((thx+thn)>=0)
 			{ /* radial label ccw top to axis azimuthal label bottom to axis */
-				(priv->flaga)=2;
+				(priv->flaga)=PLOT_POLAR_AXES_DN;
 				sx=dr1-drs;
 				if (sx>DZE)
 				{ /* check y0 to 0 radial to get maximum scale */
@@ -271,7 +298,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{ /* radial label cw bottom to axis azimuthal label top to axis */
-				(priv->flaga)=1;
+				(priv->flaga)=PLOT_POLAR_AXES_CW;
 				sx=dr1+drs;
 				if (sx>DZE)
 				{ /* check y0 to yw radial to get maximum scale */
@@ -314,7 +341,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		{
 			if ((thx+thn)>=G_PI)
 			{ /* radial label ccw top to axis azimuthal label bottom to axis */
-				(priv->flaga)=2;
+				(priv->flaga)=PLOT_POLAR_AXES_DN;
 				(priv->s)=drs-(dr1*stn); /* check y3'=yw to get maximum scale */
 				if (((priv->s)>DZE)||((priv->s)<NZE)) (priv->s)=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))+(yw/2))/(priv->s);
 				else (priv->s)=G_MAXDOUBLE;
@@ -357,7 +384,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else if ((thx+thn)>=0)
 			{ /* radial label cw top to axis azimuthal label bottom to axis */
-				(priv->flaga)=3;
+				(priv->flaga)=(PLOT_POLAR_AXES_DN|PLOT_POLAR_AXES_CW);
 				if (thn>=0)
 				{/* check y4'=yw to get maximum scale */
 					if ((drs>DZE)||(drs<NZE)) (priv->s)=(((priv->wr)*(stn-(sin(priv->centre.th))))-(dtt*ctn)+(yw/2))/drs;
@@ -473,7 +500,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{ /* radial label cw bottom to axis azimuthal label top to axis */
-				(priv->flaga)=1;
+				(priv->flaga)=PLOT_POLAR_AXES_CW;
 				if ((drs>DZE)||(drs<NZE)) (priv->s)=(((priv->wr)*(stn-(sin(priv->centre.th))))-(dtt*ctn)-(yw/2))/drs; /* check y4'=0 to get maximum scale */
 				else (priv->s)=G_MAXDOUBLE;
 				sx=(dr1*ctn)-drc;
@@ -523,7 +550,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				if ((thx+thn)>=G_PI)
 				{ /* radial label cw bottom to axis azimuthal label top to axis */
-					(priv->flaga)=1;
+					(priv->flaga)=PLOT_POLAR_AXES_CW;
 					sx=dr1+drs;
 					if (sx>DZE)
 					{/* check radial y0 to yw */
@@ -641,7 +668,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else if ((thx+thn)>=NMY_PI)
 				{ /* radial label cw top to axis azimuthal label bottom to axis */
-					(priv->flaga)=3;
+					(priv->flaga)=(PLOT_POLAR_AXES_DN|PLOT_POLAR_AXES_CW);
 					sx=dr1-drs;
 					if (sx>DZE)
 					{/* check radial y0 to 0 */
@@ -716,7 +743,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else
 				{ /* radial label ccw top to axis azimuthal label bottom to axis */
-					(priv->flaga)=2;
+					(priv->flaga)=PLOT_POLAR_AXES_DN;
 					sx=dr1-drs;
 					if (sx>DZE)
 					{/* check radial y0 to 0 */
@@ -760,7 +787,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else if ((thx+thn)>=0)
 			{ /* radial label cw bottom to axis azimuthal label top to axis */
-				(priv->flaga)=1;
+				(priv->flaga)=PLOT_POLAR_AXES_CW;
 				if (thx<=NMY_PI_2)
 				{
 					sx=drs-(dr1*stx);
@@ -823,7 +850,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else
 			{ /* radial label ccw top to axis azimuthal label bottom to axis */
-				(priv->flaga)=2;
+				(priv->flaga)=PLOT_POLAR_AXES_DN;
 				if (thn>=G_PI_2)
 				{
 					sx=drs-(dr1*stn);
@@ -893,7 +920,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		else dz=dt/(kx*(priv->ticks.zin));
 		cairo_move_to(cr, (priv->x0)+((priv->wr)*ctn), (priv->y0)-((priv->wr)*stn));
 		cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*ctn), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*stn));
-		if (((plot->flags)&1)==0)
+		if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0)
 		{
 			for (j=1; j<(priv->ticks.zin); j++)
 			{
@@ -911,11 +938,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_move_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
 				cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
 				cairo_stroke(cr);
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_ascii_dtostr(lbl, (priv->thcs), round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
-				cairo_text_extents(cr, lbl, &extents);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				rl=(priv->wr)+tt+((priv->s)*dr1);
-				cairo_move_to(cr, (priv->x0)+(rl*csx)-((extents.width)/2)-(extents.x_bearing), (priv->y0)-(rl*ssx)-((extents.height)/2)-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				cairo_move_to(cr, (priv->x0)+(rl*csx)-(wd/2), (priv->y0)-(rl*ssx)-(hg/2));
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 			}
 		}
 		else
@@ -925,10 +956,6 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			csx=fmod(dwr,1);
 			if ((csx<DZE)||((1-csx)<DZE)) /* check if angles can be rationalised */
 			{
-				dscr2=pango_font_description_new();
-				pango_font_description_set_family(dscr2, "sans");
-				pango_font_description_set_weight(dscr2, PANGO_WEIGHT_NORMAL);
-				pango_font_description_set_absolute_size(dscr2, (plot->afsize)*PANGO_SCALE);
 				j0=round(dwr);
 				jl=2+floor(log10(j0));
 				g_ascii_dtostr(lbl, jl, j0);
@@ -961,7 +988,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						g_free(str1);
 					}
 					lyt=pango_cairo_create_layout(cr); /* draw azimuthal tick labels */
-					pango_layout_set_font_description(lyt, dscr2);
+					pango_layout_set_font_description(lyt, (plot->afont));
 					pango_layout_set_text(lyt, str3, -1);
 					pango_layout_get_pixel_size(lyt, &wd, &hg);
 					rl=(priv->wr)+tt+((priv->s)*dr1);
@@ -970,7 +997,6 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					g_object_unref(lyt);
 					g_free(str3);
 				}
-				pango_font_description_free(dscr2);
 				g_free(str2);
 			}
 			else
@@ -991,11 +1017,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					cairo_move_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
 					cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
 					cairo_stroke(cr);
+					lyt=pango_cairo_create_layout(cr);
+					pango_layout_set_font_description(lyt, (plot->afont));
 					g_snprintf(lbl, (priv->thcs), "%f", sx);/* output radial value as is */
-					cairo_text_extents(cr, lbl, &extents);
+					pango_layout_set_text(lyt, lbl, -1);
+					pango_layout_get_pixel_size(lyt, &wd, &hg);
 					rl=(priv->wr)+tt+((priv->s)*dr1);
-					cairo_move_to(cr, (priv->x0)+(rl*csx)-((extents.width)/2)-(extents.x_bearing), (priv->y0)-(rl*ssx)-((extents.height)/2)-(extents.y_bearing));
-					cairo_show_text(cr, lbl);
+					cairo_move_to(cr, (priv->x0)+(rl*csx)-(wd/2), (priv->y0)-(rl*ssx)-(hg/2));
+					pango_cairo_show_layout(cr, lyt);
+					g_object_unref(lyt);
 				}
 			}
 		}
@@ -1017,10 +1047,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		kx=1;
 		if ((priv->flaga)==0)
 		{
-			mtr2.xx=ctx;
-			mtr2.xy=stx;
-			mtr2.yx=-stx;
-			mtr2.yy=ctx;
+			{mtr.xx=ctx; mtr.xy=stx; mtr.yx=-stx; mtr.yy=ctx; mtr.x0=0; mtr.y0=0;}
 			for (j=1; j<(priv->ticks.r); j++)
 			{
 				rt+=dwr;
@@ -1045,40 +1072,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					kx*=2;
 				}
 				cairo_stroke(cr);
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
-				cairo_text_extents(cr, lbl, &extents);
-				sx=rt-((extents.width)/2)-(extents.x_bearing);
-				dz=-JTI-(extents.height)-(extents.y_bearing);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				sx=rt-(wd/2);
+				dz=-JTI-hg;
 				cairo_move_to(cr, (priv->x0)+(sx*ctx)+(dz*stx), (priv->y0)+(dz*ctx)-(sx*stx));
-				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);/* draw radial tick labels*/
 				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 			}
 			rt+=dwr;
 			cairo_new_sub_path(cr);
 			cairo_arc(cr, (priv->x0), (priv->y0), rt, -thx, -thn);
 			cairo_stroke(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw radial label */
-			pango_layout_set_font_description(lyt, dscr1);
+			pango_layout_set_font_description(lyt, (plot->lfont));
 			pango_layout_set_text(lyt, (plot->rlab), -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			sx=(priv->wr)+(((dr1*(priv->s))-wd)/2);
 			cairo_move_to(cr, (priv->x0)+(sx*ctx)-(dtr*stx), (priv->y0)-(dtr*ctx)-(sx*stx));
-			cairo_set_matrix(cr, &mtr2);
+			cairo_set_matrix(cr, &mtr);
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
+			cairo_identity_matrix(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
-			pango_layout_set_font_description(lyt, dscr1);
+			pango_layout_set_font_description(lyt, (plot->lfont));
 			g_object_unref(lyt);
 		}
-		else if ((priv->flaga)==2)
+		else if ((priv->flaga)==PLOT_POLAR_AXES_DN)
 		{
-			mtr2.xx=-ctx;
-			mtr2.xy=-stx;
-			mtr2.yx=stx;
-			mtr2.yy=-ctx;
+			{mtr.xx=-ctx; mtr.xy=-stx; mtr.yx=stx; mtr.yy=-ctx;}
 			for (j=1; j<(priv->ticks.r); j++)
 			{
 				rt+=dwr;
@@ -1103,41 +1132,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					kx*=2;
 				}
 				cairo_stroke(cr);
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
-				cairo_text_extents(cr, lbl, &extents);
-				sx=rt+((extents.width)/2)+(extents.x_bearing);
-				dz=-JTI+(extents.y_bearing);
-				cairo_move_to(cr, (priv->x0)+(sx*ctx)+(dz*stx), (priv->y0)+(dz*ctx)-(sx*stx));
-				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);/* draw radial tick labels*/
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				sx=rt+(wd/2);
+				cairo_move_to(cr, (priv->x0)+(sx*ctx)-(JTI*stx), (priv->y0)-(JTI*ctx)-(sx*stx));
 				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 			}
 			rt+=dwr;
 			cairo_new_sub_path(cr);
 			cairo_arc(cr, (priv->x0), (priv->y0), rt, -thx, -thn);
 			cairo_stroke(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw radial label */
-			pango_layout_set_font_description(lyt, dscr1);
+			pango_layout_set_font_description(lyt, (plot->lfont));
 			pango_layout_set_text(lyt, (plot->rlab), -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			sx=(priv->wr)+(((dr1*(priv->s))+wd)/2);
 			dz=hg-dtr;
 			cairo_move_to(cr, (priv->x0)+(sx*ctx)+(dz*stx), (priv->y0)+(dz*ctx)-(sx*stx));
-			cairo_set_matrix(cr, &mtr2);
+			cairo_set_matrix(cr, &mtr);
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
+			cairo_identity_matrix(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
-			pango_layout_set_font_description(lyt, dscr1);
+			pango_layout_set_font_description(lyt, (plot->lfont));
 			g_object_unref(lyt);
 		}
-		else if ((priv->flaga)==3)
+		else if ((priv->flaga)==(PLOT_POLAR_AXES_DN|PLOT_POLAR_AXES_CW))
 		{
-			mtr2.xx=ctn;
-			mtr2.xy=stn;
-			mtr2.yx=-stn;
-			mtr2.yy=ctn;
+			{mtr.xx=ctn; mtr.xy=stn; mtr.yx=-stn; mtr.yy=ctn;}
 			for (j=1; j<(priv->ticks.r); j++)
 			{
 				rt+=dwr;
@@ -1162,41 +1192,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					kx*=2;
 				}
 				cairo_stroke(cr);
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
-				cairo_text_extents(cr, lbl, &extents);
-				sx=rt-((extents.width)/2)-(extents.x_bearing);
-				dz=JTI-(extents.y_bearing);
-				cairo_move_to(cr, (priv->x0)+(sx*ctn)+(dz*stn), (priv->y0)+(dz*ctn)-(sx*stn));
-				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);/* draw radial tick labels*/
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				sx=rt-(wd/2);
+				cairo_move_to(cr, (priv->x0)+(sx*ctn)+(JTI*stn), (priv->y0)+(JTI*ctn)-(sx*stn));
 				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 			}
 			rt+=dwr;
 			cairo_new_sub_path(cr);
 			cairo_arc(cr, (priv->x0), (priv->y0), rt, -thx, -thn);
 			cairo_stroke(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw radial label */
-			pango_layout_set_font_description(lyt, dscr1);
+			pango_layout_set_font_description(lyt, (plot->lfont));
 			pango_layout_set_text(lyt, (plot->rlab), -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			sx=(priv->wr)+(((dr1*(priv->s))-wd)/2);
 			dz=dtr-hg;
 			cairo_move_to(cr, (priv->x0)+(sx*ctn)+(dz*stn), (priv->y0)+(dz*ctn)-(sx*stn));
-			cairo_set_matrix(cr, &mtr2);
+			cairo_set_matrix(cr, &mtr);
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
+			cairo_identity_matrix(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
-			pango_layout_set_font_description(lyt, dscr1);
+			pango_layout_set_font_description(lyt, (plot->lfont));
 			g_object_unref(lyt);
 		}
 		else
 		{
-			mtr2.xx=-ctn;
-			mtr2.xy=-stn;
-			mtr2.yx=stn;
-			mtr2.yy=-ctn;
+			{mtr.xx=-ctn; mtr.xy=-stn; mtr.yx=stn; mtr.yy=-ctn;}
 			for (j=1; j<(priv->ticks.r); j++)
 			{
 				rt+=dwr;
@@ -1221,32 +1252,37 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					kx*=2;
 				}
 				cairo_stroke(cr);
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
-				cairo_text_extents(cr, lbl, &extents);
-				sx=rt+((extents.width)/2)+(extents.x_bearing);
-				dz=JTI+(extents.height)+(extents.y_bearing);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
+				sx=rt+(wd/2);
+				dz=JTI+hg;
 				cairo_move_to(cr, (priv->x0)+(sx*ctn)+(dz*stn), (priv->y0)+(dz*ctn)-(sx*stn));
-				cairo_set_matrix(cr, &mtr2);
-				cairo_show_text(cr, lbl);/* draw radial tick labels*/
 				cairo_set_matrix(cr, &mtr);
+				pango_cairo_update_layout(cr, lyt);
+				pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
+				g_object_unref(lyt);
+				cairo_identity_matrix(cr);
 			}
 			rt+=dwr;
 			cairo_new_sub_path(cr);
 			cairo_arc(cr, (priv->x0), (priv->y0), rt, -thx, -thn);
 			cairo_stroke(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw radial label */
-			pango_layout_set_font_description(lyt, dscr1);
+			pango_layout_set_font_description(lyt, (plot->lfont));
 			pango_layout_set_text(lyt, (plot->rlab), -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			sx=(priv->wr)+(((dr1*(priv->s))+wd)/2);
 			cairo_move_to(cr, (priv->x0)+(sx*ctn)+(dtr*stn), (priv->y0)+(dtr*ctn)-(sx*stn));
-			cairo_set_matrix(cr, &mtr2);
+			cairo_set_matrix(cr, &mtr);
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_set_matrix(cr, &mtr);
+			cairo_identity_matrix(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
-			pango_layout_set_font_description(lyt, dscr1);
+			pango_layout_set_font_description(lyt, (plot->lfont));
 			g_object_unref(lyt);
 		}
 	}
@@ -1273,7 +1309,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			sx=((yw/2)-dtt)/sx;
 			if (sx<(priv->s)) (priv->s)=sx;
 		}
-		(priv->flaga)=4;
+		(priv->flaga)=PLOT_POLAR_AXES_NL;
 		(priv->x0)=(xw/2)-(drc*(priv->s));
 		(priv->y0)=(yw/2)+(drs*(priv->s));
 		sx=(priv->bounds.thmin);
@@ -1283,7 +1319,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		ssx=sin(sx);
 		cairo_move_to(cr, (priv->x0), (priv->y0));
 		cairo_line_to(cr, (priv->x0)+((JT+((priv->s)*dr1))*csx), (priv->y0)-((JT+((priv->s)*dr1))*ssx));
-		if (((plot->flags)&1)==0)
+		if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0)
 		{
 			for (j=1; j<(priv->ticks.zin); j++)
 			{
@@ -1301,19 +1337,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_move_to(cr, (priv->x0), (priv->y0));
 				cairo_line_to(cr, (priv->x0)+((JT+((priv->s)*dr1))*csx), (priv->y0)-((JT+((priv->s)*dr1))*ssx));
 				cairo_stroke(cr);
+				lyt=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				g_snprintf(lbl, (priv->thcs), "%d", (gint) round(sx*I180_MY_PI));/* draw azimuthal tick labels */
-				cairo_text_extents(cr, lbl, &extents);
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				rl=tt+((priv->s)*dr1);
-				cairo_move_to(cr, (priv->x0)+(rl*csx)-((extents.width)/2)-(extents.x_bearing), (priv->y0)-(rl*ssx)-((extents.height)/2)-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				cairo_move_to(cr, (priv->x0)+(rl*csx)-(wd/2), (priv->y0)-(rl*ssx)-(hg/2));
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 			}
 		}
-		else if (fmod((priv->ticks.zin),2)==0) /* change if necessary */
+		else if (fmod((priv->ticks.zin),2)==0)
 		{
-			dscr2=pango_font_description_new();
-			pango_font_description_set_family(dscr2, "sans");
-			pango_font_description_set_weight(dscr2, PANGO_WEIGHT_NORMAL);
-			pango_font_description_set_absolute_size(dscr2, (plot->afsize)*PANGO_SCALE);
 			jl=2+floor(log10((priv->ticks.zin)/2));
 			g_ascii_dtostr(lbl, jl, ((priv->ticks.zin)/2));
 			str2=g_strdup(lbl);
@@ -1345,7 +1381,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					g_free(str1);
 				}
 				lyt=pango_cairo_create_layout(cr); /* draw azimuthal tick labels */
-				pango_layout_set_font_description(lyt, dscr2);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				pango_layout_set_text(lyt, str3, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				rl=tt+((priv->s)*dr1);
@@ -1354,15 +1390,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				g_object_unref(lyt);
 				g_free(str3);
 			}
-			pango_font_description_free(dscr2);
 			g_free(str2);
 		}
 		else
 		{
-			dscr2=pango_font_description_new();
-			pango_font_description_set_family(dscr2, "sans");
-			pango_font_description_set_weight(dscr2, PANGO_WEIGHT_NORMAL);
-			pango_font_description_set_absolute_size(dscr2, (plot->afsize)*PANGO_SCALE);
 			jl=2+floor(log10(priv->ticks.zin));
 			g_ascii_dtostr(lbl, jl, (priv->ticks.zin));
 			str2=g_strdup(lbl);
@@ -1394,7 +1425,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					g_free(str1);
 				}
 				lyt=pango_cairo_create_layout(cr); /* draw azimuthal tick labels */
-				pango_layout_set_font_description(lyt, dscr2);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				pango_layout_set_text(lyt, str3, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				rl=tt+((priv->s)*dr1);
@@ -1403,7 +1434,6 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				g_object_unref(lyt);
 				g_free(str3);
 			}
-			pango_font_description_free(dscr2);
 			g_free(str2);
 		}
 		for (k=1; k<kx; k++)
@@ -1442,24 +1472,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				kx*=2;
 			}
 			cairo_stroke(cr);
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->rcs), "%f", (rt/(priv->s)));
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, (priv->x0)+rt-((extents.width)/2)-(extents.x_bearing), (priv->y0)+JTI-(extents.y_bearing));
-			cairo_show_text(cr, lbl);/* draw radial tick labels*/
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, (priv->x0)+rt-(wd/2), (priv->y0)+JTI);
+			pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
+			g_object_unref(lyt);
 		}
 		rt+=dwr;
 		cairo_new_sub_path(cr);
 		cairo_arc(cr, (priv->x0), (priv->y0), rt, NMY_PI, G_PI);
 		cairo_stroke(cr);
 		lyt=pango_cairo_create_layout(cr); /* draw radial label */
-		pango_layout_set_font_description(lyt, dscr1);
+		pango_layout_set_font_description(lyt, (plot->lfont));
 		pango_layout_set_text(lyt, (plot->rlab), -1);
 		pango_layout_get_pixel_size(lyt, &wd, &hg);
 		cairo_move_to(cr, (priv->x0)+(((dr1*(priv->s))-wd)/2), (priv->y0)+dtr-hg);
 		pango_cairo_show_layout(cr, lyt);
 		g_object_unref(lyt);
 		lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
-		pango_layout_set_font_description(lyt, dscr1);
+		pango_layout_set_font_description(lyt, (plot->lfont));
 		g_object_unref(lyt);
 	}
 	else
@@ -1485,7 +1519,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
 			if (sx<(priv->s)) (priv->s)=sx;
 		}
-		(priv->flaga)=4;
+		(priv->flaga)=PLOT_POLAR_AXES_NL;
 		(priv->x0)=(xw/2)-(drc*(priv->s))-((priv->wr)*cos(priv->centre.th));
 		(priv->y0)=(yw/2)+(drs*(priv->s))+((priv->wr)*sin(priv->centre.th));
 		sx=0;
@@ -1499,7 +1533,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		cairo_stroke(cr);
 		cairo_restore(cr);
 		cairo_line_to(cr, (priv->x0)+(priv->wr)+((priv->s)*dr1), (priv->y0));
-		if (((plot->flags)&1)==0)
+		if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0)
 		{
 			for (j=1; j<(priv->ticks.zin); j++)
 			{
@@ -1523,19 +1557,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_restore(cr);
 				cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
 				cairo_stroke(cr);
-				g_snprintf(lbl, (priv->thcs), "%d", (gint) round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
-				cairo_text_extents(cr, lbl, &extents);
+				lyt=pango_cairo_create_layout(cr); /* draw azimuthal tick labels */
+				pango_layout_set_font_description(lyt, (plot->afont));
+				g_snprintf(lbl, (priv->thcs), "%d", (gint) round(sx*I180_MY_PI));
+				pango_layout_set_text(lyt, lbl, -1);
+				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				rl=(priv->wr)+tt+((priv->s)*dr1);
-				cairo_move_to(cr, (priv->x0)+(rl*csx)-((extents.width)/2)-(extents.x_bearing), (priv->y0)-(rl*ssx)-((extents.height)/2)-(extents.y_bearing));
-				cairo_show_text(cr, lbl);
+				cairo_move_to(cr, (priv->x0)+(rl*csx)-(wd/2), (priv->y0)-(rl*ssx)-(hg/2));
+				pango_cairo_show_layout(cr, lyt);
+				g_object_unref(lyt);
 			}
 		}
 		else if (fmod((priv->ticks.zin),2)==0)
 		{
-			dscr2=pango_font_description_new();
-			pango_font_description_set_family(dscr2, "sans");
-			pango_font_description_set_weight(dscr2, PANGO_WEIGHT_NORMAL);
-			pango_font_description_set_absolute_size(dscr2, (plot->afsize)*PANGO_SCALE);
 			jl=2+floor(log10((priv->ticks.zin)/2));
 			g_ascii_dtostr(lbl, jl, ((priv->ticks.zin)/2));
 			str2=g_strdup(lbl);
@@ -1574,7 +1608,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					g_free(str1);
 				}
 				lyt=pango_cairo_create_layout(cr); /* draw azimuthal tick labels */
-				pango_layout_set_font_description(lyt, dscr2);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				pango_layout_set_text(lyt, str3, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				rl=(priv->wr)+tt+((priv->s)*dr1);
@@ -1583,15 +1617,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				g_object_unref(lyt);
 				g_free(str3);
 			}
-			pango_font_description_free(dscr2);
 			g_free(str2);
 		}
 		else
 		{
-			dscr2=pango_font_description_new();
-			pango_font_description_set_family(dscr2, "sans");
-			pango_font_description_set_weight(dscr2, PANGO_WEIGHT_NORMAL);
-			pango_font_description_set_absolute_size(dscr2, (plot->afsize)*PANGO_SCALE);
 			jl=2+floor(log10(priv->ticks.zin));
 			g_ascii_dtostr(lbl, jl, (priv->ticks.zin));
 			str2=g_strdup(lbl);
@@ -1630,7 +1659,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					g_free(str1);
 				}
 				lyt=pango_cairo_create_layout(cr); /* draw azimuthal tick labels */
-				pango_layout_set_font_description(lyt, dscr2);
+				pango_layout_set_font_description(lyt, (plot->afont));
 				pango_layout_set_text(lyt, str3, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				rl=(priv->wr)+tt+((priv->s)*dr1);
@@ -1639,7 +1668,6 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				g_object_unref(lyt);
 				g_free(str3);
 			}
-			pango_font_description_free(dscr2);
 			g_free(str2);
 		}
 		for (k=1; k<kx; k++)
@@ -1680,870 +1708,1701 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				kx*=2;
 			}
 			cairo_stroke(cr);
+			lyt=pango_cairo_create_layout(cr);
+			pango_layout_set_font_description(lyt, (plot->afont));
 			g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
-			cairo_text_extents(cr, lbl, &extents);
-			cairo_move_to(cr, (priv->x0)+rt-((extents.width)/2)-(extents.x_bearing), (priv->y0)+JTI-(extents.y_bearing));
-			cairo_show_text(cr, lbl);/* draw radial tick labels*/
+			pango_layout_set_text(lyt, lbl, -1);
+			pango_layout_get_pixel_size(lyt, &wd, &hg);
+			cairo_move_to(cr, (priv->x0)+rt-(wd/2), (priv->y0)+JTI);
+			pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
+			g_object_unref(lyt);
 		}
 		rt+=dwr;
 		cairo_new_sub_path(cr);
 		cairo_arc(cr, (priv->x0), (priv->y0), rt, NMY_PI, G_PI);
 		cairo_stroke(cr);
 		lyt=pango_cairo_create_layout(cr); /* draw radial label */
-		pango_layout_set_font_description(lyt, dscr1);
+		pango_layout_set_font_description(lyt, (plot->lfont));
 		pango_layout_set_text(lyt, (plot->rlab), -1);
 		pango_layout_get_pixel_size(lyt, &wd, &hg);
 		cairo_move_to(cr, (priv->x0)+(priv->wr)+(((dr1*(priv->s))-wd)/2), (priv->y0)+dtr-hg);
 		pango_cairo_show_layout(cr, lyt);
 		g_object_unref(lyt);
 		lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
-		pango_layout_set_font_description(lyt, dscr1);
+		pango_layout_set_font_description(lyt, (plot->lfont));
 		g_object_unref(lyt);
 	}
-	pango_font_description_free(dscr1);
 	if (plot->rdata && plot->thdata) /* plot data */
 	{
-		if (((plot->flags)&2)!=0)
+		if (((plot->flagd)&PLOT_POLAR_DISP_LIN)!=0)
 		{
 			cairo_set_line_width(cr, (plot->linew));
-			if (((plot->flags)&4)!=0) /* lines and points */
+			if (((plot->flagd)&PLOT_POLAR_DISP_PTS)!=0) /* lines and points */
 			{
-				if (((plot->flags)&8)==0) /* straight lines */
+				if (((plot->flagd)&PLOT_POLAR_DISP_PNT)==0) /* straight lines */
 				{
-					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
+					for (k=0; k<(plot->ind->len); k++)
 					{
-						r=g_array_index(plot->rdata, gdouble, 0);
-						th=ssx+g_array_index(plot->thdata, gdouble, 0);
-						if (r<(priv->bounds.rmin))
+						ft=fmod(k,(plot->rd->len));
+						vv=g_array_index((plot->rd), gdouble, ft);
+						wv=g_array_index((plot->gr), gdouble, ft);
+						xv=g_array_index((plot->bl), gdouble, ft);
+						yv=g_array_index((plot->al), gdouble, ft);
+						cairo_set_source_rgba(cr, vv, wv, xv, yv);
+						ft=g_array_index((plot->ind), gint, k);
+						lt=g_array_index((plot->sizes), gint, k)+ft;
+						for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 						{
-							if (th<(priv->bounds.thmin)) xs=5;
-							else if (th>(priv->bounds.thmax)) xs=9;
-							else xs=1;
-						}
-						else if (r>(priv->bounds.rmax))
-						{
-							if (th<(priv->bounds.thmin)) xs=6;
-							else if (th>(priv->bounds.thmax)) xs=10;
-							else xs=2;
-						}
-						else if (th<(priv->bounds.thmin)) xs=4;
-						else if (th>(priv->bounds.thmax)) xs=8;
-						else
-						{
-							xs=0;
-							drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
-							x=(priv->x0)+(drs*cos(th));
-							y=(priv->y0)-(drs*sin(th));
-							cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
-							cairo_fill(cr);
-							cairo_move_to(cr, x, y);
-						}
-						for (j=1; j<(plot->size); j++)
-						{
-							rn=g_array_index(plot->rdata, gdouble, j);
-							tn=ssx+g_array_index(plot->thdata, gdouble, j);
-							if (rn<(priv->bounds.rmin))
+							r=g_array_index((plot->rdata), gdouble, ft);
+							th=ssx+g_array_index((plot->thdata), gdouble, ft);
+							if (r<(priv->bounds.rmin))
 							{
-								if (tn<(priv->bounds.thmin))
-								{
-									if (xs==0)
-									{
-										drs=r-rn;
-										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
-										else
-										{
-											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
-											drs+=th;
-											if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
-											else
-											{
-												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
-												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-										}
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-									else if (xs==2)
-									{
-										drs=th-tn;
-										if (drs>DZE)
-										{
-											drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
-											drs+=rn;
-											if (drs<(priv->bounds.rmax))
-											{
-												csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-												csx+=tn;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(csx));
-												y=(priv->y0)-(drc*sin(csx));
-												cairo_move_to(cr, x, y);
-												if (drs>(priv->bounds.rmin))
-												{
-													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-												}
-												else
-												{
-													drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-													drs+=tn;
-													x=(priv->x0)+((priv->wr)*cos(drs));
-													y=(priv->y0)-((priv->wr)*sin(drs));
-												}
-												cairo_line_to(cr, x, y);
-												cairo_stroke(cr);
-											}
-										}
-									}
-									xs=5;
-								}
-								else if (tn>(priv->bounds.thmax))
-								{
-									if (xs==0)
-									{
-										drs=r-rn;
-										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
-										else
-										{
-											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
-											drs+=th;
-											if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
-											else
-											{
-												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
-												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-										}
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-									else if (xs==2)
-									{
-										drs=tn-th;
-										if (drs>DZE)
-										{
-											drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
-											drs+=r;
-											if (drs<(priv->bounds.rmax))
-											{
-												csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-												csx+=th;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(csx));
-												y=(priv->y0)-(drc*sin(csx));
-												cairo_move_to(cr, x, y);
-												if (drs>(priv->bounds.rmin))
-												{
-													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-												}
-												else
-												{
-													drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-													drs+=tn;
-													x=(priv->x0)+((priv->wr)*cos(drs));
-													y=(priv->y0)-((priv->wr)*sin(drs));
-												}
-												cairo_line_to(cr, x, y);
-												cairo_stroke(cr);
-											}
-										}
-									}
-									xs=9;
-								}
-								else
-								{
-									if (xs==0)
-									{
-										drs=r-rn;
-										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
-										drs+=th;
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-									else if (xs==2)
-									{
-										csx=(th-tn)/(r-rn);
-										drs=csx*((priv->bounds.rmax)-r);
-										drs+=th;
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-										cairo_move_to(cr, x, y);
-										drs=csx*((priv->bounds.rmin)-rn);
-										drs+=tn;
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-									else if (xs==4)
-									{
-										drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
-										drs+=r-(priv->bounds.rmin);
-										if (drs>0)
-										{
-											drs=(priv->wr)+(drs*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											cairo_move_to(cr, x, y);
-											drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
-											drs+=th;
-											x=(priv->x0)+((priv->wr)*cos(drs));
-											y=(priv->y0)-((priv->wr)*sin(drs));
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-									else if (xs==6)
-									{
-										drs=tn-th;
-										if (drs>DZE)
-										{
-											drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
-											drs+=r;
-											if (drs>(priv->bounds.rmin))
-											{
-												csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-												csx+=tn;
-												x=(priv->x0)+((priv->wr)*cos(csx));
-												y=(priv->y0)-((priv->wr)*sin(csx));
-												cairo_move_to(cr, x, y);
-												if (drs<(priv->bounds.rmax))
-												{
-													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-												}
-												else
-												{
-													drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-													drs+=th;
-													drc=(priv->wr)+(dr1*(priv->s));
-													x=(priv->x0)+(drc*cos(drs));
-													y=(priv->y0)-(drc*sin(drs));
-												}
-												cairo_line_to(cr, x, y);
-												cairo_stroke(cr);
-											}
-										}
-									}
-									else if (xs==8)
-									{
-										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
-										drs+=r-(priv->bounds.rmin);
-										if (drs>0)
-										{
-											drs=(priv->wr)+(drs*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											cairo_move_to(cr, x, y);
-											drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
-											drs+=th;
-											x=(priv->x0)+((priv->wr)*cos(drs));
-											y=(priv->y0)-((priv->wr)*sin(drs));
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-									else if (xs==10)
-									{
-										drs=th-tn;
-										if (drs>DZE)
-										{
-											drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
-											drs+=rn;
-											if (drs>(priv->bounds.rmin))
-											{
-												csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-												csx+=tn;
-												x=(priv->x0)+((priv->wr)*cos(csx));
-												y=(priv->y0)-((priv->wr)*sin(csx));
-												cairo_move_to(cr, x, y);
-												if (drs<(priv->bounds.rmax))
-												{
-													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-												}
-												else
-												{
-													drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-													drs+=th;
-													drc=(priv->wr)+(dr1*(priv->s));
-													x=(priv->x0)+(drc*cos(drs));
-													y=(priv->y0)-(drc*sin(drs));
-												}
-												cairo_line_to(cr, x, y);
-												cairo_stroke(cr);
-											}
-										}
-									}
-									xs=1;
-								}
+								if (th<(priv->bounds.thmin)) xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW);
+								else if (th>(priv->bounds.thmax)) xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW);
+								else xt=PLOT_POLAR_BORDERS_IN;
 							}
-							else if (rn>(priv->bounds.rmax))
+							else if (r>(priv->bounds.rmax))
 							{
-								if (tn<(priv->bounds.thmin))
-								{
-									if (xs==0)
-									{
-										drs=rn-r;
-										if ((drs<DZE)&&(drs>NZE))
-										{
-											drs=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-										else
-										{
-											drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
-											drs+=th;
-											if (drs>=thn)
-											{
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											else
-											{
-												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
-												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-										}
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-									else if (xs==1)
-									{
-										drs=th-tn;
-										if (drs>DZE)
-										{
-											drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
-											drs+=rn;
-											if (drs>(priv->bounds.rmin))
-											{
-												csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-												csx+=th;
-												x=(priv->x0)+((priv->wr)*cos(csx));
-												y=(priv->y0)-((priv->wr)*sin(csx));
-												cairo_move_to(cr, x, y);
-												if (drs<(priv->bounds.rmax))
-												{
-													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-												}
-												else
-												{
-													drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-													drs+=tn;
-													drc=(priv->wr)+(dr1*(priv->s));
-													x=(priv->x0)+(drc*cos(drs));
-													y=(priv->y0)-(drc*sin(drs));
-												}
-												cairo_line_to(cr, x, y);
-												cairo_stroke(cr);
-											}
-										}
-									}
-									xs=6;
-								}
-								else if (tn>(priv->bounds.thmax))
-								{
-									if (xs==0)
-									{
-										drs=rn-r;
-										if ((drs<DZE)&&(drs>NZE))
-										{
-											drs=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-										else
-										{
-											drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
-											drs+=th;
-											if (drs<=thx)
-											{
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											else
-											{
-												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
-												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-										}
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-									else if (xs==1)
-									{
-										drs=tn-th;
-										if (drs>DZE)
-										{
-											drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
-											drs+=r;
-											if (drs>(priv->bounds.rmin))
-											{
-												csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-												csx+=th;
-												x=(priv->x0)+((priv->wr)*cos(csx));
-												y=(priv->y0)-((priv->wr)*sin(csx));
-												cairo_move_to(cr, x, y);
-												if (drs<(priv->bounds.rmax))
-												{
-													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-												}
-												else
-												{
-													drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-													drs+=tn;
-													drc=(priv->wr)+(dr1*(priv->s));
-													x=(priv->x0)+(drc*cos(drs));
-													y=(priv->y0)-(drc*sin(drs));
-												}
-												cairo_line_to(cr, x, y);
-												cairo_stroke(cr);
-											}
-										}
-									}
-									xs=10;
-								}
-								else
-								{
-									if (xs==0)
-									{
-										drs=rn-r;
-										drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
-										drs+=th;
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-									else if (xs==1)
-									{
-										csx=(tn-th)/(rn-r);
-										drs=csx*((priv->bounds.rmax)-rn);
-										drs+=tn;
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-										cairo_move_to(cr, x, y);
-										drs=csx*((priv->bounds.rmin)-r);
-										drs+=th;
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-									else if (xs==4)
-									{
-										drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
-										drs+=r-(priv->bounds.rmin);
-										if (drs<dr1)
-										{
-											drs=(priv->wr)+(drs*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											cairo_move_to(cr, x, y);
-											drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
-											drs+=th;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-									else if (xs==5)
-									{
-										drs=tn-th;
-										if (drs>DZE)
-										{
-											drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
-											drs+=r;
-											if (drs<(priv->bounds.rmax))
-											{
-												csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-												csx+=th;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(csx));
-												y=(priv->y0)-(drc*sin(csx));
-												cairo_move_to(cr, x, y);
-												if (drs>(priv->bounds.rmin))
-												{
-													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-												}
-												else
-												{
-													drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-													drs+=th;
-													x=(priv->x0)+((priv->wr)*cos(drs));
-													y=(priv->y0)-((priv->wr)*sin(drs));
-												}
-												cairo_line_to(cr, x, y);
-												cairo_stroke(cr);
-											}
-										}
-									}
-									else if (xs==8)
-									{
-										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
-										drs+=r-(priv->bounds.rmin);
-										if (drs<dr1)
-										{
-											drs=(priv->wr)+(drs*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											cairo_move_to(cr, x, y);
-											drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
-											drs+=th;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-									else if (xs==9)
-									{
-										drs=th-tn;
-										if (drs>DZE)
-										{
-											drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
-											drs+=rn;
-											if (drs<(priv->bounds.rmax))
-											{
-												csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-												csx+=tn;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(csx));
-												y=(priv->y0)-(drc*sin(csx));
-												cairo_move_to(cr, x, y);
-												if (drs>(priv->bounds.rmin))
-												{
-													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-												}
-												else
-												{
-													drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-													drs+=th;
-													x=(priv->x0)+((priv->wr)*cos(drs));
-													y=(priv->y0)-((priv->wr)*sin(drs));
-												}
-												cairo_line_to(cr, x, y);
-												cairo_stroke(cr);
-											}
-										}
-									}
-									xs=2;
-								}
+								if (th<(priv->bounds.thmin)) xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW);
+								else if (th>(priv->bounds.thmax)) xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW);
+								else xt=PLOT_POLAR_BORDERS_OUT;
 							}
-							else if (tn<(priv->bounds.thmin))
+							else if (th<(priv->bounds.thmin)) xt=PLOT_POLAR_BORDERS_CW;
+							else if (th>(priv->bounds.thmax)) xt=PLOT_POLAR_BORDERS_CCW;
+							else
 							{
-								if (xs==0)
-								{
-									drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
-									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==1)
-								{
-									drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
-									drs+=tn;
-									if (drs>(priv->bounds.thmin))
-									{
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
-										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==2)
-								{
-									drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
-									drs+=tn;
-									if (drs>(priv->bounds.thmin))
-									{
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
-										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								xs=4;
-							}
-							else if (tn>(priv->bounds.thmax))
-							{
-								if (xs==0)
-								{
-									drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
-									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==1)
-								{
-									drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
-									drs+=tn;
-									if (drs<(priv->bounds.thmax))
-									{
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
-										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==2)
-								{
-									drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
-									drs+=tn;
-									if (drs<(priv->bounds.thmax))
-									{
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
-										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								xs=8;
-							}
-							else /* within range */
-							{
-								if ((xs&1)!=0)
-								{
-									drs=rn-r;
-									if ((xs&4)!=0)
-									{
-										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
-										else
-										{
-											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
-											drs+=tn;
-											if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
-											else
-											{
-												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
-												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-										}
-									}
-									else if ((xs&8)!=0)
-									{
-										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
-										else
-										{
-											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
-											drs+=tn;
-											if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
-											else
-											{
-												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
-												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-										}
-									}
-									else
-									{
-										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
-										drs+=tn;
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-									}
-									cairo_move_to(cr, x, y);
-								}
-								else if ((xs&2)!=0)
-								{
-									drs=r-rn;
-									if ((xs&4)!=0)
-									{
-										if ((drs<DZE)&&(drs>NZE))
-										{
-											drs=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-										else
-										{
-											drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
-											drs+=tn;
-											if (drs>=thn)
-											{
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											else
-											{
-												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
-												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-										}
-									}
-									else if ((xs&8)!=0)
-									{
-										if ((drs<DZE)&&(drs>NZE))
-										{
-											drs=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-										else
-										{
-											drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
-											drs+=tn;
-											if (drs<=thx)
-											{
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											else
-											{
-												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
-												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-										}
-									}
-									else
-									{
-										drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
-										drs+=tn;
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-									}
-									cairo_move_to(cr, x, y);
-								}
-								else if ((xs&4)!=0)
-								{
-									drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									cairo_move_to(cr, x, y);
-								}
-								else if ((xs&8)!=0)
-								{
-									drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									cairo_move_to(cr, x, y);
-								}
-								drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
-								x=(priv->x0)+(drs*cos(tn));
-								y=(priv->y0)-(drs*sin(tn));
-								cairo_line_to(cr, x, y);
-								cairo_stroke(cr);
+								xt=0;
+								drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+								x=(priv->x0)+(drs*cos(th));
+								y=(priv->y0)-(drs*sin(th));
 								cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
 								cairo_fill(cr);
 								cairo_move_to(cr, x, y);
-								xs=0;
 							}
-							r=rn;
-							th=tn;
+							for (j=1+ft; j<lt; j++)
+							{
+								rn=g_array_index((plot->rdata), gdouble, j);
+								tn=ssx+g_array_index((plot->thdata), gdouble, j);
+								if (rn<(priv->bounds.rmin))
+								{
+									if (tn<(priv->bounds.thmin))
+									{
+										if (xt==0)
+										{
+											drs=r-rn;
+											if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+											else
+											{
+												drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
+												drs+=th;
+												if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+												else
+												{
+													drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+													drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_OUT)
+										{
+											drs=th-tn;
+											if (drs>DZE)
+											{
+												drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+												drs+=rn;
+												if (drs<(priv->bounds.rmax))
+												{
+													csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													csx+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(csx));
+													y=(priv->y0)-(drc*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs>(priv->bounds.rmin))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+													}
+													else
+													{
+														drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+														drs+=tn;
+														x=(priv->x0)+((priv->wr)*cos(drs));
+														y=(priv->y0)-((priv->wr)*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW);
+									}
+									else if (tn>(priv->bounds.thmax))
+									{
+										if (xt==0)
+										{
+											drs=r-rn;
+											if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+											else
+											{
+												drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
+												drs+=th;
+												if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+												else
+												{
+													drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+													drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_OUT)
+										{
+											drs=tn-th;
+											if (drs>DZE)
+											{
+												drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+												drs+=r;
+												if (drs<(priv->bounds.rmax))
+												{
+													csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													csx+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(csx));
+													y=(priv->y0)-(drc*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs>(priv->bounds.rmin))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+													}
+													else
+													{
+														drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+														drs+=tn;
+														x=(priv->x0)+((priv->wr)*cos(drs));
+														y=(priv->y0)-((priv->wr)*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW);
+									}
+									else
+									{
+										if (xt==0)
+										{
+											drs=r-rn;
+											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
+											drs+=th;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_OUT)
+										{
+											csx=(th-tn)/(r-rn);
+											drs=csx*((priv->bounds.rmax)-r);
+											drs+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=csx*((priv->bounds.rmin)-rn);
+											drs+=tn;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_CW)
+										{
+											drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
+											drs+=r-(priv->bounds.rmin);
+											if (drs>0)
+											{
+												drs=(priv->wr)+(drs*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												cairo_move_to(cr, x, y);
+												drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
+												drs+=th;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+										else if (xt==(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW))
+										{
+											drs=tn-th;
+											if (drs>DZE)
+											{
+												drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+												drs+=r;
+												if (drs>(priv->bounds.rmin))
+												{
+													csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+													csx+=tn;
+													x=(priv->x0)+((priv->wr)*cos(csx));
+													y=(priv->y0)-((priv->wr)*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs<(priv->bounds.rmax))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+													}
+													else
+													{
+														drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+														drs+=th;
+														drc=(priv->wr)+(dr1*(priv->s));
+														x=(priv->x0)+(drc*cos(drs));
+														y=(priv->y0)-(drc*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										else if (xt==PLOT_POLAR_BORDERS_CCW)
+										{
+											drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
+											drs+=r-(priv->bounds.rmin);
+											if (drs>0)
+											{
+												drs=(priv->wr)+(drs*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												cairo_move_to(cr, x, y);
+												drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
+												drs+=th;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+										else if (xt==(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW))
+										{
+											drs=th-tn;
+											if (drs>DZE)
+											{
+												drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+												drs+=rn;
+												if (drs>(priv->bounds.rmin))
+												{
+													csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+													csx+=tn;
+													x=(priv->x0)+((priv->wr)*cos(csx));
+													y=(priv->y0)-((priv->wr)*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs<(priv->bounds.rmax))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+													}
+													else
+													{
+														drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+														drs+=th;
+														drc=(priv->wr)+(dr1*(priv->s));
+														x=(priv->x0)+(drc*cos(drs));
+														y=(priv->y0)-(drc*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=PLOT_POLAR_BORDERS_IN;
+									}
+								}
+								else if (rn>(priv->bounds.rmax))
+								{
+									if (tn<(priv->bounds.thmin))
+									{
+										if (xt==0)
+										{
+											drs=rn-r;
+											if ((drs<DZE)&&(drs>NZE))
+											{
+												drs=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
+												drs+=th;
+												if (drs>=thn)
+												{
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												else
+												{
+													drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+													drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_IN)
+										{
+											drs=th-tn;
+											if (drs>DZE)
+											{
+												drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+												drs+=rn;
+												if (drs>(priv->bounds.rmin))
+												{
+													csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													csx+=th;
+													x=(priv->x0)+((priv->wr)*cos(csx));
+													y=(priv->y0)-((priv->wr)*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs<(priv->bounds.rmax))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+													}
+													else
+													{
+														drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+														drs+=tn;
+														drc=(priv->wr)+(dr1*(priv->s));
+														x=(priv->x0)+(drc*cos(drs));
+														y=(priv->y0)-(drc*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW);
+									}
+									else if (tn>(priv->bounds.thmax))
+									{
+										if (xt==0)
+										{
+											drs=rn-r;
+											if ((drs<DZE)&&(drs>NZE))
+											{
+												drs=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
+												drs+=th;
+												if (drs<=thx)
+												{
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												else
+												{
+													drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+													drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_IN)
+										{
+											drs=tn-th;
+											if (drs>DZE)
+											{
+												drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+												drs+=r;
+												if (drs>(priv->bounds.rmin))
+												{
+													csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													csx+=th;
+													x=(priv->x0)+((priv->wr)*cos(csx));
+													y=(priv->y0)-((priv->wr)*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs<(priv->bounds.rmax))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+													}
+													else
+													{
+														drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+														drs+=tn;
+														drc=(priv->wr)+(dr1*(priv->s));
+														x=(priv->x0)+(drc*cos(drs));
+														y=(priv->y0)-(drc*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW);
+									}
+									else
+									{
+										if (xt==0)
+										{
+											drs=rn-r;
+											drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
+											drs+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_IN)
+										{
+											csx=(tn-th)/(rn-r);
+											drs=csx*((priv->bounds.rmax)-rn);
+											drs+=tn;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=csx*((priv->bounds.rmin)-r);
+											drs+=th;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_CW)
+										{
+											drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
+											drs+=r-(priv->bounds.rmin);
+											if (drs<dr1)
+											{
+												drs=(priv->wr)+(drs*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												cairo_move_to(cr, x, y);
+												drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
+												drs+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+										else if (xt==(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW))
+										{
+											drs=tn-th;
+											if (drs>DZE)
+											{
+												drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+												drs+=r;
+												if (drs<(priv->bounds.rmax))
+												{
+													csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													csx+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(csx));
+													y=(priv->y0)-(drc*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs>(priv->bounds.rmin))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+													}
+													else
+													{
+														drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+														drs+=th;
+															x=(priv->x0)+((priv->wr)*cos(drs));
+														y=(priv->y0)-((priv->wr)*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										else if (xt==PLOT_POLAR_BORDERS_CCW)
+										{
+											drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
+											drs+=r-(priv->bounds.rmin);
+											if (drs<dr1)
+											{
+												drs=(priv->wr)+(drs*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												cairo_move_to(cr, x, y);
+												drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
+												drs+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+										else if (xt==(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW))
+										{
+											drs=th-tn;
+											if (drs>DZE)
+											{
+												drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+												drs+=rn;
+												if (drs<(priv->bounds.rmax))
+												{
+													csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													csx+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(csx));
+													y=(priv->y0)-(drc*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs>(priv->bounds.rmin))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+													}
+													else
+													{
+														drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+														drs+=th;
+														x=(priv->x0)+((priv->wr)*cos(drs));
+														y=(priv->y0)-((priv->wr)*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=PLOT_POLAR_BORDERS_OUT;
+									}
+								}
+								else if (tn<(priv->bounds.thmin))
+								{
+									if (xt==0)
+									{
+										drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+										drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_IN)
+									{
+										drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
+										drs+=tn;
+										if (drs>(priv->bounds.thmin))
+										{
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
+									{
+										drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
+										drs+=tn;
+										if (drs>(priv->bounds.thmin))
+										{
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									xt=PLOT_POLAR_BORDERS_CW;
+								}
+								else if (tn>(priv->bounds.thmax))
+								{
+									if (xt==0)
+										{
+										drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+										drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_IN)
+									{
+										drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
+										drs+=tn;
+										if (drs<(priv->bounds.thmax))
+										{
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
+									{
+										drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
+										drs+=tn;
+										if (drs<(priv->bounds.thmax))
+										{
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									xt=PLOT_POLAR_BORDERS_CCW;
+								}
+								else /* within range */
+								{
+									if ((xt&PLOT_POLAR_BORDERS_IN)!=0)
+									{
+										drs=rn-r;
+										if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
+										{
+											if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+											else
+											{
+												drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
+												drs+=tn;
+												if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+												else
+												{
+													drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+													drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+											}
+										}
+										else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
+										{
+											if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+											else
+											{
+												drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
+												drs+=tn;
+												if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+												else
+												{
+													drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+													drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+											}
+										}
+										else
+										{
+											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
+											drs+=tn;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+										}
+										cairo_move_to(cr, x, y);
+									}
+									else if ((xt&PLOT_POLAR_BORDERS_OUT)!=0)
+									{
+										drs=r-rn;
+										if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
+										{
+											if ((drs<DZE)&&(drs>NZE))
+											{
+												drs=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
+												drs+=tn;
+												if (drs>=thn)
+												{
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												else
+												{
+													drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+													drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+											}
+										}
+										else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
+										{
+											if ((drs<DZE)&&(drs>NZE))
+											{
+												drs=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
+												drs+=tn;
+												if (drs<=thx)
+												{
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												else
+												{
+													drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+													drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+											}
+										}
+										else
+										{
+											drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
+											drs+=tn;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+										}
+										cairo_move_to(cr, x, y);
+									}
+									else if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
+									{
+										drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+										cairo_move_to(cr, x, y);
+									}
+									else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
+									{
+										drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+										cairo_move_to(cr, x, y);
+									}
+									drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
+									x=(priv->x0)+(drs*cos(tn));
+									y=(priv->y0)-(drs*sin(tn));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+									cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
+									cairo_fill(cr);
+									cairo_move_to(cr, x, y);
+									xt=0;
+								}
+								r=rn;
+								th=tn;
+							}
 						}
 					}
 				}
 				else /* spline interpolation to polar transform */
 				{
+					for (k=0; k<(plot->ind->len); k++)
+					{
+						ft=fmod(k,(plot->rd->len));
+						vv=g_array_index((plot->rd), gdouble, ft);
+						wv=g_array_index((plot->gr), gdouble, ft);
+						xv=g_array_index((plot->bl), gdouble, ft);
+						yv=g_array_index((plot->al), gdouble, ft);
+						cairo_set_source_rgba(cr, vv, wv, xv, yv);
+						ft=g_array_index((plot->ind), gint, k);
+						lt=g_array_index((plot->sizes), gint, k)+ft;
+						for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
+						{
+							r=g_array_index((plot->rdata), gdouble, ft);
+							th=ssx+g_array_index((plot->thdata), gdouble, ft);
+							if (r<(priv->bounds.rmin))
+							{
+								if (th<(priv->bounds.thmin)) xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW);
+								else if (th>(priv->bounds.thmax)) xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW);
+								else xt=PLOT_POLAR_BORDERS_IN;
+							}
+							else if (r>(priv->bounds.rmax))
+							{
+								if (th<(priv->bounds.thmin)) xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW);
+								else if (th>(priv->bounds.thmax)) xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW);
+								else xt=PLOT_POLAR_BORDERS_OUT;
+							}
+							else if (th<(priv->bounds.thmin)) xt=PLOT_POLAR_BORDERS_CW;
+							else if (th>(priv->bounds.thmax)) xt=PLOT_POLAR_BORDERS_CCW;
+							else
+							{
+								xt=0;
+								drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+								x=(priv->x0)+(drs*cos(th));
+								y=(priv->y0)-(drs*sin(th));
+								cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
+								cairo_fill(cr);
+								cairo_move_to(cr, x, y);
+							}
+							for (j=1+ft; j<lt; j++)
+							{
+								rn=g_array_index((plot->rdata), gdouble, j);
+								tn=ssx+g_array_index((plot->thdata), gdouble, j);
+								if (rn<(priv->bounds.rmin))
+								{
+									if (tn<(priv->bounds.thmin))
+									{
+										if (xt==0)
+										{
+											drs=r-rn;
+											if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+											else
+											{
+												drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
+												drs+=th;
+												if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+												else
+												{
+													drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+													drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_OUT)
+										{
+											drs=th-tn;
+											if (drs>DZE)
+											{
+												drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+												drs+=rn;
+												if (drs<(priv->bounds.rmax))
+												{
+													csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													csx+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(csx));
+													y=(priv->y0)-(drc*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs>(priv->bounds.rmin))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+													}
+													else
+													{
+														drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+														drs+=tn;
+														x=(priv->x0)+((priv->wr)*cos(drs));
+														y=(priv->y0)-((priv->wr)*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW);
+									}
+									else if (tn>(priv->bounds.thmax))
+									{
+										if (xt==0)
+										{
+											drs=r-rn;
+											if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+											else
+											{
+												drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
+												drs+=th;
+												if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+												else
+												{
+													drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+													drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_OUT)
+										{
+											drs=tn-th;
+											if (drs>DZE)
+											{
+												drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+												drs+=r;
+												if (drs<(priv->bounds.rmax))
+												{
+													csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													csx+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(csx));
+													y=(priv->y0)-(drc*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs>(priv->bounds.rmin))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+													}
+													else
+													{
+														drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+														drs+=tn;
+														x=(priv->x0)+((priv->wr)*cos(drs));
+														y=(priv->y0)-((priv->wr)*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW);
+									}
+									else
+									{
+										if (xt==0)
+										{
+											drs=r-rn;
+											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
+											drs+=th;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_OUT)
+										{
+											csx=(th-tn)/(r-rn);
+											drs=csx*((priv->bounds.rmax)-r);
+											drs+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=csx*((priv->bounds.rmin)-rn);
+											drs+=tn;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_CW)
+										{
+											drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
+											drs+=r-(priv->bounds.rmin);
+											if (drs>0)
+											{
+												drs=(priv->wr)+(drs*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												cairo_move_to(cr, x, y);
+												drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
+												drs+=th;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+										else if (xt==(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW))
+										{
+											drs=tn-th;
+											if (drs>DZE)
+											{
+												drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+												drs+=r;
+												if (drs>(priv->bounds.rmin))
+												{
+													csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+													csx+=tn;
+													x=(priv->x0)+((priv->wr)*cos(csx));
+													y=(priv->y0)-((priv->wr)*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs<(priv->bounds.rmax))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+													}
+													else
+													{
+														drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+														drs+=th;
+														drc=(priv->wr)+(dr1*(priv->s));
+														x=(priv->x0)+(drc*cos(drs));
+														y=(priv->y0)-(drc*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										else if (xt==PLOT_POLAR_BORDERS_CCW)
+										{
+											drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
+											drs+=r-(priv->bounds.rmin);
+											if (drs>0)
+											{
+												drs=(priv->wr)+(drs*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												cairo_move_to(cr, x, y);
+												drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
+												drs+=th;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+										else if (xt==(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW))
+										{
+											drs=th-tn;
+											if (drs>DZE)
+											{
+												drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+												drs+=rn;
+												if (drs>(priv->bounds.rmin))
+												{
+													csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+													csx+=tn;
+													x=(priv->x0)+((priv->wr)*cos(csx));
+													y=(priv->y0)-((priv->wr)*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs<(priv->bounds.rmax))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+													}
+													else
+													{
+														drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+														drs+=th;
+														drc=(priv->wr)+(dr1*(priv->s));
+														x=(priv->x0)+(drc*cos(drs));
+														y=(priv->y0)-(drc*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=PLOT_POLAR_BORDERS_IN;
+									}
+								}
+								else if (rn>(priv->bounds.rmax))
+								{
+									if (tn<(priv->bounds.thmin))
+									{
+										if (xt==0)
+										{
+											drs=rn-r;
+											if ((drs<DZE)&&(drs>NZE))
+											{
+												drs=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
+												drs+=th;
+												if (drs>=thn)
+												{
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												else
+												{
+													drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+													drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_IN)
+										{
+											drs=th-tn;
+											if (drs>DZE)
+											{
+												drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+												drs+=rn;
+												if (drs>(priv->bounds.rmin))
+												{
+													csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													csx+=th;
+													x=(priv->x0)+((priv->wr)*cos(csx));
+													y=(priv->y0)-((priv->wr)*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs<(priv->bounds.rmax))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+													}
+													else
+													{
+														drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+														drs+=tn;
+														drc=(priv->wr)+(dr1*(priv->s));
+														x=(priv->x0)+(drc*cos(drs));
+														y=(priv->y0)-(drc*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW);
+									}
+									else if (tn>(priv->bounds.thmax))
+									{
+										if (xt==0)
+										{
+											drs=rn-r;
+											if ((drs<DZE)&&(drs>NZE))
+											{
+												drs=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
+												drs+=th;
+												if (drs<=thx)
+												{
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												else
+												{
+													drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+													drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_IN)
+										{
+											drs=tn-th;
+											if (drs>DZE)
+											{
+												drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+												drs+=r;
+												if (drs>(priv->bounds.rmin))
+												{
+													csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													csx+=th;
+													x=(priv->x0)+((priv->wr)*cos(csx));
+													y=(priv->y0)-((priv->wr)*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs<(priv->bounds.rmax))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+													}
+													else
+													{
+														drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+														drs+=tn;
+														drc=(priv->wr)+(dr1*(priv->s));
+														x=(priv->x0)+(drc*cos(drs));
+														y=(priv->y0)-(drc*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW);
+									}
+									else
+									{
+										if (xt==0)
+										{
+											drs=rn-r;
+											drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
+											drs+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_IN)
+										{
+											csx=(tn-th)/(rn-r);
+											drs=csx*((priv->bounds.rmax)-rn);
+											drs+=tn;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=csx*((priv->bounds.rmin)-r);
+											drs+=th;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+										else if (xt==PLOT_POLAR_BORDERS_CW)
+										{
+											drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
+											drs+=r-(priv->bounds.rmin);
+											if (drs<dr1)
+											{
+												drs=(priv->wr)+(drs*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												cairo_move_to(cr, x, y);
+												drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
+												drs+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+										else if (xt==(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW))
+										{
+											drs=tn-th;
+											if (drs>DZE)
+											{
+												drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+												drs+=r;
+												if (drs<(priv->bounds.rmax))
+												{
+													csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													csx+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(csx));
+													y=(priv->y0)-(drc*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs>(priv->bounds.rmin))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+													}
+													else
+													{
+														drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+														drs+=th;
+														x=(priv->x0)+((priv->wr)*cos(drs));
+														y=(priv->y0)-((priv->wr)*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										else if (xt==PLOT_POLAR_BORDERS_CCW)
+										{
+											drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
+											drs+=r-(priv->bounds.rmin);
+											if (drs<dr1)
+											{
+												drs=(priv->wr)+(drs*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												cairo_move_to(cr, x, y);
+												drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
+												drs+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+										else if (xt==(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW))
+										{
+											drs=th-tn;
+											if (drs>DZE)
+											{
+												drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+												drs+=rn;
+												if (drs<(priv->bounds.rmax))
+												{
+													csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													csx+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(csx));
+													y=(priv->y0)-(drc*sin(csx));
+													cairo_move_to(cr, x, y);
+													if (drs>(priv->bounds.rmin))
+													{
+														drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+														x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+														y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+													}
+													else
+													{
+														drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+														drs+=th;
+														x=(priv->x0)+((priv->wr)*cos(drs));
+														y=(priv->y0)-((priv->wr)*sin(drs));
+													}
+													cairo_line_to(cr, x, y);
+													cairo_stroke(cr);
+												}
+											}
+										}
+										xt=PLOT_POLAR_BORDERS_OUT;
+									}
+								}
+								else if (tn<(priv->bounds.thmin))
+								{
+									if (xt==0)
+									{
+										drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+										drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_IN)
+									{
+										drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
+										drs+=tn;
+										if (drs>(priv->bounds.thmin))
+										{
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
+									{
+										drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
+										drs+=tn;
+										if (drs>(priv->bounds.thmin))
+										{
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									xt=PLOT_POLAR_BORDERS_CW;
+								}
+								else if (tn>(priv->bounds.thmax))
+								{
+									if (xt==0)
+									{
+										drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+										drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_IN)
+									{
+										drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
+										drs+=tn;
+										if (drs<(priv->bounds.thmax))
+										{
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
+									{
+										drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
+										drs+=tn;
+										if (drs<(priv->bounds.thmax))
+										{
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									xt=PLOT_POLAR_BORDERS_CCW;
+								}
+								else /* within range */
+								{
+									if ((xt&PLOT_POLAR_BORDERS_IN)!=0)
+									{
+										drs=rn-r;
+										if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
+										{
+											if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+											else
+											{
+												drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
+												drs+=tn;
+												if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+												else
+												{
+													drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+													drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+											}
+										}
+										else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
+										{
+											if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+											else
+											{
+												drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
+												drs+=tn;
+												if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+												else
+												{
+													drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+													drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+											}
+										}
+										else
+										{
+											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
+											drs+=tn;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+										}
+										cairo_move_to(cr, x, y);
+									}
+									else if ((xt&PLOT_POLAR_BORDERS_OUT)!=0)
+									{
+										drs=r-rn;
+										if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
+										{
+											if ((drs<DZE)&&(drs>NZE))
+											{
+												drs=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
+												drs+=tn;
+												if (drs>=thn)
+												{
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												else
+												{
+													drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+													drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+											}
+										}
+										else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
+										{
+											if ((drs<DZE)&&(drs>NZE))
+											{
+												drs=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
+												drs+=tn;
+												if (drs<=thx)
+												{
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												else
+												{
+													drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+													drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+											}
+										}
+										else
+										{
+											drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
+											drs+=tn;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+										}
+										cairo_move_to(cr, x, y);
+									}
+									else if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
+									{
+										drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+										cairo_move_to(cr, x, y);
+									}
+									else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
+									{
+										drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+										cairo_move_to(cr, x, y);
+									}
+									drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
+									x=(priv->x0)+(drs*cos(tn));
+									y=(priv->y0)-(drs*sin(tn));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+									cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
+									cairo_fill(cr);
+									cairo_move_to(cr, x, y);
+									xt=0;
+								}
+								r=rn;
+								th=tn;
+							}
+						}
+					}
+				}	
+			}
+			else if (((plot->flagd)&PLOT_POLAR_DISP_PNT)==0) /* straight lines only */
+			{
+				for (k=0; k<(plot->ind->len); k++)
+				{
+						ft=fmod(k,(plot->rd->len));
+						vv=g_array_index((plot->rd), gdouble, ft);
+						wv=g_array_index((plot->gr), gdouble, ft);
+						xv=g_array_index((plot->bl), gdouble, ft);
+						yv=g_array_index((plot->al), gdouble, ft);
+						cairo_set_source_rgba(cr, vv, wv, xv, yv);
+						ft=g_array_index((plot->ind), gint, k);
+						lt=g_array_index((plot->sizes), gint, k)+ft;
 					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 					{
-						r=g_array_index(plot->rdata, gdouble, 0);
-						th=ssx+g_array_index(plot->thdata, gdouble, 0);
+						r=g_array_index((plot->rdata), gdouble, ft);
+						th=ssx+g_array_index((plot->thdata), gdouble, ft);
 						if (r<(priv->bounds.rmin))
 						{
-							if (th<(priv->bounds.thmin)) xs=5;
-							else if (th>(priv->bounds.thmax)) xs=9;
-							else xs=1;
+							if (th<(priv->bounds.thmin)) xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW);
+							else if (th>(priv->bounds.thmax)) xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW);
+							else xt=PLOT_POLAR_BORDERS_IN;
 						}
 						else if (r>(priv->bounds.rmax))
 						{
-							if (th<(priv->bounds.thmin)) xs=6;
-							else if (th>(priv->bounds.thmax)) xs=10;
-							else xs=2;
+							if (th<(priv->bounds.thmin)) xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW);
+							else if (th>(priv->bounds.thmax)) xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW);
+							else xt=PLOT_POLAR_BORDERS_OUT;
 						}
-						else if (th<(priv->bounds.thmin)) xs=4;
-						else if (th>(priv->bounds.thmax)) xs=8;
+						else if (th<(priv->bounds.thmin)) xt=PLOT_POLAR_BORDERS_CW;
+						else if (th>(priv->bounds.thmax)) xt=PLOT_POLAR_BORDERS_CCW;
 						else
 						{
-							xs=0;
+							xt=0;
 							drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
 							x=(priv->x0)+(drs*cos(th));
 							y=(priv->y0)-(drs*sin(th));
-							cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
-							cairo_fill(cr);
 							cairo_move_to(cr, x, y);
 						}
-						for (j=1; j<(plot->size); j++)
+						for (j=1+ft; j<lt; j++)
 						{
-							rn=g_array_index(plot->rdata, gdouble, j);
-							tn=ssx+g_array_index(plot->thdata, gdouble, j);
+							rn=g_array_index((plot->rdata), gdouble, j);
+							tn=ssx+g_array_index((plot->thdata), gdouble, j);
 							if (rn<(priv->bounds.rmin))
 							{
 								if (tn<(priv->bounds.thmin))
 								{
-									if (xs==0)
+									if (xt==0)
 									{
 										drs=r-rn;
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
@@ -2563,7 +3422,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
-									else if (xs==2)
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
 									{
 										drs=th-tn;
 										if (drs>DZE)
@@ -2596,11 +3455,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									xs=5;
+									xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW);
 								}
 								else if (tn>(priv->bounds.thmax))
 								{
-									if (xs==0)
+									if (xt==0)
 									{
 										drs=r-rn;
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
@@ -2620,7 +3479,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
-									else if (xs==2)
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
 									{
 										drs=tn-th;
 										if (drs>DZE)
@@ -2653,11 +3512,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									xs=9;
+									xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW);
 								}
 								else
 								{
-									if (xs==0)
+									if (xt==0)
 									{
 										drs=r-rn;
 										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
@@ -2667,7 +3526,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
-									else if (xs==2)
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
 									{
 										csx=(th-tn)/(r-rn);
 										drs=csx*((priv->bounds.rmax)-r);
@@ -2683,7 +3542,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
-									else if (xs==4)
+									else if (xt==PLOT_POLAR_BORDERS_CW)
 									{
 										drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
@@ -2701,7 +3560,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											cairo_stroke(cr);
 										}
 									}
-									else if (xs==6)
+									else if (xt==(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW))
 									{
 										drs=tn-th;
 										if (drs>DZE)
@@ -2734,7 +3593,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									else if (xs==8)
+									else if (xt==PLOT_POLAR_BORDERS_CCW)
 									{
 										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
@@ -2752,7 +3611,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											cairo_stroke(cr);
 										}
 									}
-									else if (xs==10)
+									else if (xt==(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW))
 									{
 										drs=th-tn;
 										if (drs>DZE)
@@ -2785,14 +3644,14 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									xs=1;
+									xt=PLOT_POLAR_BORDERS_IN;
 								}
 							}
 							else if (rn>(priv->bounds.rmax))
 							{
 								if (tn<(priv->bounds.thmin))
 								{
-									if (xs==0)
+									if (xt==0)
 									{
 										drs=rn-r;
 										if ((drs<DZE)&&(drs>NZE))
@@ -2822,7 +3681,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
-									else if (xs==1)
+									else if (xt==PLOT_POLAR_BORDERS_IN)
 									{
 										drs=th-tn;
 										if (drs>DZE)
@@ -2855,11 +3714,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									xs=6;
+									xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW);
 								}
 								else if (tn>(priv->bounds.thmax))
 								{
-									if (xs==0)
+									if (xt==0)
 									{
 										drs=rn-r;
 										if ((drs<DZE)&&(drs>NZE))
@@ -2889,7 +3748,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
-									else if (xs==1)
+									else if (xt==PLOT_POLAR_BORDERS_IN)
 									{
 										drs=tn-th;
 										if (drs>DZE)
@@ -2922,11 +3781,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									xs=10;
+									xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW);
 								}
 								else
 								{
-									if (xs==0)
+									if (xt==0)
 									{
 										drs=rn-r;
 										drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
@@ -2937,7 +3796,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
-									else if (xs==1)
+									else if (xt==PLOT_POLAR_BORDERS_IN)
 									{
 										csx=(tn-th)/(rn-r);
 										drs=csx*((priv->bounds.rmax)-rn);
@@ -2953,7 +3812,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
-									else if (xs==4)
+									else if (xt==PLOT_POLAR_BORDERS_CW)
 									{
 										drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
@@ -2972,7 +3831,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											cairo_stroke(cr);
 										}
 									}
-									else if (xs==5)
+									else if (xt==(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW))
 									{
 										drs=tn-th;
 										if (drs>DZE)
@@ -3005,7 +3864,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									else if (xs==8)
+									else if (xt==PLOT_POLAR_BORDERS_CCW)
 									{
 										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
@@ -3024,7 +3883,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											cairo_stroke(cr);
 										}
 									}
-									else if (xs==9)
+									else if (xt==(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW))
 									{
 										drs=th-tn;
 										if (drs>DZE)
@@ -3057,12 +3916,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									xs=2;
+									xt=PLOT_POLAR_BORDERS_OUT;
 								}
 							}
 							else if (tn<(priv->bounds.thmin))
 							{
-								if (xs==0)
+								if (xt==0)
 								{
 									drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
 									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
@@ -3071,7 +3930,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
-								else if (xs==1)
+								else if (xt==PLOT_POLAR_BORDERS_IN)
 								{
 									drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
 									drs+=tn;
@@ -3088,7 +3947,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_stroke(cr);
 									}
 								}
-								else if (xs==2)
+								else if (xt==PLOT_POLAR_BORDERS_OUT)
 								{
 									drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
 									drs+=tn;
@@ -3106,11 +3965,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_stroke(cr);
 									}
 								}
-								xs=4;
+								xt=PLOT_POLAR_BORDERS_CW;
 							}
 							else if (tn>(priv->bounds.thmax))
 							{
-								if (xs==0)
+								if (xt==0)
 								{
 									drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
 									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
@@ -3119,7 +3978,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
-								else if (xs==1)
+								else if (xt==PLOT_POLAR_BORDERS_IN)
 								{
 									drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
 									drs+=tn;
@@ -3136,7 +3995,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_stroke(cr);
 									}
 								}
-								else if (xs==2)
+								else if (xt==PLOT_POLAR_BORDERS_OUT)
 								{
 									drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
 									drs+=tn;
@@ -3154,14 +4013,14 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_stroke(cr);
 									}
 								}
-								xs=8;
+								xt=PLOT_POLAR_BORDERS_CCW;
 							}
 							else /* within range */
 							{
-								if ((xs&1)!=0)
+								if ((xt&PLOT_POLAR_BORDERS_IN)!=0)
 								{
 									drs=rn-r;
-									if ((xs&4)!=0)
+									if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
 									{
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
 										else
@@ -3178,7 +4037,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									else if ((xs&8)!=0)
+									else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
 									{
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
 										else
@@ -3204,10 +4063,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									}
 									cairo_move_to(cr, x, y);
 								}
-								else if ((xs&2)!=0)
+								else if ((xt&PLOT_POLAR_BORDERS_OUT)!=0)
 								{
 									drs=r-rn;
-									if ((xs&4)!=0)
+									if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
 									{
 										if ((drs<DZE)&&(drs>NZE))
 										{
@@ -3234,7 +4093,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											}
 										}
 									}
-									else if ((xs&8)!=0)
+									else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
 									{
 										if ((drs<DZE)&&(drs>NZE))
 										{
@@ -3271,7 +4130,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									}
 									cairo_move_to(cr, x, y);
 								}
-								else if ((xs&4)!=0)
+								else if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
 								{
 									drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
 									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
@@ -3279,7 +4138,810 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									cairo_move_to(cr, x, y);
 								}
-								else if ((xs&8)!=0)
+								else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
+								{
+									drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+									cairo_move_to(cr, x, y);
+								}
+								drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
+								x=(priv->x0)+(drs*cos(tn));
+								y=(priv->y0)-(drs*sin(tn));
+								cairo_line_to(cr, x, y);
+								xt=0;
+							}
+							r=rn;
+							th=tn;
+						}
+						cairo_stroke(cr);
+					}
+				}
+			}
+			else /* spline interpolation to polar transform */
+			{
+				for (k=0; k<(plot->ind->len); k++)
+				{
+						ft=fmod(k,(plot->rd->len));
+						vv=g_array_index((plot->rd), gdouble, ft);
+						wv=g_array_index((plot->gr), gdouble, ft);
+						xv=g_array_index((plot->bl), gdouble, ft);
+						yv=g_array_index((plot->al), gdouble, ft);
+						cairo_set_source_rgba(cr, vv, wv, xv, yv);
+						ft=g_array_index((plot->ind), gint, k);
+						lt=g_array_index((plot->sizes), gint, k)+ft;
+					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
+					{
+						r=g_array_index((plot->rdata), gdouble, ft);
+						th=ssx+g_array_index((plot->thdata), gdouble, ft);
+						if (r<(priv->bounds.rmin))
+						{
+							if (th<(priv->bounds.thmin)) xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW);
+							else if (th>(priv->bounds.thmax)) xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW);
+							else xt=PLOT_POLAR_BORDERS_IN;
+						}
+						else if (r>(priv->bounds.rmax))
+						{
+							if (th<(priv->bounds.thmin)) xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW);
+							else if (th>(priv->bounds.thmax)) xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW);
+							else xt=PLOT_POLAR_BORDERS_OUT;
+						}
+						else if (th<(priv->bounds.thmin)) xt=PLOT_POLAR_BORDERS_CW;
+						else if (th>(priv->bounds.thmax)) xt=PLOT_POLAR_BORDERS_CCW;
+						else
+						{
+							xt=0;
+							drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+							x=(priv->x0)+(drs*cos(th));
+							y=(priv->y0)-(drs*sin(th));
+							cairo_move_to(cr, x, y);
+						}
+						for (j=1+ft; j<lt; j++)
+						{
+							rn=g_array_index((plot->rdata), gdouble, j);
+							tn=ssx+g_array_index((plot->thdata), gdouble, j);
+							if (rn<(priv->bounds.rmin))
+							{
+								if (tn<(priv->bounds.thmin))
+								{
+									if (xt==0)
+									{
+										drs=r-rn;
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+										else
+										{
+											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
+											drs+=th;
+											if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+											else
+											{
+												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+										}
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+											drs+=rn;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												csx+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+													drs+=tn;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+									xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW);
+								}
+								else if (tn>(priv->bounds.thmax))
+								{
+									if (xt==0)
+									{
+										drs=r-rn;
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+										else
+										{
+											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
+											drs+=th;
+											if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+											else
+											{
+												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+										}
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+											drs+=r;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												csx+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+													drs+=tn;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+									xt=(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW);
+								}
+								else
+								{
+									if (xt==0)
+									{
+										drs=r-rn;
+										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
+										drs+=th;
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_OUT)
+									{
+										csx=(th-tn)/(r-rn);
+										drs=csx*((priv->bounds.rmax)-r);
+										drs+=th;
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=csx*((priv->bounds.rmin)-rn);
+										drs+=tn;
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_CW)
+									{
+										drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
+										drs+=r-(priv->bounds.rmin);
+										if (drs>0)
+										{
+											drs=(priv->wr)+(drs*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
+											drs+=th;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									else if (xt==(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW))
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+											drs+=r;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												csx+=tn;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													drs+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+									else if (xt==PLOT_POLAR_BORDERS_CCW)
+									{
+										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
+										drs+=r-(priv->bounds.rmin);
+										if (drs>0)
+										{
+											drs=(priv->wr)+(drs*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
+											drs+=th;
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									else if (xt==(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW))
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+											drs+=rn;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												csx+=tn;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													drs+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+									xt=PLOT_POLAR_BORDERS_IN;
+								}
+							}
+							else if (rn>(priv->bounds.rmax))
+							{
+								if (tn<(priv->bounds.thmin))
+								{
+									if (xt==0)
+									{
+										drs=rn-r;
+										if ((drs<DZE)&&(drs>NZE))
+										{
+											drs=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+										}
+										else
+										{
+											drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
+											drs+=th;
+											if (drs>=thn)
+											{
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											else
+											{
+												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+										}
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_IN)
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+											drs+=rn;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												csx+=th;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													drs+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+									xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CW);
+								}
+								else if (tn>(priv->bounds.thmax))
+								{
+									if (xt==0)
+									{
+										drs=rn-r;
+										if ((drs<DZE)&&(drs>NZE))
+										{
+											drs=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+										}
+										else
+										{
+											drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
+											drs+=th;
+											if (drs<=thx)
+											{
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											else
+											{
+												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+										}
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_IN)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+											drs+=r;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												csx+=th;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													drs+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+									xt=(PLOT_POLAR_BORDERS_OUT|PLOT_POLAR_BORDERS_CCW);
+								}
+								else
+								{
+									if (xt==0)
+									{
+										drs=rn-r;
+										drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
+										drs+=th;
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_IN)
+									{
+										csx=(tn-th)/(rn-r);
+										drs=csx*((priv->bounds.rmax)-rn);
+										drs+=tn;
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=csx*((priv->bounds.rmin)-r);
+										drs+=th;
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xt==PLOT_POLAR_BORDERS_CW)
+									{
+										drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
+										drs+=r-(priv->bounds.rmin);
+										if (drs<dr1)
+										{
+											drs=(priv->wr)+(drs*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
+											drs+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									else if (xt==(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CW))
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+											drs+=r;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												csx+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													drs+=th;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+									else if (xt==PLOT_POLAR_BORDERS_CCW)
+									{
+										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
+										drs+=r-(priv->bounds.rmin);
+										if (drs<dr1)
+										{
+											drs=(priv->wr)+(drs*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											cairo_move_to(cr, x, y);
+											drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
+											drs+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(drs));
+											y=(priv->y0)-(drc*sin(drs));
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+									else if (xt==(PLOT_POLAR_BORDERS_IN|PLOT_POLAR_BORDERS_CCW))
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+											drs+=rn;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												csx+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													drs+=th;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+									xt=PLOT_POLAR_BORDERS_OUT;
+								}
+							}
+							else if (tn<(priv->bounds.thmin))
+							{
+								if (xt==0)
+								{
+									drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+								}
+								else if (xt==PLOT_POLAR_BORDERS_IN)
+								{
+									drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
+									drs+=tn;
+									if (drs>(priv->bounds.thmin))
+									{
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+								}
+								else if (xt==PLOT_POLAR_BORDERS_OUT)
+								{
+									drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
+									drs+=tn;
+									if (drs>(priv->bounds.thmin))
+									{
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+								}
+								xt=PLOT_POLAR_BORDERS_CW;
+							}
+							else if (tn>(priv->bounds.thmax))
+							{
+								if (xt==0)
+								{
+									drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+								}
+								else if (xt==PLOT_POLAR_BORDERS_IN)
+								{
+									drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
+									drs+=tn;
+									if (drs<(priv->bounds.thmax))
+									{
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+								}
+								else if (xt==PLOT_POLAR_BORDERS_OUT)
+								{
+									drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
+									drs+=tn;
+									if (drs<(priv->bounds.thmax))
+									{
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+								}
+								xt=PLOT_POLAR_BORDERS_CCW;
+							}
+							else /* within range */
+							{
+								if ((xt&PLOT_POLAR_BORDERS_IN)!=0)
+								{
+								drs=rn-r;
+									if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
+									{
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+										else
+										{
+											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
+											drs+=tn;
+											if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+											else
+											{
+												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+										}
+									}
+									else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
+									{
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+										else
+										{
+											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
+											drs+=tn;
+											if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+											else
+											{
+												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+										}
+									}
+									else
+									{
+										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
+										drs+=tn;
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+									}
+									cairo_move_to(cr, x, y);
+								}
+								else if ((xt&PLOT_POLAR_BORDERS_OUT)!=0)
+								{
+									drs=r-rn;
+									if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
+									{
+										if ((drs<DZE)&&(drs>NZE))
+										{
+											drs=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+										}
+										else
+										{
+											drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
+											drs+=tn;
+											if (drs>=thn)
+											{
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											else
+											{
+												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+										}
+									}
+									else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
+									{
+										if ((drs<DZE)&&(drs>NZE))
+										{
+											drs=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+										}
+										else
+										{
+											drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
+											drs+=tn;
+											if (drs<=thx)
+											{
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											else
+											{
+												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+										}
+									}
+									else
+									{
+										drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
+										drs+=tn;
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+									}
+									cairo_move_to(cr, x, y);
+								}
+								else if ((xt&PLOT_POLAR_BORDERS_CW)!=0)
+								{
+									drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+									cairo_move_to(cr, x, y);
+								}
+								else if ((xt&PLOT_POLAR_BORDERS_CCW)!=0)
 								{
 									drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
 									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
@@ -3292,10 +4954,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								y=(priv->y0)-(drs*sin(tn));
 								cairo_line_to(cr, x, y);
 								cairo_stroke(cr);
-								cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
-								cairo_fill(cr);
-								cairo_move_to(cr, x, y);
-								xs=0;
+								xt=0;
 							}
 							r=rn;
 							th=tn;
@@ -3303,1603 +4962,52 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					}
 				}
 			}
-			else if (((plot->flags)&8)==0) /* straight lines only */
-			{
-				for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
-				{
-					r=g_array_index(plot->rdata, gdouble, 0);
-					th=ssx+g_array_index(plot->thdata, gdouble, 0);
-					if (r<(priv->bounds.rmin))
-					{
-						if (th<(priv->bounds.thmin)) xs=5;
-						else if (th>(priv->bounds.thmax)) xs=9;
-						else xs=1;
-					}
-					else if (r>(priv->bounds.rmax))
-					{
-						if (th<(priv->bounds.thmin)) xs=6;
-						else if (th>(priv->bounds.thmax)) xs=10;
-						else xs=2;
-					}
-					else if (th<(priv->bounds.thmin)) xs=4;
-					else if (th>(priv->bounds.thmax)) xs=8;
-					else
-					{
-						xs=0;
-						drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
-						x=(priv->x0)+(drs*cos(th));
-						y=(priv->y0)-(drs*sin(th));
-						cairo_move_to(cr, x, y);
-					}
-					for (j=1; j<(plot->size); j++)
-					{
-						rn=g_array_index(plot->rdata, gdouble, j);
-						tn=ssx+g_array_index(plot->thdata, gdouble, j);
-						if (rn<(priv->bounds.rmin))
-						{
-							if (tn<(priv->bounds.thmin))
-							{
-								if (xs==0)
-								{
-									drs=r-rn;
-									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
-									else
-									{
-										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
-										drs+=th;
-										if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
-										else
-										{
-											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
-											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-									}
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==2)
-								{
-									drs=th-tn;
-									if (drs>DZE)
-									{
-										drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
-										drs+=rn;
-										if (drs<(priv->bounds.rmax))
-										{
-											csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-											csx+=tn;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(csx));
-											y=(priv->y0)-(drc*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs>(priv->bounds.rmin))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-											else
-											{
-												drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-												drs+=tn;
-												x=(priv->x0)+((priv->wr)*cos(drs));
-												y=(priv->y0)-((priv->wr)*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=5;
-							}
-							else if (tn>(priv->bounds.thmax))
-							{
-								if (xs==0)
-								{
-									drs=r-rn;
-									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
-									else
-									{
-										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
-										drs+=th;
-										if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
-										else
-										{
-											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
-											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-									}
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==2)
-								{
-									drs=tn-th;
-									if (drs>DZE)
-									{
-										drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
-										drs+=r;
-										if (drs<(priv->bounds.rmax))
-										{
-											csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-											csx+=th;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(csx));
-											y=(priv->y0)-(drc*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs>(priv->bounds.rmin))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-											else
-											{
-												drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-												drs+=tn;
-												x=(priv->x0)+((priv->wr)*cos(drs));
-												y=(priv->y0)-((priv->wr)*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=9;
-							}
-							else
-							{
-								if (xs==0)
-								{
-									drs=r-rn;
-									drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
-									drs+=th;
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==2)
-								{
-									csx=(th-tn)/(r-rn);
-									drs=csx*((priv->bounds.rmax)-r);
-									drs+=th;
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=csx*((priv->bounds.rmin)-rn);
-									drs+=tn;
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==4)
-								{
-									drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
-									drs+=r-(priv->bounds.rmin);
-									if (drs>0)
-									{
-										drs=(priv->wr)+(drs*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
-										drs+=th;
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==6)
-								{
-									drs=tn-th;
-									if (drs>DZE)
-									{
-										drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
-										drs+=r;
-										if (drs>(priv->bounds.rmin))
-										{
-											csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-											csx+=tn;
-											x=(priv->x0)+((priv->wr)*cos(csx));
-											y=(priv->y0)-((priv->wr)*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs<(priv->bounds.rmax))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-											else
-											{
-												drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-												drs+=th;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								else if (xs==8)
-								{
-									drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
-									drs+=r-(priv->bounds.rmin);
-									if (drs>0)
-									{
-										drs=(priv->wr)+(drs*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
-										drs+=th;
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==10)
-								{
-									drs=th-tn;
-									if (drs>DZE)
-									{
-										drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
-										drs+=rn;
-										if (drs>(priv->bounds.rmin))
-										{
-											csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-											csx+=tn;
-											x=(priv->x0)+((priv->wr)*cos(csx));
-											y=(priv->y0)-((priv->wr)*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs<(priv->bounds.rmax))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-											else
-											{
-												drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-												drs+=th;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=1;
-							}
-						}
-						else if (rn>(priv->bounds.rmax))
-						{
-							if (tn<(priv->bounds.thmin))
-							{
-								if (xs==0)
-								{
-									drs=rn-r;
-									if ((drs<DZE)&&(drs>NZE))
-									{
-										drs=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									}
-									else
-									{
-										drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
-										drs+=th;
-										if (drs>=thn)
-										{
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-										}
-										else
-										{
-											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
-											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-									}
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==1)
-								{
-									drs=th-tn;
-									if (drs>DZE)
-									{
-										drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
-										drs+=rn;
-										if (drs>(priv->bounds.rmin))
-										{
-											csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-											csx+=th;
-											x=(priv->x0)+((priv->wr)*cos(csx));
-											y=(priv->y0)-((priv->wr)*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs<(priv->bounds.rmax))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-											else
-											{
-												drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-												drs+=tn;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=6;
-							}
-							else if (tn>(priv->bounds.thmax))
-							{
-								if (xs==0)
-								{
-									drs=rn-r;
-									if ((drs<DZE)&&(drs>NZE))
-									{
-										drs=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									}
-									else
-									{
-										drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
-										drs+=th;
-										if (drs<=thx)
-										{
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-										}
-										else
-										{
-											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
-											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-									}
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==1)
-								{
-									drs=tn-th;
-									if (drs>DZE)
-									{
-										drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
-										drs+=r;
-										if (drs>(priv->bounds.rmin))
-										{
-											csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-											csx+=th;
-											x=(priv->x0)+((priv->wr)*cos(csx));
-											y=(priv->y0)-((priv->wr)*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs<(priv->bounds.rmax))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-											else
-											{
-												drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-												drs+=tn;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=10;
-							}
-							else
-							{
-								if (xs==0)
-								{
-									drs=rn-r;
-									drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
-									drs+=th;
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==1)
-								{
-									csx=(tn-th)/(rn-r);
-									drs=csx*((priv->bounds.rmax)-rn);
-									drs+=tn;
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=csx*((priv->bounds.rmin)-r);
-									drs+=th;
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==4)
-								{
-									drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
-									drs+=r-(priv->bounds.rmin);
-									if (drs<dr1)
-									{
-										drs=(priv->wr)+(drs*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
-										drs+=th;
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==5)
-								{
-									drs=tn-th;
-									if (drs>DZE)
-									{
-										drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
-										drs+=r;
-										if (drs<(priv->bounds.rmax))
-										{
-											csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-											csx+=th;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(csx));
-											y=(priv->y0)-(drc*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs>(priv->bounds.rmin))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-											else
-											{
-												drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-												drs+=th;
-												x=(priv->x0)+((priv->wr)*cos(drs));
-												y=(priv->y0)-((priv->wr)*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								else if (xs==8)
-								{
-									drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
-									drs+=r-(priv->bounds.rmin);
-									if (drs<dr1)
-									{
-										drs=(priv->wr)+(drs*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
-										drs+=th;
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==9)
-								{
-									drs=th-tn;
-									if (drs>DZE)
-									{
-										drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
-										drs+=rn;
-										if (drs<(priv->bounds.rmax))
-										{
-											csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-											csx+=tn;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(csx));
-											y=(priv->y0)-(drc*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs>(priv->bounds.rmin))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-											else
-											{
-												drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-												drs+=th;
-												x=(priv->x0)+((priv->wr)*cos(drs));
-												y=(priv->y0)-((priv->wr)*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=2;
-							}
-						}
-						else if (tn<(priv->bounds.thmin))
-						{
-							if (xs==0)
-							{
-								drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
-								drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-								x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-								y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-								cairo_line_to(cr, x, y);
-								cairo_stroke(cr);
-							}
-							else if (xs==1)
-							{
-								drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
-								drs+=tn;
-								if (drs>(priv->bounds.thmin))
-								{
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-							}
-							else if (xs==2)
-							{
-								drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
-								drs+=tn;
-								if (drs>(priv->bounds.thmin))
-								{
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-							}
-							xs=4;
-						}
-						else if (tn>(priv->bounds.thmax))
-						{
-							if (xs==0)
-							{
-								drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
-								drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-								x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-								y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-								cairo_line_to(cr, x, y);
-								cairo_stroke(cr);
-							}
-							else if (xs==1)
-							{
-								drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
-								drs+=tn;
-								if (drs<(priv->bounds.thmax))
-								{
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-							}
-							else if (xs==2)
-							{
-								drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
-								drs+=tn;
-								if (drs<(priv->bounds.thmax))
-								{
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-							}
-							xs=8;
-						}
-						else /* within range */
-						{
-							if ((xs&1)!=0)
-							{
-								drs=rn-r;
-								if ((xs&4)!=0)
-								{
-									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
-									else
-									{
-										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
-										drs+=tn;
-										if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
-										else
-										{
-											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
-											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-									}
-								}
-								else if ((xs&8)!=0)
-								{
-									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
-									else
-									{
-										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
-										drs+=tn;
-										if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
-										else
-										{
-											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
-											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-									}
-								}
-								else
-								{
-									drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
-									drs+=tn;
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-								}
-								cairo_move_to(cr, x, y);
-							}
-							else if ((xs&2)!=0)
-							{
-								drs=r-rn;
-								if ((xs&4)!=0)
-								{
-									if ((drs<DZE)&&(drs>NZE))
-									{
-										drs=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									}
-									else
-									{
-										drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
-										drs+=tn;
-										if (drs>=thn)
-										{
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-										}
-										else
-										{
-											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
-											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-									}
-								}
-								else if ((xs&8)!=0)
-								{
-									if ((drs<DZE)&&(drs>NZE))
-									{
-										drs=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									}
-									else
-									{
-										drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
-										drs+=tn;
-										if (drs<=thx)
-										{
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-										}
-										else
-										{
-											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
-											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-									}
-								}
-								else
-								{
-									drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
-									drs+=tn;
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-								}
-								cairo_move_to(cr, x, y);
-							}
-							else if ((xs&4)!=0)
-							{
-								drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
-								drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-								x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-								y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-								cairo_move_to(cr, x, y);
-							}
-							else if ((xs&8)!=0)
-							{
-								drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
-								drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-								x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-								y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-								cairo_move_to(cr, x, y);
-							}
-							drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
-							x=(priv->x0)+(drs*cos(tn));
-							y=(priv->y0)-(drs*sin(tn));
-							cairo_line_to(cr, x, y);
-							xs=0;
-						}
-						r=rn;
-						th=tn;
-					}
-					cairo_stroke(cr);
-				}
-			}
-			else /* spline interpolation to polar transform */
-			{
-				for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
-				{
-					r=g_array_index(plot->rdata, gdouble, 0);
-					th=ssx+g_array_index(plot->thdata, gdouble, 0);
-					if (r<(priv->bounds.rmin))
-					{
-						if (th<(priv->bounds.thmin)) xs=5;
-						else if (th>(priv->bounds.thmax)) xs=9;
-						else xs=1;
-					}
-					else if (r>(priv->bounds.rmax))
-					{
-						if (th<(priv->bounds.thmin)) xs=6;
-						else if (th>(priv->bounds.thmax)) xs=10;
-						else xs=2;
-					}
-					else if (th<(priv->bounds.thmin)) xs=4;
-					else if (th>(priv->bounds.thmax)) xs=8;
-					else
-					{
-						xs=0;
-						drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
-						x=(priv->x0)+(drs*cos(th));
-						y=(priv->y0)-(drs*sin(th));
-						cairo_move_to(cr, x, y);
-					}
-					for (j=1; j<(plot->size); j++)
-					{
-						rn=g_array_index(plot->rdata, gdouble, j);
-						tn=ssx+g_array_index(plot->thdata, gdouble, j);
-						if (rn<(priv->bounds.rmin))
-						{
-							if (tn<(priv->bounds.thmin))
-							{
-								if (xs==0)
-								{
-									drs=r-rn;
-									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
-									else
-									{
-										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
-										drs+=th;
-										if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
-										else
-										{
-											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
-											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-									}
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==2)
-									{
-									drs=th-tn;
-									if (drs>DZE)
-									{
-										drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
-										drs+=rn;
-										if (drs<(priv->bounds.rmax))
-										{
-											csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-											csx+=tn;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(csx));
-											y=(priv->y0)-(drc*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs>(priv->bounds.rmin))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-											else
-											{
-												drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-												drs+=tn;
-												x=(priv->x0)+((priv->wr)*cos(drs));
-												y=(priv->y0)-((priv->wr)*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=5;
-							}
-							else if (tn>(priv->bounds.thmax))
-							{
-								if (xs==0)
-								{
-									drs=r-rn;
-									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
-									else
-									{
-										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
-										drs+=th;
-										if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
-										else
-										{
-											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
-											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-									}
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==2)
-								{
-									drs=tn-th;
-									if (drs>DZE)
-									{
-										drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
-										drs+=r;
-										if (drs<(priv->bounds.rmax))
-										{
-											csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-											csx+=th;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(csx));
-											y=(priv->y0)-(drc*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs>(priv->bounds.rmin))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-											else
-											{
-												drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-												drs+=tn;
-												x=(priv->x0)+((priv->wr)*cos(drs));
-												y=(priv->y0)-((priv->wr)*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=9;
-							}
-							else
-							{
-								if (xs==0)
-								{
-									drs=r-rn;
-									drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
-									drs+=th;
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==2)
-								{
-									csx=(th-tn)/(r-rn);
-									drs=csx*((priv->bounds.rmax)-r);
-									drs+=th;
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=csx*((priv->bounds.rmin)-rn);
-									drs+=tn;
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==4)
-								{
-									drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
-									drs+=r-(priv->bounds.rmin);
-									if (drs>0)
-									{
-										drs=(priv->wr)+(drs*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
-										drs+=th;
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==6)
-								{
-									drs=tn-th;
-									if (drs>DZE)
-									{
-										drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
-										drs+=r;
-										if (drs>(priv->bounds.rmin))
-										{
-											csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-											csx+=tn;
-											x=(priv->x0)+((priv->wr)*cos(csx));
-											y=(priv->y0)-((priv->wr)*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs<(priv->bounds.rmax))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-											else
-											{
-												drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-												drs+=th;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								else if (xs==8)
-								{
-									drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
-									drs+=r-(priv->bounds.rmin);
-									if (drs>0)
-									{
-										drs=(priv->wr)+(drs*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
-										drs+=th;
-										x=(priv->x0)+((priv->wr)*cos(drs));
-										y=(priv->y0)-((priv->wr)*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==10)
-								{
-									drs=th-tn;
-									if (drs>DZE)
-									{
-										drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
-										drs+=rn;
-										if (drs>(priv->bounds.rmin))
-										{
-											csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
-											csx+=tn;
-											x=(priv->x0)+((priv->wr)*cos(csx));
-											y=(priv->y0)-((priv->wr)*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs<(priv->bounds.rmax))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-											else
-											{
-												drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-												drs+=th;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=1;
-							}
-						}
-						else if (rn>(priv->bounds.rmax))
-						{
-							if (tn<(priv->bounds.thmin))
-							{
-								if (xs==0)
-								{
-									drs=rn-r;
-									if ((drs<DZE)&&(drs>NZE))
-									{
-										drs=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									}
-									else
-									{
-										drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
-										drs+=th;
-										if (drs>=thn)
-										{
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-										}
-										else
-										{
-											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
-											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-									}
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==1)
-								{
-									drs=th-tn;
-									if (drs>DZE)
-									{
-										drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
-										drs+=rn;
-										if (drs>(priv->bounds.rmin))
-										{
-											csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-											csx+=th;
-											x=(priv->x0)+((priv->wr)*cos(csx));
-											y=(priv->y0)-((priv->wr)*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs<(priv->bounds.rmax))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-											else
-											{
-												drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-												drs+=tn;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=6;
-							}
-							else if (tn>(priv->bounds.thmax))
-							{
-								if (xs==0)
-								{
-									drs=rn-r;
-									if ((drs<DZE)&&(drs>NZE))
-									{
-										drs=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									}
-									else
-									{
-										drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
-										drs+=th;
-										if (drs<=thx)
-										{
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-										}
-										else
-										{
-											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
-											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-									}
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==1)
-								{
-									drs=tn-th;
-									if (drs>DZE)
-									{
-										drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
-										drs+=r;
-										if (drs>(priv->bounds.rmin))
-										{
-											csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-											csx+=th;
-											x=(priv->x0)+((priv->wr)*cos(csx));
-											y=(priv->y0)-((priv->wr)*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs<(priv->bounds.rmax))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-											else
-											{
-												drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-												drs+=tn;
-												drc=(priv->wr)+(dr1*(priv->s));
-												x=(priv->x0)+(drc*cos(drs));
-												y=(priv->y0)-(drc*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=10;
-							}
-							else
-							{
-								if (xs==0)
-								{
-									drs=rn-r;
-									drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
-									drs+=th;
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==1)
-								{
-									csx=(tn-th)/(rn-r);
-									drs=csx*((priv->bounds.rmax)-rn);
-									drs+=tn;
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=csx*((priv->bounds.rmin)-r);
-									drs+=th;
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-								else if (xs==4)
-								{
-									drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
-									drs+=r-(priv->bounds.rmin);
-									if (drs<dr1)
-									{
-										drs=(priv->wr)+(drs*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
-										drs+=th;
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==5)
-								{
-									drs=tn-th;
-									if (drs>DZE)
-									{
-										drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
-										drs+=r;
-										if (drs<(priv->bounds.rmax))
-										{
-											csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
-											csx+=th;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(csx));
-											y=(priv->y0)-(drc*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs>(priv->bounds.rmin))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-											}
-											else
-											{
-												drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-												drs+=th;
-												x=(priv->x0)+((priv->wr)*cos(drs));
-												y=(priv->y0)-((priv->wr)*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								else if (xs==8)
-								{
-									drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
-									drs+=r-(priv->bounds.rmin);
-									if (drs<dr1)
-									{
-										drs=(priv->wr)+(drs*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										cairo_move_to(cr, x, y);
-										drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
-										drs+=th;
-										drc=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drc*cos(drs));
-										y=(priv->y0)-(drc*sin(drs));
-										cairo_line_to(cr, x, y);
-										cairo_stroke(cr);
-									}
-								}
-								else if (xs==9)
-								{
-									drs=th-tn;
-									if (drs>DZE)
-									{
-										drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
-										drs+=rn;
-										if (drs<(priv->bounds.rmax))
-										{
-											csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
-											csx+=tn;
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(csx));
-											y=(priv->y0)-(drc*sin(csx));
-											cairo_move_to(cr, x, y);
-											if (drs>(priv->bounds.rmin))
-											{
-												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
-												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-											}
-											else
-											{
-												drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
-												drs+=th;
-												x=(priv->x0)+((priv->wr)*cos(drs));
-												y=(priv->y0)-((priv->wr)*sin(drs));
-											}
-											cairo_line_to(cr, x, y);
-											cairo_stroke(cr);
-										}
-									}
-								}
-								xs=2;
-							}
-						}
-						else if (tn<(priv->bounds.thmin))
-						{
-							if (xs==0)
-							{
-								drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
-								drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-								x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-								y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-								cairo_line_to(cr, x, y);
-								cairo_stroke(cr);
-							}
-							else if (xs==1)
-							{
-								drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
-								drs+=tn;
-								if (drs>(priv->bounds.thmin))
-								{
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-							}
-							else if (xs==2)
-							{
-								drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
-								drs+=tn;
-								if (drs>(priv->bounds.thmin))
-								{
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-							}
-							xs=4;
-						}
-						else if (tn>(priv->bounds.thmax))
-						{
-							if (xs==0)
-							{
-								drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
-								drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
-								x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-								y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-								cairo_line_to(cr, x, y);
-								cairo_stroke(cr);
-							}
-							else if (xs==1)
-							{
-								drs=((priv->bounds.rmin)-rn)*(tn-th)/(rn-r);
-								drs+=tn;
-								if (drs<(priv->bounds.thmax))
-								{
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-							}
-							else if (xs==2)
-							{
-								drs=((priv->bounds.rmax)-rn)*(tn-th)/(rn-r);
-								drs+=tn;
-								if (drs<(priv->bounds.thmax))
-								{
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-									cairo_move_to(cr, x, y);
-									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
-									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									cairo_line_to(cr, x, y);
-									cairo_stroke(cr);
-								}
-							}
-							xs=8;
-						}
-						else /* within range */
-						{
-							if ((xs&1)!=0)
-							{
-							drs=rn-r;
-								if ((xs&4)!=0)
-								{
-									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
-									else
-									{
-										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
-										drs+=tn;
-										if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
-										else
-										{
-											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
-											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-									}
-								}
-								else if ((xs&8)!=0)
-								{
-									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
-									else
-									{
-										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
-										drs+=tn;
-										if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
-										else
-										{
-											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
-											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-									}
-								}
-								else
-								{
-									drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
-									drs+=tn;
-									x=(priv->x0)+((priv->wr)*cos(drs));
-									y=(priv->y0)-((priv->wr)*sin(drs));
-								}
-								cairo_move_to(cr, x, y);
-							}
-							else if ((xs&2)!=0)
-							{
-								drs=r-rn;
-								if ((xs&4)!=0)
-								{
-									if ((drs<DZE)&&(drs>NZE))
-									{
-										drs=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-									}
-									else
-									{
-										drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
-										drs+=tn;
-										if (drs>=thn)
-										{
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-										}
-										else
-										{
-											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
-											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-										}
-									}
-								}
-								else if ((xs&8)!=0)
-								{
-									if ((drs<DZE)&&(drs>NZE))
-									{
-										drs=(priv->wr)+(dr1*(priv->s));
-										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-									}
-									else
-									{
-										drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
-										drs+=tn;
-										if (drs<=thx)
-										{
-											drc=(priv->wr)+(dr1*(priv->s));
-											x=(priv->x0)+(drc*cos(drs));
-											y=(priv->y0)-(drc*sin(drs));
-										}
-										else
-										{
-											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
-											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-										}
-									}
-								}
-								else
-								{
-									drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
-									drs+=tn;
-									drc=(priv->wr)+(dr1*(priv->s));
-									x=(priv->x0)+(drc*cos(drs));
-									y=(priv->y0)-(drc*sin(drs));
-								}
-								cairo_move_to(cr, x, y);
-							}
-							else if ((xs&4)!=0)
-							{
-								drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
-								drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-								x=(priv->x0)+(drs*cos(priv->bounds.thmin));
-								y=(priv->y0)-(drs*sin(priv->bounds.thmin));
-								cairo_move_to(cr, x, y);
-							}
-							else if ((xs&8)!=0)
-							{
-								drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
-								drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
-								x=(priv->x0)+(drs*cos(priv->bounds.thmax));
-								y=(priv->y0)-(drs*sin(priv->bounds.thmax));
-								cairo_move_to(cr, x, y);
-							}
-							drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
-							x=(priv->x0)+(drs*cos(tn));
-							y=(priv->y0)-(drs*sin(tn));
-							cairo_line_to(cr, x, y);
-							cairo_stroke(cr);
-							xs=0;
-						}
-						r=rn;
-						th=tn;
-					}
-				}
-			}
 		}
-		else if (((plot->flags)&4)!=0) /* points only */
+		else if (((plot->flagd)&PLOT_POLAR_DISP_PTS)!=0) /* points only */
 		{
-			for (j=0; j<(plot->size); j++)
+			for (k=0; k<(plot->ind->len); k++)
 			{
-				r=g_array_index(plot->rdata, gdouble, j);
-				th=g_array_index(plot->thdata, gdouble, j);
-				if ((r>=(priv->bounds.rmin))&&(r<=(priv->bounds.rmax)))
+				ft=fmod(k,(plot->rd->len));
+				vv=g_array_index((plot->rd), gdouble, ft);
+				wv=g_array_index((plot->gr), gdouble, ft);
+				xv=g_array_index((plot->bl), gdouble, ft);
+				yv=g_array_index((plot->al), gdouble, ft);
+				cairo_set_source_rgba(cr, vv, wv, xv, yv);
+				ft=g_array_index((plot->ind), gint, k);
+				lt=g_array_index((plot->sizes), gint, k)+ft;
+				for (j=ft; j<lt; j++)
 				{
-					if (th<(priv->bounds.thmin))
+					r=g_array_index((plot->rdata), gdouble, j);
+					th=g_array_index((plot->thdata), gdouble, j);
+					if ((r>=(priv->bounds.rmin))&&(r<=(priv->bounds.rmax)))
 					{
-						dwr=th+MY_2PI;
-						if ((dwr>=(priv->bounds.thmin))&&(dwr<=(priv->bounds.thmax)))
+						if (th<(priv->bounds.thmin))
+						{
+							dwr=th+MY_2PI;
+							if ((dwr>=(priv->bounds.thmin))&&(dwr<=(priv->bounds.thmax)))
+							{
+								drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+								x=(priv->x0)+(drs*cos(th));
+								y=(priv->y0)-(drs*sin(th));
+								cairo_move_to(cr, x, y);
+								cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
+								cairo_fill(cr);
+							}
+						}
+						else if (th>(priv->bounds.thmax))
+						{
+							dwr=th-MY_2PI;
+							if ((dwr>=(priv->bounds.thmin))&&(dwr<=(priv->bounds.thmax)))
+							{
+								drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+								x=(priv->x0)+(drs*cos(th));
+								y=(priv->y0)-(drs*sin(th));
+								cairo_move_to(cr, x, y);
+								cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
+								cairo_fill(cr);
+							}
+						}
+						else
 						{
 							drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
 							x=(priv->x0)+(drs*cos(th));
@@ -4908,28 +5016,6 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
 							cairo_fill(cr);
 						}
-					}
-					else if (th>(priv->bounds.thmax))
-					{
-						dwr=th-MY_2PI;
-						if ((dwr>=(priv->bounds.thmin))&&(dwr<=(priv->bounds.thmax)))
-						{
-							drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
-							x=(priv->x0)+(drs*cos(th));
-							y=(priv->y0)-(drs*sin(th));
-							cairo_move_to(cr, x, y);
-							cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
-							cairo_fill(cr);
-						}
-					}
-					else
-					{
-						drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
-						x=(priv->x0)+(drs*cos(th));
-						y=(priv->y0)-(drs*sin(th));
-						cairo_move_to(cr, x, y);
-						cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
-						cairo_fill(cr);
 					}
 				}
 			}
@@ -4958,7 +5044,7 @@ gboolean plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, gdou
 	(priv->bounds.rmin)=rn;
 	(priv->bounds.rmax)=rx;
 	(priv->centre.r)=rcn;
-	if (((plot->flags)&1)==0) {(priv->bounds.thmin)=thn*MY_PI_180; (priv->centre.th)=thc*MY_PI_180; (priv->bounds.thmax)=thx*MY_PI_180;}
+	if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0) {(priv->bounds.thmin)=thn*MY_PI_180; (priv->centre.th)=thc*MY_PI_180; (priv->bounds.thmax)=thx*MY_PI_180;}
 	else {(priv->bounds.thmin)=thn; (priv->centre.th)=thc; (priv->bounds.thmax)=thx;}
 	plot_polar_redraw(widget);
 	return FALSE;
@@ -4976,7 +5062,7 @@ gboolean plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble x
 	(priv->ticks.zc)=WGS;
 	if (xx<0) {xx=-xx; xn=-xn;}
 	if (xx<xn) {num=xx; xx=xn; xn=num;}
-	dtt=((plot->afsize)+(plot->lfsize)+JTI)*(xx-xn)/(((priv->bounds.rmax)-(priv->bounds.rmin))*(priv->s));
+	dtt=(((pango_font_description_get_size(plot->afont)+pango_font_description_get_size(plot->lfont))/PANGO_SCALE)+JTI)*(xx-xn)/(((priv->bounds.rmax)-(priv->bounds.rmin))*(priv->s));
 	(priv->rcs)=2; /* determine number of characters needed for radial labels and pretty max/min values */
 	if (xn<=0)
 	{
@@ -5124,7 +5210,7 @@ gboolean plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble x
 		if (num3<1) (priv->rcs)+=1-floor(log10(num3));
 	}
 	if ((priv->rcs)>8) (priv->rcs)=8;
-	if (((plot->flags)&1)==0)
+	if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0)
 	{
 		num=(yx-yn);
 		if (num<0)
@@ -5339,6 +5425,33 @@ gboolean plot_polar_print_eps(GtkWidget *plot, gchar* fout)
 	return FALSE;
 }
 
+gboolean plot_polar_print_png(GtkWidget *plot, gchar* fout)
+{
+	cairo_t *cr;
+	cairo_surface_t *surface;
+
+	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
+	cr=cairo_create(surface);
+	draw(plot, cr);
+	cairo_surface_write_to_png(surface, fout);
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
+	return FALSE;
+}
+
+gboolean plot_polar_print_svg(GtkWidget *plot, gchar* fout)
+{
+	cairo_t *cr;
+	cairo_surface_t *surface;
+
+	surface=cairo_svg_surface_create(fout, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
+	cr=cairo_create(surface);
+	draw(plot, cr);
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
+	return FALSE;
+}
+
 static gboolean plot_polar_button_press(GtkWidget *widget, GdkEventButton *event)
 {
 	PlotPolarPrivate *priv;
@@ -5355,14 +5468,14 @@ static gboolean plot_polar_button_press(GtkWidget *widget, GdkEventButton *event
 		(priv->rescale.thmax)=(priv->bounds.thmax);
 		dy=(priv->y0)-(event->y);
 		dx=(event->x)-(priv->x0);
-		if (((plot->zmode)&12)!=0)
+		if (((plot->zmode)&(PLOT_POLAR_ZOOM_SGL|PLOT_POLAR_ZOOM_AZM))!=0)
 		{
 			dt=atan2(dy, dx); /* divide by zero handling */
 			if ((dt<=(priv->bounds.thmax))&&(dt>=(priv->bounds.thmin))) {(priv->rescale.thmax)=dt; (priv->flagr)=1;}
 			else if (((dt+MY_2PI)<=(priv->bounds.thmax))&&((dt+MY_2PI)<=(priv->bounds.thmin))) {(priv->rescale.thmax)=dt+MY_2PI; (priv->flagr)=1;}
 			else if (((dt-MY_2PI)<=(priv->bounds.thmax))&&((dt-MY_2PI)<=(priv->bounds.thmin))) {(priv->rescale.thmax)=dt-MY_2PI; (priv->flagr)=1;}
 		}
-		if (((plot->zmode)&10)!=0)
+		if (((plot->zmode)&(PLOT_POLAR_ZOOM_SGL|PLOT_POLAR_ZOOM_RDL))!=0)
 		{
 			dx*=dx;
 			dy*=dy;
@@ -5396,7 +5509,7 @@ static gboolean plot_polar_motion_notify(GtkWidget *widget, GdkEventMotion *even
 		if ((dy>=(priv->bounds.rmin))&&(dy<=(priv->bounds.rmax)))
 		{
 			(plot->rps)=dy;
-			if (((plot->flags)&1)==0) (plot->thps)=dt*I180_MY_PI;
+			if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0) (plot->thps)=dt*I180_MY_PI;
 			else (plot->thps)=dt;
 			g_signal_emit(plot, plot_polar_signals[MOVED], 0);
 		}
@@ -5411,7 +5524,7 @@ static gboolean plot_polar_motion_notify(GtkWidget *widget, GdkEventMotion *even
 		if ((dy>=(priv->bounds.rmin))&&(dy<=(priv->bounds.rmax)))
 		{
 			(plot->rps)=dy;
-			if (((plot->flags)&1)==0) (plot->thps)=(dt*I180_MY_PI)+360;
+			if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0) (plot->thps)=(dt*I180_MY_PI)+360;
 			else (plot->thps)=dt+MY_2PI;
 			g_signal_emit(plot, plot_polar_signals[MOVED], 0);
 		}
@@ -5426,7 +5539,7 @@ static gboolean plot_polar_motion_notify(GtkWidget *widget, GdkEventMotion *even
 		if ((dy>=(priv->bounds.rmin))&&(dy<=(priv->bounds.rmax)))
 		{
 			(plot->rps)=dy;
-			if (((plot->flags)&1)==0) (plot->thps)=(dt*I180_MY_PI)-360;
+			if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0) (plot->thps)=(dt*I180_MY_PI)-360;
 			else (plot->thps)=dt-MY_2PI;
 			g_signal_emit(plot, plot_polar_signals[MOVED], 0);
 		}
@@ -5445,20 +5558,20 @@ static gboolean plot_polar_button_release(GtkWidget *widget, GdkEventButton *eve
 	plot=PLOT_POLAR(widget);
 	if ((priv->flagr)==1)
 	{
-		if (((plot->zmode)&8)==0)
+		if (((plot->zmode)&PLOT_POLAR_ZOOM_SGL)==0)
 		{
 			(priv->rescale.rmin)=(priv->bounds.rmin);
 			(priv->rescale.thmin)=(priv->bounds.thmin);
 			dy=(priv->y0)-(event->y);
 			dx=(event->x)-(priv->x0);
-			if (((plot->zmode)&4)!=0)
+			if (((plot->zmode)&PLOT_POLAR_ZOOM_AZM)!=0)
 			{
 				dt=atan2(dy, dx); /* divide by zero handling */
 				if ((dt<=(priv->bounds.thmax))&&(dt>=(priv->bounds.thmin))) (priv->rescale.thmin)=dt;
 				else if (((dt+MY_2PI)<=(priv->bounds.thmax))&&((dt+MY_2PI)<=(priv->bounds.thmin))) (priv->rescale.thmin)=dt+MY_2PI;
 				else if (((dt-MY_2PI)<=(priv->bounds.thmax))&&((dt-MY_2PI)<=(priv->bounds.thmin))) (priv->rescale.thmin)=dt-MY_2PI;
 			}
-			if (((plot->zmode)&2)!=0)
+			if (((plot->zmode)&PLOT_POLAR_ZOOM_RDL)!=0)
 			{
 				dx*=dx;
 				dy*=dy;
@@ -5467,7 +5580,7 @@ static gboolean plot_polar_button_release(GtkWidget *widget, GdkEventButton *eve
 				dy+=(priv->bounds.rmin);
 				if ((dy<=(priv->bounds.rmax))&&(dy>=(priv->bounds.rmin))) (priv->rescale.rmin)=dy;
 			}
-			if (((plot->zmode)&1)==0)
+			if (((plot->zmode)&PLOT_POLAR_ZOOM_OUT)==0)
 			{
 				if ((priv->rescale.thmax)!=(priv->rescale.thmin))
 				{
@@ -5477,7 +5590,7 @@ static gboolean plot_polar_button_release(GtkWidget *widget, GdkEventButton *eve
 						xx=(priv->rescale.rmax);
 						yn=(priv->rescale.thmin);
 						yx=(priv->rescale.thmax);
-						if (((plot->flags)&1)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
+						if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
 						plot_polar_update_scale_pretty(widget, xn, xx, yn, yx);
 					}
 					else if ((priv->rescale.rmax)<(priv->rescale.rmin))
@@ -5486,7 +5599,7 @@ static gboolean plot_polar_button_release(GtkWidget *widget, GdkEventButton *eve
 						xx=(priv->rescale.rmin);
 						yn=(priv->rescale.thmin);
 						yx=(priv->rescale.thmax);
-						if (((plot->flags)&1)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
+						if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
 						plot_polar_update_scale_pretty(widget, xn, xx, yn, yx);
 					}
 				}
@@ -5503,17 +5616,17 @@ static gboolean plot_polar_button_release(GtkWidget *widget, GdkEventButton *eve
 				else if (s<0) {yn=((priv->rescale.thmax)-(priv->bounds.thmin))*s; yx=((priv->rescale.thmin)-(priv->bounds.thmax))*s;}
 				yn+=(priv->bounds.thmin);
 				yx+=(priv->bounds.thmax);
-				if (((plot->flags)&1)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
+				if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
 				plot_polar_update_scale_pretty(widget, xn, xx, yn, yx);
 			}
 		}
-		else if (((plot->zmode)&1)==0)
+		else if (((plot->zmode)&PLOT_POLAR_ZOOM_OUT)==0)
 		{
 			xn=((priv->rescale.rmax)*ZS)+(ZSC*(priv->bounds.rmin));
 			xx=((priv->rescale.rmax)*ZS)+(ZSC*(priv->bounds.rmax));
 			yn=((priv->rescale.thmax)*ZS)+(ZSC*(priv->bounds.thmin));
 			yx=((priv->rescale.thmax)*ZS)+(ZSC*(priv->bounds.thmax));
-			if (((plot->flags)&1)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
+			if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
 			plot_polar_update_scale_pretty(widget, xn, xx, yn, yx);
 		}
 		else
@@ -5522,7 +5635,7 @@ static gboolean plot_polar_button_release(GtkWidget *widget, GdkEventButton *eve
 			xx=((priv->bounds.rmax)*UZ)-(UZC*(priv->rescale.rmax));
 			yn=((priv->bounds.thmin)*UZ)-(UZC*(priv->rescale.thmax));
 			yx=((priv->bounds.thmax)*UZ)-(UZC*(priv->rescale.thmax));
-			if (((plot->flags)&1)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
+			if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
 			plot_polar_update_scale_pretty(widget, xn, xx, yn, yx);
 		}
 		(priv->flagr)=0;
@@ -5534,12 +5647,12 @@ static gboolean plot_polar_button_release(GtkWidget *widget, GdkEventButton *eve
 		{
 			if ((event->x)>=xw-11)
 			{
-				(plot->zmode)^=1;
+				(plot->zmode)^=PLOT_POLAR_ZOOM_OUT;
 				plot_polar_redraw(widget);
 			}
-			else if (((plot->zmode)&8)!=0)
+			else if (((plot->zmode)&PLOT_POLAR_ZOOM_SGL)!=0)
 			{
-				(plot->zmode)&=1;
+				(plot->zmode)&=PLOT_POLAR_ZOOM_OUT;
 				plot_polar_redraw(widget);
 			}
 			else
@@ -5559,8 +5672,16 @@ static void plot_polar_finalise(PlotPolar *plot)
 	priv=PLOT_POLAR_GET_PRIVATE(plot);
 	if (plot->rlab) g_free(plot->rlab);
 	if (plot->thlab) g_free(plot->thlab);
+	if (plot->afont) pango_font_description_free(plot->afont);
+	if (plot->lfont) pango_font_description_free(plot->lfont);
 	if (plot->rdata) g_free(plot->rdata);
 	if (plot->thdata) g_free(plot->thdata);
+	if (plot->ind) g_array_free((plot->ind), FALSE);
+	if (plot->sizes) g_array_free((plot->sizes), FALSE);
+	if (plot->rd) g_array_free((plot->rd), FALSE);
+	if (plot->gr) g_array_free((plot->gr), FALSE);
+	if (plot->bl) g_array_free((plot->bl), FALSE);
+	if (plot->al) g_array_free((plot->al), FALSE);
 }
 
 static void plot_polar_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -5609,14 +5730,15 @@ static void plot_polar_get_property(GObject *object, guint prop_id, GValue *valu
 	}
 }
 
-static gboolean plot_polar_expose(GtkWidget *plot, GdkEventExpose *event)
+static gboolean plot_polar_expose(GtkWidget *widget, GdkEventExpose *event)
 {
 	cairo_t *cr;
 
-	cr=gdk_cairo_create(plot->window);
+	cr=gdk_cairo_create(widget->window);
 	cairo_rectangle(cr, (event->area.x), (event->area.y), (event->area.width), (event->area.height));
 	cairo_clip(cr);
-	draw(plot, cr);
+	drawz(widget, cr);
+	draw(widget, cr);
 	cairo_destroy(cr);
 	return FALSE;
 }
@@ -5654,6 +5776,7 @@ static void plot_polar_class_init(PlotPolarClass *klass)
 static void plot_polar_init(PlotPolar *plot)
 {
 	PlotPolarPrivate *priv;
+	gdouble val;
 
 	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);
 	priv=PLOT_POLAR_GET_PRIVATE(plot);
@@ -5662,12 +5785,54 @@ static void plot_polar_init(PlotPolar *plot)
 	{(priv->ticks.r)=4; (priv->ticks.zin)=12; (priv->ticks.z2m)=2; (priv->ticks.zc)=40.0;}
 	{(priv->rcs)=5; (priv->thcs)=6;}
 	{(priv->flagr)=0; (priv->flaga)=0;}
-	{(plot->rdata)=NULL; (plot->thdata)=NULL;}
+	{(plot->rdata)=NULL; (plot->thdata)=NULL; (plot->ind)=NULL; (plot->sizes)=NULL;}
 	{(plot->rlab)=g_strdup("Amplitude"); (plot->thlab)=g_strdup("Azimuth");}
-	{(plot->afsize)=12; (plot->lfsize)=12;}
-	{(plot->size)=0; (plot->flags)=4; (plot->ptsize)=5; (plot->linew)=2;}
-	(plot->zmode)=6;
+	{(plot->flagd)=(PLOT_POLAR_DISP_PTS|PLOT_POLAR_DISP_LIN); (plot->ptsize)=5; (plot->linew)=2;}
+	(plot->zmode)=(PLOT_POLAR_ZOOM_RDL|PLOT_POLAR_ZOOM_AZM);
 	{(plot->rps)=0; (plot->thps)=0;}
+	{(plot->afont)=pango_font_description_new(); (plot->lfont)=pango_font_description_new();}
+	{pango_font_description_set_family((plot->afont), "sans"); pango_font_description_set_family((plot->lfont), "sans");}
+	{pango_font_description_set_style((plot->afont), PANGO_STYLE_NORMAL); pango_font_description_set_style((plot->lfont), PANGO_STYLE_NORMAL);}
+	{pango_font_description_set_size((plot->afont), 12*PANGO_SCALE); pango_font_description_set_size((plot->lfont), 12*PANGO_SCALE);}
+	(plot->rd)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
+	(plot->gr)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
+	(plot->bl)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
+	(plot->al)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
+	val=0;
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	g_array_append_val((plot->bl), val);
+	val=1;
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	val=0;
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	g_array_append_val((plot->rd), val);
+	val=1.0;
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
+	g_array_append_val((plot->bl), val);
+	val=0;
+	g_array_append_val((plot->rd), val);
+	g_array_append_val((plot->gr), val);
+	val=1;
+	g_array_append_val((plot->rd), val);
+	val=0.8;
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
+	g_array_append_val((plot->al), val);
 }
 
 GtkWidget *plot_polar_new(void) {return g_object_new(PLOT_TYPE_POLAR, NULL);}

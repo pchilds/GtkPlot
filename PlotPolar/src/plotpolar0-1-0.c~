@@ -33,10 +33,16 @@
  * curved azimuthal axis label
  * splines in drawn lines
  * ensure new wrapping handling implemented consistently throughout
+<<<<<<< HEAD
  * lines connecting points across the rmin-rmax boundary should be drawn
  * BUGS:
  * positioning not centred well (bad centre values?)
  * +ve half of plot missing when zooming on LHS
+=======
+ * BUGS:
+ * positioning not centred well (bad centre values?)
+ * single click zoom in no radius (e.g. -4pi/6 to 3pi/6)
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
  */
 
 #include <gtk/gtk.h>
@@ -88,14 +94,22 @@ struct xs {gdouble rmin, thmin, rmax, thmax;};
 struct tk {guint r, zin, z2m; gdouble zc;};
 struct pt {gdouble r, th;};
 typedef struct _PlotPolarPrivate PlotPolarPrivate;
+<<<<<<< HEAD
 struct _PlotPolarPrivate {struct xs bounds, rescale; struct pt centre; struct tk ticks; gint x0, y0; gdouble s; guint rcs, thcs, flaga, flagr;};
+=======
+struct _PlotPolarPrivate {struct xs bounds, rescale; struct pt centre; struct tk ticks; gint x0, y0; gdouble s, wr; guint rcs, thcs, flaga, flagr;};
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 
 static void draw(GtkWidget *widget, cairo_t *cr)
 {
 	PlotPolarPrivate *priv;
 	PlotPolar *plot;
 	gint j, k, xw, yw, kx, j0, jl, xs, wd, hg;
+<<<<<<< HEAD
 	gdouble dtt, tt, dtr, thx, thn, dt, wr, sx, csx, ssx, dr1, drs, drc, dz, rt, dwr, rl, ctx, ctn, stx, stn, r, th, rn, tn, x, y;
+=======
+	gdouble dtt, tt, dtr, thx, thn, dt, sx, csx, ssx, dr1, drs, drc, dz, rt, dwr, rl, ctx, ctn, stx, stn, r, th, rn, tn, x, y;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 	gchar lbl[10];
 	gchar *str1=NULL, *str2=NULL, *str3;
 	cairo_text_extents_t extents;
@@ -175,8 +189,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		(priv->bounds.rmax)=(priv->bounds.rmin);
 		(priv->bounds.rmin)=dt;
 	}
+<<<<<<< HEAD
 	if ((priv->bounds.rmin)<=0) {(priv->bounds.rmin)=0; wr=0;}
 	else wr=WGP*sqrt(xw*yw);
+=======
+	if ((priv->bounds.rmin)<=0) {(priv->bounds.rmin)=0; (priv->wr)=0;}
+	else (priv->wr)=WGP*sqrt(xw*yw);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 	if ((priv->centre.r)<=0) (priv->centre.r)=0;
 	else if ((priv->centre.r)<(priv->bounds.rmax)) (priv->centre.r)=(priv->bounds.rmax);
 	cairo_set_source_rgb(cr, 0, 0, 0);
@@ -229,21 +248,34 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		{
 			(priv->s)=dr1-drc;
 			if ((priv->s)<DZE) (priv->s)=G_MAXDOUBLE;
+<<<<<<< HEAD
 			else (priv->s)=((xw/2)-(wr*(1-cos(priv->centre.th))))/(priv->s); /* check x0 to xw radial to get maximum scale */
+=======
+			else (priv->s)=((xw/2)-((priv->wr)*(1-cos(priv->centre.th))))/(priv->s); /* check x0 to xw radial to get maximum scale */
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			if ((thx+thn)>=0)
 			{ /* radial label ccw top to axis azimuthal label bottom to axis */
 				(priv->flaga)=2;
 				sx=dr1-drs;
 				if (sx>DZE)
 				{ /* check y0 to 0 radial to get maximum scale */
+<<<<<<< HEAD
 					sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+					sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					if (sx<(priv->s)) (priv->s)=sx;
 				}
 				sx=(dr1*ctx)-drc;
 				if ((sx>DZE)||(sx<NZE))
 				{ /* check x1'||x1"=0 to get maximum scale */
+<<<<<<< HEAD
 					if (thx>=MY_3PI_4) sx=((wr*(cos(priv->centre.th)))-((dtt+wr)*ctx)-(xw/2))/sx;
 					else sx=((wr*(cos(priv->centre.th)-ctx))+(dtt*stx)-(xw/2))/sx;
+=======
+					if (thx>=MY_3PI_4) sx=(((priv->wr)*(cos(priv->centre.th)))-((dtt+(priv->wr))*ctx)-(xw/2))/sx;
+					else sx=(((priv->wr)*(cos(priv->centre.th)-ctx))+(dtt*stx)-(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					if (sx<(priv->s)) (priv->s)=sx;
 				}
 				if (thn<=NMY_PI_2)
@@ -251,7 +283,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1+drs;
 					if (sx>DZE)
 					{ /* check y0 to yw radial to get maximum scale */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -260,12 +296,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=drs-(dr1*stn);
 					if ((sx>DZE)||(sx<NZE))
 					{
+<<<<<<< HEAD
 						sx=(((wr+dtt)*stn)-(wr*sin(priv->centre.th))+(yw/2))/sx;
+=======
+						sx=((((priv->wr)+dtt)*stn)-((priv->wr)*sin(priv->centre.th))+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if ((drs>DZE)||(drs<NZE))
 					{
+<<<<<<< HEAD
 						sx=((wr*(stx-sin(priv->centre.th)))+(dtt*ctx)+(yw/2))/drs;
+=======
+						sx=(((priv->wr)*(stx-sin(priv->centre.th)))+(dtt*ctx)+(yw/2))/drs;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -276,14 +320,23 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				sx=dr1+drs;
 				if (sx>DZE)
 				{ /* check y0 to yw radial to get maximum scale */
+<<<<<<< HEAD
 					sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
+=======
+					sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					if (sx<(priv->s)) (priv->s)=sx;
 				}
 				sx=(dr1*ctn)-drc;
 				if ((sx>DZE)||(sx<NZE))
 				{ /* check x2'|x2"=0 to get maximum scale */
+<<<<<<< HEAD
 					if (thn<=N3_MY_PI_4) sx=((wr*cos(priv->centre.th))-((wr+dtt)*ctn)-(xw/2))/sx;
 					else sx=((wr*(cos(priv->centre.th)-ctn))-(dtt*stn)-(xw/2))/sx;
+=======
+					if (thn<=N3_MY_PI_4) sx=(((priv->wr)*cos(priv->centre.th))-(((priv->wr)+dtt)*ctn)-(xw/2))/sx;
+					else sx=(((priv->wr)*(cos(priv->centre.th)-ctn))-(dtt*stn)-(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					if (sx<(priv->s)) (priv->s)=sx;
 				}
 				if (thx>=G_PI_2)
@@ -291,7 +344,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1-drs;
 					if (sx>DZE)
 					{
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -300,12 +357,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=drs-(dr1*stx);
 					if ((sx>DZE)||(sx<NZE))
 					{
+<<<<<<< HEAD
 						sx=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))-(yw/2))/sx;
+=======
+						sx=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if ((drs>DZE)||(drs<NZE))
 					{
+<<<<<<< HEAD
 						sx=((wr*(stn-sin(priv->centre.th)))-(dtt*ctn)-(yw/2))/drs;
+=======
+						sx=(((priv->wr)*(stn-sin(priv->centre.th)))-(dtt*ctn)-(yw/2))/drs;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -317,13 +382,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{ /* radial label ccw top to axis azimuthal label bottom to axis */
 				(priv->flaga)=2;
 				(priv->s)=drs-(dr1*stn); /* check y3'=yw to get maximum scale */
+<<<<<<< HEAD
 				if (((priv->s)>DZE)||((priv->s)<NZE)) (priv->s)=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))+(yw/2))/(priv->s);
+=======
+				if (((priv->s)>DZE)||((priv->s)<NZE)) (priv->s)=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))+(yw/2))/(priv->s);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				else (priv->s)=G_MAXDOUBLE;
 				sx=(dr1*ctx)-drc;
 				if ((sx>DZE)||(sx<NZE))
 				{/* check x1'||x1"=0 to get maximum scale */
+<<<<<<< HEAD
 					if (thx>=MY_3PI_4) sx=((wr*(cos(priv->centre.th)))-((wr+dtt)*ctx)-(xw/2))/sx;
 					else sx=((wr*(cos(priv->centre.th)-ctx))+(dtt*stx)-(xw/2))/sx;
+=======
+					if (thx>=MY_3PI_4) sx=(((priv->wr)*(cos(priv->centre.th)))-(((priv->wr)+dtt)*ctx)-(xw/2))/sx;
+					else sx=(((priv->wr)*(cos(priv->centre.th)-ctx))+(dtt*stx)-(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					if (sx<(priv->s)) (priv->s)=sx;
 				}
 				if (thn>=G_PI_2)
@@ -331,12 +405,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=drs-(dr1*stn);
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y2'=0 to get maximum scale */
+<<<<<<< HEAD
 						sx=(((wr+dtt)*stn)-(wr*sin(priv->centre.th))-(yw/2))/sx;
+=======
+						sx=((((priv->wr)+dtt)*stn)-((priv->wr)*sin(priv->centre.th))-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if ((drc>DZE)||(drc<NZE))
 					{/* check x4=xw to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*(ctn-cos(priv->centre.th)))-(xw/2))/drc;
+=======
+						sx=(((priv->wr)*(ctn-cos(priv->centre.th)))-(xw/2))/drc;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -345,13 +427,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1-drs;
 					if (sx>DZE)
 					{/* check y0 to 0 radial to get maximum scale */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=(dr1*ctn)-drc;
 					if ((sx>DZE)||(sx<NZE))
 					{/* check x2'=xw to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*cos(priv->centre.th))-((wr+dtt)*ctn)+(xw/2))/sx;
+=======
+						sx=(((priv->wr)*cos(priv->centre.th))-(((priv->wr)+dtt)*ctn)+(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -361,26 +451,44 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				(priv->flaga)=3;
 				if (thn>=0)
 				{/* check y4'=yw to get maximum scale */
+<<<<<<< HEAD
 					if ((drs>DZE)||(drs<NZE)) (priv->s)=((wr*(stn-(sin(priv->centre.th))))-(dtt*ctn)+(yw/2))/drs;
+=======
+					if ((drs>DZE)||(drs<NZE)) (priv->s)=(((priv->wr)*(stn-(sin(priv->centre.th))))-(dtt*ctn)+(yw/2))/drs;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					else (priv->s)=G_MAXDOUBLE;
 					sx=(dr1*ctn)-drc;
 					if ((sx>DZE)||(sx<NZE))
 					{/* check x2"||x2'=xw to get maximum scale */
+<<<<<<< HEAD
 						if (thn>=G_PI_4) sx=((wr*cos(priv->centre.th))-((wr+dtt)*ctn)+(xw/2))/sx;
 						else sx=((wr*(cos(priv->centre.th)-ctn))-(dtt*stn)+(xw/2))/sx;
+=======
+						if (thn>=G_PI_4) sx=(((priv->wr)*cos(priv->centre.th))-(((priv->wr)+dtt)*ctn)+(xw/2))/sx;
+						else sx=(((priv->wr)*(cos(priv->centre.th)-ctn))-(dtt*stn)+(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
 				else
 				{/* check x0 to xw radial to get maximum scale */
 					(priv->s)=dr1-drc;
+<<<<<<< HEAD
 					if ((priv->s)>DZE) (priv->s)=((xw/2)-dtt-(wr*(1-cos(priv->centre.th))))/(priv->s);
+=======
+					if ((priv->s)>DZE) (priv->s)=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/(priv->s);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					else (priv->s)=G_MAXDOUBLE;
 					sx=drs-(dr1*stn);
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y2'||y2"=yw to get maximum scale */
+<<<<<<< HEAD
 						if (thn<=NMY_PI_4) sx=(((wr+dtt)*stn)-(wr*sin(priv->centre.th))+(yw/2))/sx;
 						else sx=((wr*(stn-sin(priv->centre.th)))-(dtt*ctn)+(yw/2))/sx;
+=======
+						if (thn<=NMY_PI_4) sx=((((priv->wr)+dtt)*stn)-((priv->wr)*sin(priv->centre.th))+(yw/2))/sx;
+						else sx=(((priv->wr)*(stn-sin(priv->centre.th)))-(dtt*ctn)+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -389,13 +497,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1-drs;
 					if (sx>DZE)
 					{/* check y0 to 0 radial to get maximum scale */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=(dr1*cos(thx))-drc;
 					if ((sx>DZE)||(sx<NZE))
 					{/* check x1'=0 to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*(cos(priv->centre.th)))-((dtt+wr)*ctx)-(xw/2))/sx;
+=======
+						sx=(((priv->wr)*(cos(priv->centre.th)))-((dtt+(priv->wr))*ctx)-(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -404,12 +520,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=drs-(dr1*sin(thx));;
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y1'=0 to get maximum scale */
+<<<<<<< HEAD
 						sx=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))-(yw/2))/sx;
+=======
+						sx=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if ((drc>DZE)||(drc<NZE))
 					{/* check x3=0 to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*(ctx-(cos(priv->centre.th))))+(xw/2))/drc;
+=======
+						sx=(((priv->wr)*(ctx-(cos(priv->centre.th))))+(xw/2))/drc;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -420,25 +544,43 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				if (thx>=0)
 				{/* check x0 to xw radial to get maximum scale */
 					(priv->s)=dr1-drc;
+<<<<<<< HEAD
 					if ((priv->s)>DZE) (priv->s)=((xw/2)-dtt-(wr*(1-cos(priv->centre.th))))/(priv->s);
+=======
+					if ((priv->s)>DZE) (priv->s)=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/(priv->s);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					else (priv->s)=G_MAXDOUBLE;
 					sx=drs-(dr1*stx);
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y1"||y1'=0 to get maximum scale */
+<<<<<<< HEAD
 						if (thx>=G_PI_4) sx=((wr*(stx-(sin(priv->centre.th))))-(dtt*ctx)-(yw/2))/sx;
 						else sx=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))-(yw/2))/sx;
+=======
+						if (thx>=G_PI_4) sx=(((priv->wr)*(stx-(sin(priv->centre.th))))-(dtt*ctx)-(yw/2))/sx;
+						else sx=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
 				else
 				{/* check y3'=0 to get maximum scale */
+<<<<<<< HEAD
 					if ((drs>DZE)||(drs<NZE)) (priv->s)=((wr*(stx-sin(priv->centre.th)))+(dtt*ctx)-(yw/2))/drs;
+=======
+					if ((drs>DZE)||(drs<NZE)) (priv->s)=(((priv->wr)*(stx-sin(priv->centre.th)))+(dtt*ctx)-(yw/2))/drs;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					else (priv->s)=G_MAXDOUBLE;
 					sx=(dr1*ctx)-drc;
 					if ((sx>DZE)||(sx<NZE))
 					{/* check x1"||x1'=xw to get maximum scale */
+<<<<<<< HEAD
 						if (thx<=NMY_PI_4) sx=((wr*(cos(priv->centre.th)-ctx))+(dtt*stx)-(xw/2))/sx;
 						else sx=((wr*(cos(priv->centre.th)))-((wr+dtt)*ctx)+(xw/2))/sx;
+=======
+						if (thx<=NMY_PI_4) sx=(((priv->wr)*(cos(priv->centre.th)-ctx))+(dtt*stx)-(xw/2))/sx;
+						else sx=(((priv->wr)*(cos(priv->centre.th)))-(((priv->wr)+dtt)*ctx)+(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -447,13 +589,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1+drs;
 					if (sx>DZE)
 					{/* check y0 to yw radial to get maximum scale */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=(dr1*cos(thn))-drc;
 					if ((sx>DZE)||(sx<NZE))
 					{/* check x2'=0 to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*cos(priv->centre.th))-((wr+dtt)*ctn)-(xw/2))/sx;
+=======
+						sx=(((priv->wr)*cos(priv->centre.th))-(((priv->wr)+dtt)*ctn)-(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -462,12 +612,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=drs-(dr1*sin(thn));
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y2'=yw to get maximum scale */
+<<<<<<< HEAD
 						sx=(((wr+dtt)*stn)-(wr*sin(priv->centre.th))+(yw/2))/sx;
+=======
+						sx=((((priv->wr)+dtt)*stn)-((priv->wr)*sin(priv->centre.th))+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if ((drc>DZE)||(drc<NZE))
 					{/* check x4=0 to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*(ctn-(cos(priv->centre.th))))+(xw/2))/drc;
+=======
+						sx=(((priv->wr)*(ctn-(cos(priv->centre.th))))+(xw/2))/drc;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -475,13 +633,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			else
 			{ /* radial label cw bottom to axis azimuthal label top to axis */
 				(priv->flaga)=1;
+<<<<<<< HEAD
 				if ((drs>DZE)||(drs<NZE)) (priv->s)=((wr*(stn-(sin(priv->centre.th))))-(dtt*ctn)-(yw/2))/drs; /* check y4'=0 to get maximum scale */
+=======
+				if ((drs>DZE)||(drs<NZE)) (priv->s)=(((priv->wr)*(stn-(sin(priv->centre.th))))-(dtt*ctn)-(yw/2))/drs; /* check y4'=0 to get maximum scale */
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				else (priv->s)=G_MAXDOUBLE;
 				sx=(dr1*ctn)-drc;
 				if ((sx>DZE)||(sx<NZE))
 				{/* check x2'||x2"=0 to get maximum scale */
+<<<<<<< HEAD
 					if (thn<=N3_MY_PI_4) sx=((wr*cos(priv->centre.th))-((wr+dtt)*ctn)-(xw/2))/sx;
 					else sx=((wr*(cos(priv->centre.th)-ctn))-(dtt*stn)-(xw/2))/sx;
+=======
+					if (thn<=N3_MY_PI_4) sx=(((priv->wr)*cos(priv->centre.th))-(((priv->wr)+dtt)*ctn)-(xw/2))/sx;
+					else sx=(((priv->wr)*(cos(priv->centre.th)-ctn))-(dtt*stn)-(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					if (sx<(priv->s)) (priv->s)=sx;
 				}
 				if (thx<=NMY_PI_2)
@@ -489,12 +656,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=drs-(dr1*stx);
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y1'=yw to get maximum scale */
+<<<<<<< HEAD
 						sx=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))+(yw/2))/sx;
+=======
+						sx=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if ((drc>DZE)||(drc<NZE))
 					{/* check x3=xw to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*(ctx-(cos(priv->centre.th))))-(xw/2))/drc;
+=======
+						sx=(((priv->wr)*(ctx-(cos(priv->centre.th))))-(xw/2))/drc;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -503,13 +678,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1+drs;
 					if (sx>DZE)
 					{/* check y0 to yw radial to get maximum scale */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=(dr1*cos(thx))-drc;
 					if ((sx>DZE)||(sx<NZE))
 					{/* check x1'=xw to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*(cos(priv->centre.th)))-((wr+dtt)*ctx)-(xw/2))/sx;;
+=======
+						sx=(((priv->wr)*(cos(priv->centre.th)))-(((priv->wr)+dtt)*ctx)-(xw/2))/sx;;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -518,7 +701,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		else 
 		{/* check radial x0 to 0 */
 			(priv->s)=dr1+drc;
+<<<<<<< HEAD
 			if ((priv->s)>DZE) (priv->s)=((xw/2)-dtt-(wr*(1+cos(priv->centre.th))))/(priv->s);
+=======
+			if ((priv->s)>DZE) (priv->s)=((xw/2)-dtt-((priv->wr)*(1+cos(priv->centre.th))))/(priv->s);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			else (priv->s)=G_MAXDOUBLE;
 			if (dt>=NMY_PI)
 			{
@@ -528,13 +715,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1+drs;
 					if (sx>DZE)
 					{/* check radial y0 to yw */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=dr1-drc;
 					if (sx>DZE)
 					{/* check radial x0 to xw */
+<<<<<<< HEAD
 						sx=((xw/2)-dtt-(wr*(1-cos(priv->centre.th))))/sx;
+=======
+						sx=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if (thx>=G_PI_2)
@@ -542,7 +737,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=dr1-drs;
 						if (sx>DZE)
 						{/* check radial y0 to 0 */
+<<<<<<< HEAD
 							sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+							sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 					}
@@ -551,7 +750,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=drs-(dr1*stx);
 						if ((sx>DZE)||(sx<NZE))
 						{/* check y1'=0 */
+<<<<<<< HEAD
 							sx=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))-(yw/2))/sx;
+=======
+							sx=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 						if (thn>=MY_3PI_4)
@@ -559,7 +762,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=drs-(dr1*stn);
 							if ((sx>DZE)||(sx<NZE))
 							{/* check y2"=0 to get maximum scale */
+<<<<<<< HEAD
 								sx=((wr*(stn-sin(priv->centre.th)))-(dtt*ctn)-(yw/2))/sx;
+=======
+								sx=(((priv->wr)*(stn-sin(priv->centre.th)))-(dtt*ctn)-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 						}
@@ -571,7 +778,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1+drs;
 					if (sx>DZE)
 					{/* check radial y0 to yw */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if (thn>=G_PI_2)
@@ -579,7 +790,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=drs-(dr1*stn);
 						if ((sx>DZE)||(sx<NZE))
 						{/* check y2'=0 */
+<<<<<<< HEAD
 							sx=(((wr+dtt)*stn)-(wr*sin(priv->centre.th))-(yw/2))/sx;
+=======
+							sx=((((priv->wr)+dtt)*stn)-((priv->wr)*sin(priv->centre.th))-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 						if (thx>=0)
@@ -587,7 +802,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=dr1-drc;
 							if (sx>DZE)
 							{/* check radial x0 to xw */
+<<<<<<< HEAD
 								sx=((xw/2)-dtt-(wr*(1-cos(priv->centre.th))))/sx;
+=======
+								sx=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 							if (thx<=G_PI_4)
@@ -595,7 +814,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								sx=drs-(dr1*stx);
 								if ((sx>DZE)||(sx<NZE))
 								{/* check y1"=0 */
+<<<<<<< HEAD
 									sx=((wr*(stx-(sin(priv->centre.th))))-(dtt*ctx)-(yw/2))/sx;
+=======
+									sx=(((priv->wr)*(stx-(sin(priv->centre.th))))-(dtt*ctx)-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									if (sx<(priv->s)) (priv->s)=sx;
 								}
 							}
@@ -605,8 +828,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=(dr1*ctx)-drc;
 							if ((sx>DZE)||(sx<NZE))
 							{/* check x1'||x1"=xw to get maximum scale */
+<<<<<<< HEAD
 								if (thx>=NMY_PI_4) sx=((wr*(cos(priv->centre.th)))-((dtt+wr)*ctx)+(xw/2))/sx;
 								else sx=((wr*(cos(priv->centre.th)-ctx))+(dtt*stx)+(xw/2))/sx;
+=======
+								if (thx>=NMY_PI_4) sx=(((priv->wr)*(cos(priv->centre.th)))-((dtt+(priv->wr))*ctx)+(xw/2))/sx;
+								else sx=(((priv->wr)*(cos(priv->centre.th)-ctx))+(dtt*stx)+(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 						}
@@ -616,7 +844,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=dr1-drs;
 						if (sx>DZE)
 						{/* check radial y0 to 0 */
+<<<<<<< HEAD
 							sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+							sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 						if (thx>=0)
@@ -624,7 +856,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=dr1-drc;
 							if (sx>DZE)
 							{/* check radial x0 to xw */
+<<<<<<< HEAD
 								sx=((xw/2)-dtt-(wr*(1-cos(priv->centre.th))))/sx;
+=======
+								sx=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 						}
@@ -633,8 +869,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=(dr1*ctx)-drc;
 							if ((sx>DZE)||(sx<NZE))
 							{/* check x1'||x1"=xw to get maximum scale */
+<<<<<<< HEAD
 								if (thx>=NMY_PI_4) sx=((wr*(cos(priv->centre.th)))-((dtt+wr)*ctx)+(xw/2))/sx;
 								else sx=((wr*(cos(priv->centre.th)-ctx))+(dtt*stx)+(xw/2))/sx;
+=======
+								if (thx>=NMY_PI_4) sx=(((priv->wr)*(cos(priv->centre.th)))-((dtt+(priv->wr))*ctx)+(xw/2))/sx;
+								else sx=(((priv->wr)*(cos(priv->centre.th)-ctx))+(dtt*stx)+(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 						}
@@ -646,7 +887,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1-drs;
 					if (sx>DZE)
 					{/* check radial y0 to 0 */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if (thx<=NMY_PI_2)
@@ -654,7 +899,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=drs-(dr1*stx);
 						if ((sx>DZE)||(sx<NZE))
 						{/* check y1'=yw */
+<<<<<<< HEAD
 							sx=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))+(yw/2))/sx;
+=======
+							sx=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 						if ((thn)<=0)
@@ -662,7 +911,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=dr1-drc;
 							if (sx>DZE)
 							{/* check radial x0 to xw */
+<<<<<<< HEAD
 								sx=((xw/2)-dtt-(wr*(1-cos(priv->centre.th))))/sx;
+=======
+								sx=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 							if (thn>=NMY_PI_4)
@@ -670,7 +923,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								sx=drs-(dr1*stn);
 								if ((sx>DZE)||(sx<NZE))
 								{/* check y2"=yw to get maximum scale */
+<<<<<<< HEAD
 									sx=((wr*(stn-sin(priv->centre.th)))-(dtt*ctn)+(yw/2))/sx;
+=======
+									sx=(((priv->wr)*(stn-sin(priv->centre.th)))-(dtt*ctn)+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									if (sx<(priv->s)) (priv->s)=sx;
 								}
 							}
@@ -680,8 +937,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=(dr1*ctn)-drc;
 							if ((sx>DZE)||(sx<NZE))
 							{/* check x2'||x2"=xw to get maximum scale */
+<<<<<<< HEAD
 								if (thn<=G_PI_4) sx=((wr*cos(priv->centre.th))-((wr+dtt)*ctn)+(xw/2))/sx;
 								else sx=((wr*(cos(priv->centre.th)-ctn))-(dtt*stn)+(xw/2))/sx;
+=======
+								if (thn<=G_PI_4) sx=(((priv->wr)*cos(priv->centre.th))-(((priv->wr)+dtt)*ctn)+(xw/2))/sx;
+								else sx=(((priv->wr)*(cos(priv->centre.th)-ctn))-(dtt*stn)+(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 						}
@@ -691,7 +953,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=dr1+drs;
 						if (sx>DZE)
 						{/* check radial y0 to yw */
+<<<<<<< HEAD
 							sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
+=======
+							sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 						if (thn<=0)
@@ -699,7 +965,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=dr1-drc;
 							if (sx>DZE)
 							{/* check radial x0 to xw */
+<<<<<<< HEAD
 								sx=((xw/2)-dtt-(wr*(1-cos(priv->centre.th))))/sx;
+=======
+								sx=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 						}
@@ -708,8 +978,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=(dr1*ctn)-drc;
 							if ((sx>DZE)||(sx<NZE))
 							{/* check x2'||x2"=xw to get maximum scale */
+<<<<<<< HEAD
 								if (thn<=G_PI_4) sx=((wr*cos(priv->centre.th))-((wr+dtt)*ctn)+(xw/2))/sx;
 								else sx=((wr*(cos(priv->centre.th)-ctn))-(dtt*stn)+(xw/2))/sx;
+=======
+								if (thn<=G_PI_4) sx=(((priv->wr)*cos(priv->centre.th))-(((priv->wr)+dtt)*ctn)+(xw/2))/sx;
+								else sx=(((priv->wr)*(cos(priv->centre.th)-ctn))-(dtt*stn)+(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 						}
@@ -721,13 +996,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1-drs;
 					if (sx>DZE)
 					{/* check radial y0 to 0 */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=dr1-drc;
 					if (sx>DZE)
 					{/* check radial x0 to xw */
+<<<<<<< HEAD
 						sx=((xw/2)-dtt-(wr*(1-cos(priv->centre.th))))/sx;
+=======
+						sx=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if (thn>=NMY_PI_2)
@@ -735,7 +1018,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=drs-(dr1*sin(thn));
 						if ((sx>DZE)||(sx<NZE))
 						{/* check y2'=yw */
+<<<<<<< HEAD
 							sx=(((wr+dtt)*stn)-(wr*sin(priv->centre.th))+(yw/2))/sx;
+=======
+							sx=((((priv->wr)+dtt)*stn)-((priv->wr)*sin(priv->centre.th))+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 						if (thx<=N3_MY_PI_4)
@@ -743,7 +1030,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							sx=drs-(dr1*stx);
 							if ((sx>DZE)||(sx<NZE))
 							{/* check y1"=yw */
+<<<<<<< HEAD
 								sx=((wr*(stx-(sin(priv->centre.th))))-(dtt*ctx)+(yw/2))/sx;
+=======
+								sx=(((priv->wr)*(stx-(sin(priv->centre.th))))-(dtt*ctx)+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								if (sx<(priv->s)) (priv->s)=sx;
 							}
 						}
@@ -753,7 +1044,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=dr1+drs;
 						if (sx>DZE)
 						{/* check radial y0 to yw */
+<<<<<<< HEAD
 							sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
+=======
+							sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 					}
@@ -767,12 +1062,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=drs-(dr1*stx);
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y1'=yw */
+<<<<<<< HEAD
 						sx=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))+(yw/2))/sx;
+=======
+						sx=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if ((drc>DZE)||(drc<NZE))
 					{/* check x3=xw to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*(ctx-(cos(priv->centre.th))))-(xw/2))/drc;
+=======
+						sx=(((priv->wr)*(ctx-(cos(priv->centre.th))))-(xw/2))/drc;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if (thn>=MY_3PI_4)
@@ -780,7 +1083,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=drs-(dr1*stn);
 						if ((sx>DZE)||(sx<NZE))
 						{/* check y2"=0 to get maximum scale */
+<<<<<<< HEAD
 							sx=((wr*(stn-sin(priv->centre.th)))-(dtt*ctn)-(yw/2))/sx;
+=======
+							sx=(((priv->wr)*(stn-sin(priv->centre.th)))-(dtt*ctn)-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 					}
@@ -789,12 +1096,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=drs-(dr1*stn);
 						if ((sx>DZE)||(sx<NZE))
 						{/* check y2'=0 */
+<<<<<<< HEAD
 							sx=(((wr+dtt)*stn)-(wr*sin(priv->centre.th))-(yw/2))/sx;
+=======
+							sx=((((priv->wr)+dtt)*stn)-((priv->wr)*sin(priv->centre.th))-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 						if ((drc>DZE)||(drc<NZE))
 						{/* check x4'=xw to get maximum scale */
+<<<<<<< HEAD
 							sx=((wr*(ctn-(cos(priv->centre.th))))+(dtt*stn)-(xw/2))/drc;
+=======
+							sx=(((priv->wr)*(ctn-(cos(priv->centre.th))))+(dtt*stn)-(xw/2))/drc;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 					}
@@ -804,20 +1119,33 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1+drs;
 					if (sx>DZE)
 					{/* check radial y0 to yw */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=(dr1*ctx)-drc;
 					if ((sx>DZE)||(sx<NZE))
 					{/* check x1'=xw to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*(cos(priv->centre.th)))-((dtt+wr)*ctx)+(xw/2))/sx;
+=======
+						sx=(((priv->wr)*(cos(priv->centre.th)))-((dtt+(priv->wr))*ctx)+(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=drs-(dr1*stn);
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y2"||y2'=0 */
+<<<<<<< HEAD
 						if (thn>=MY_3PI_4) sx=((wr*(stn-sin(priv->centre.th)))-(dtt*ctn)-(yw/2))/sx;
 						else sx=(((wr+dtt)*stn)-(wr*sin(priv->centre.th))-(yw/2))/sx;
+=======
+						if (thn>=MY_3PI_4) sx=(((priv->wr)*(stn-sin(priv->centre.th)))-(dtt*ctn)-(yw/2))/sx;
+						else sx=((((priv->wr)+dtt)*stn)-((priv->wr)*sin(priv->centre.th))-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
@@ -830,12 +1158,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=drs-(dr1*stn);
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y2'=0 */
+<<<<<<< HEAD
 						sx=(((wr+dtt)*stn)-(wr*sin(priv->centre.th))-(yw/2))/sx;
+=======
+						sx=((((priv->wr)+dtt)*stn)-((priv->wr)*sin(priv->centre.th))-(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if ((drc>DZE)||(drc<NZE))
 					{/* check x4=xw to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*(ctn-(cos(priv->centre.th))))-(xw/2))/drc;
+=======
+						sx=(((priv->wr)*(ctn-(cos(priv->centre.th))))-(xw/2))/drc;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					if (thx<=N3_MY_PI_4)
@@ -843,7 +1179,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=drs-(dr1*stx);
 						if ((sx>DZE)||(sx<NZE))
 						{/* check y1"=yw */
+<<<<<<< HEAD
 							sx=((wr*(stx-(sin(priv->centre.th))))-(dtt*ctx)+(yw/2))/sx;
+=======
+							sx=(((priv->wr)*(stx-(sin(priv->centre.th))))-(dtt*ctx)+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 					}
@@ -852,12 +1192,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx=drs-(dr1*stx);
 						if ((sx>DZE)||(sx<NZE))
 						{/* check y1'=yw */
+<<<<<<< HEAD
 							sx=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))+(yw/2))/sx;
+=======
+							sx=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 						if ((drc>DZE)||(drc<NZE))
 						{/* check x3'=xw to get maximum scale */
+<<<<<<< HEAD
 							sx=((wr*(ctx-(cos(priv->centre.th))))-(dtt*stx)-(xw/2))/drc;
+=======
+							sx=(((priv->wr)*(ctx-(cos(priv->centre.th))))-(dtt*stx)-(xw/2))/drc;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							if (sx<(priv->s)) (priv->s)=sx;
 						}
 					}
@@ -867,33 +1215,56 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx=dr1-drs;
 					if (sx>DZE)
 					{/* check radial y0 to 0 */
+<<<<<<< HEAD
 						sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+						sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=(dr1*ctn)-drc;
 					if ((sx>DZE)||(sx<NZE))
 					{/* check x2'=xw to get maximum scale */
+<<<<<<< HEAD
 						sx=((wr*cos(priv->centre.th))-((wr+dtt)*ctn)+(xw/2))/sx;
+=======
+						sx=(((priv->wr)*cos(priv->centre.th))-(((priv->wr)+dtt)*ctn)+(xw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 					sx=drs-(dr1*stx);
 					if ((sx>DZE)||(sx<NZE))
 					{/* check y1"||y1'=yw */
+<<<<<<< HEAD
 						if (thx<=N3_MY_PI_4) sx=((wr*(stx-(sin(priv->centre.th))))-(dtt*ctx)+(yw/2))/sx;
 						else sx=(((wr+dtt)*stx)-(wr*sin(priv->centre.th))+(yw/2))/sx;
+=======
+						if (thx<=N3_MY_PI_4) sx=(((priv->wr)*(stx-(sin(priv->centre.th))))-(dtt*ctx)+(yw/2))/sx;
+						else sx=((((priv->wr)+dtt)*stx)-((priv->wr)*sin(priv->centre.th))+(yw/2))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						if (sx<(priv->s)) (priv->s)=sx;
 					}
 				}
 			}
 		}
+<<<<<<< HEAD
 		(priv->x0)=(xw/2)-(drc*(priv->s))-(wr*cos(priv->centre.th));
 		(priv->y0)=(yw/2)+(drs*(priv->s))+(wr*sin(priv->centre.th));
+=======
+		(priv->x0)=(xw/2)-(drc*(priv->s))-((priv->wr)*cos(priv->centre.th));
+		(priv->y0)=(yw/2)+(drs*(priv->s))+((priv->wr)*sin(priv->centre.th));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 		sx=thn;
 		kx=1<<(priv->ticks.z2m);
 		if (dt<0) dz=(dt+MY_2PI)/(kx*(priv->ticks.zin));
 		else dz=dt/(kx*(priv->ticks.zin));
+<<<<<<< HEAD
 		cairo_move_to(cr, (priv->x0)+(wr*ctn), (priv->y0)-(wr*stn));
 		cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*ctn), (priv->y0)-((wr+((priv->s)*dr1))*stn));
+=======
+		cairo_move_to(cr, (priv->x0)+((priv->wr)*ctn), (priv->y0)-((priv->wr)*stn));
+		cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*ctn), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*stn));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 		if (((plot->flags)&1)==0)
 		{
 			for (j=1; j<(priv->ticks.zin); j++)
@@ -903,18 +1274,32 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx+=dz;/* additional azimuthal ticks */
 					csx=cos(sx);
 					ssx=sin(sx);
+<<<<<<< HEAD
 					cairo_move_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
 					cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
+=======
+					cairo_move_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				}
 				sx+=dz;/* inner radial lines to tick */
 				csx=cos(sx);
 				ssx=sin(sx);
+<<<<<<< HEAD
 				cairo_move_to(cr, (priv->x0)+(wr*csx), (priv->y0)-(wr*ssx));
 				cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
 				cairo_stroke(cr);
 				g_ascii_dtostr(lbl, (priv->thcs), round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
 				cairo_text_extents(cr, lbl, &extents);
 				rl=wr+tt+((priv->s)*dr1);
+=======
+				cairo_move_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
+				cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+				cairo_stroke(cr);
+				g_ascii_dtostr(lbl, (priv->thcs), round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
+				cairo_text_extents(cr, lbl, &extents);
+				rl=(priv->wr)+tt+((priv->s)*dr1);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_move_to(cr, (priv->x0)+(rl*csx)-((extents.width)/2)-(extents.x_bearing), (priv->y0)-(rl*ssx)-((extents.height)/2)-(extents.y_bearing));
 				cairo_show_text(cr, lbl);
 			}
@@ -942,14 +1327,24 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx+=dz;/* additional azimuthal ticks */
 						csx=cos(sx);
 						ssx=sin(sx);
+<<<<<<< HEAD
 						cairo_move_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
 						cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
+=======
+						cairo_move_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+						cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					}
 					sx+=dz;/* inner radial lines to tick */
 					csx=cos(sx);
 					ssx=sin(sx);
+<<<<<<< HEAD
 					cairo_move_to(cr, (priv->x0)+(wr*csx), (priv->y0)-(wr*ssx));
 					cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
+=======
+					cairo_move_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					cairo_stroke(cr);
 					if ((j+j0)==0) str3=g_strdup("0");
 					else if ((j+j0)==1) str3=g_strconcat("π/", str2, NULL);
@@ -965,7 +1360,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					pango_layout_set_font_description(lyt, dscr2);
 					pango_layout_set_text(lyt, str3, -1);
 					pango_layout_get_pixel_size(lyt, &wd, &hg);
+<<<<<<< HEAD
 					rl=wr+tt+((priv->s)*dr1);
+=======
+					rl=(priv->wr)+tt+((priv->s)*dr1);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					cairo_move_to(cr, (priv->x0)+(rl*csx)-(wd/2), (priv->y0)-(rl*ssx)-(hg/2));
 					pango_cairo_show_layout(cr, lyt);
 					g_object_unref(lyt);
@@ -983,18 +1382,32 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						sx+=dz;/* additional azimuthal ticks */
 						csx=cos(sx);
 						ssx=sin(sx);
+<<<<<<< HEAD
 						cairo_move_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
 						cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
+=======
+						cairo_move_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+						cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					}
 					sx+=dz;/* inner radial lines to tick */
 					csx=cos(sx);
 					ssx=sin(sx);
+<<<<<<< HEAD
 					cairo_move_to(cr, (priv->x0)+(wr*csx), (priv->y0)-(wr*ssx));
 					cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
 					cairo_stroke(cr);
 					g_snprintf(lbl, (priv->thcs), "%f", sx);/* output radial value as is */
 					cairo_text_extents(cr, lbl, &extents);
 					rl=wr+tt+((priv->s)*dr1);
+=======
+					cairo_move_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+					cairo_stroke(cr);
+					g_snprintf(lbl, (priv->thcs), "%f", sx);/* output radial value as is */
+					cairo_text_extents(cr, lbl, &extents);
+					rl=(priv->wr)+tt+((priv->s)*dr1);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					cairo_move_to(cr, (priv->x0)+(rl*csx)-((extents.width)/2)-(extents.x_bearing), (priv->y0)-(rl*ssx)-((extents.height)/2)-(extents.y_bearing));
 					cairo_show_text(cr, lbl);
 				}
@@ -1005,6 +1418,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			sx+=dz;/* additional azimuthal ticks */
 			csx=cos(sx);
 			ssx=sin(sx);
+<<<<<<< HEAD
 			cairo_move_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
 			cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
 		}
@@ -1014,6 +1428,17 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		cairo_new_sub_path(cr);
 		cairo_arc(cr, (priv->x0), (priv->y0), wr, -thx, -thn);
 		rt=wr;
+=======
+			cairo_move_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+			cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+		}
+		cairo_move_to(cr, (priv->x0)+((priv->wr)*ctx), (priv->y0)-((priv->wr)*stx));
+		cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*ctx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*stx));
+		cairo_stroke(cr);
+		cairo_new_sub_path(cr);
+		cairo_arc(cr, (priv->x0), (priv->y0), (priv->wr), -thx, -thn);
+		rt=(priv->wr);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 		dwr=dr1*(priv->s)/(priv->ticks.r);
 		kx=1;
 		if ((priv->flaga)==0)
@@ -1034,19 +1459,31 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					csx=cos(sx);
 					ssx=sin(sx);
 					cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 					cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					for (k=1; k<(kx*(priv->ticks.zin)); k++)
 					{
 						sx+=dz;
 						csx=cos(sx);
 						ssx=sin(sx);
 						cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 						cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+						cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					}
 					kx*=2;
 				}
 				cairo_stroke(cr);
+<<<<<<< HEAD
 				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-wr)/(priv->s)));
+=======
+				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_text_extents(cr, lbl, &extents);
 				sx=rt-((extents.width)/2)-(extents.x_bearing);
 				dz=-JTI-(extents.height)-(extents.y_bearing);
@@ -1063,7 +1500,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_layout_set_font_description(lyt, dscr1);
 			pango_layout_set_text(lyt, (plot->rlab), -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
+<<<<<<< HEAD
 			sx=wr+(((dr1*(priv->s))-wd)/2);
+=======
+			sx=(priv->wr)+(((dr1*(priv->s))-wd)/2);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			cairo_move_to(cr, (priv->x0)+(sx*ctx)-(dtr*stx), (priv->y0)-(dtr*ctx)-(sx*stx));
 			cairo_set_matrix(cr, &mtr2);
 			pango_cairo_update_layout(cr, lyt);
@@ -1092,19 +1533,31 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					csx=cos(sx);
 					ssx=sin(sx);
 					cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 					cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					for (k=1; k<(kx*(priv->ticks.zin)); k++)
 					{
 						sx+=dz;
 						csx=cos(sx);
 						ssx=sin(sx);
 						cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 						cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+						cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					}
 					kx*=2;
 				}
 				cairo_stroke(cr);
+<<<<<<< HEAD
 				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-wr)/(priv->s)));
+=======
+				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_text_extents(cr, lbl, &extents);
 				sx=rt+((extents.width)/2)+(extents.x_bearing);
 				dz=-JTI+(extents.y_bearing);
@@ -1121,7 +1574,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_layout_set_font_description(lyt, dscr1);
 			pango_layout_set_text(lyt, (plot->rlab), -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
+<<<<<<< HEAD
 			sx=wr+(((dr1*(priv->s))+wd)/2);
+=======
+			sx=(priv->wr)+(((dr1*(priv->s))+wd)/2);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			dz=hg-dtr;
 			cairo_move_to(cr, (priv->x0)+(sx*ctx)+(dz*stx), (priv->y0)+(dz*ctx)-(sx*stx));
 			cairo_set_matrix(cr, &mtr2);
@@ -1151,19 +1608,31 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					csx=cos(sx);
 					ssx=sin(sx);
 					cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 					cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					for (k=1; k<(kx*(priv->ticks.zin)); k++)
 					{
 						sx+=dz;
 						csx=cos(sx);
 						ssx=sin(sx);
 						cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 						cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+						cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					}
 					kx*=2;
 				}
 				cairo_stroke(cr);
+<<<<<<< HEAD
 				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-wr)/(priv->s)));
+=======
+				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_text_extents(cr, lbl, &extents);
 				sx=rt-((extents.width)/2)-(extents.x_bearing);
 				dz=JTI-(extents.y_bearing);
@@ -1180,7 +1649,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_layout_set_font_description(lyt, dscr1);
 			pango_layout_set_text(lyt, (plot->rlab), -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
+<<<<<<< HEAD
 			sx=wr+(((dr1*(priv->s))-wd)/2);
+=======
+			sx=(priv->wr)+(((dr1*(priv->s))-wd)/2);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			dz=dtr-hg;
 			cairo_move_to(cr, (priv->x0)+(sx*ctn)+(dz*stn), (priv->y0)+(dz*ctn)-(sx*stn));
 			cairo_set_matrix(cr, &mtr2);
@@ -1210,19 +1683,31 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					csx=cos(sx);
 					ssx=sin(sx);
 					cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 					cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					for (k=1; k<(kx*(priv->ticks.zin)); k++)
 					{
 						sx+=dz;
 						csx=cos(sx);
 						ssx=sin(sx);
 						cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 						cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+						cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 					}
 					kx*=2;
 				}
 				cairo_stroke(cr);
+<<<<<<< HEAD
 				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-wr)/(priv->s)));
+=======
+				g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_text_extents(cr, lbl, &extents);
 				sx=rt+((extents.width)/2)+(extents.x_bearing);
 				dz=JTI+(extents.height)+(extents.y_bearing);
@@ -1239,7 +1724,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_layout_set_font_description(lyt, dscr1);
 			pango_layout_set_text(lyt, (plot->rlab), -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
+<<<<<<< HEAD
 			sx=wr+(((dr1*(priv->s))+wd)/2);
+=======
+			sx=(priv->wr)+(((dr1*(priv->s))+wd)/2);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			cairo_move_to(cr, (priv->x0)+(sx*ctn)+(dtr*stn), (priv->y0)+(dtr*ctn)-(sx*stn));
 			cairo_set_matrix(cr, &mtr2);
 			pango_cairo_update_layout(cr, lyt);
@@ -1265,7 +1754,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		sx=dr1+drc;
 		if (sx>DZE)
 		{/* check radial x0 to 0 */
+<<<<<<< HEAD
 			sx=((xw/2)-dtt-(wr*(1+cos(priv->centre.th))))/sx;
+=======
+			sx=((xw/2)-dtt-((priv->wr)*(1+cos(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			if (sx<(priv->s)) (priv->s)=sx;
 		}
 		sx=dr1+drs;
@@ -1466,40 +1959,69 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	else
 	{
 		(priv->s)=dr1-drc;/* check radial x0 to xw */
+<<<<<<< HEAD
 		if ((priv->s)>DZE) (priv->s)=((xw/2)-dtt-(wr*(1-cos(priv->centre.th))))/(priv->s);
+=======
+		if ((priv->s)>DZE) (priv->s)=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/(priv->s);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 		else (priv->s)=G_MAXDOUBLE;
 		sx=dr1-drs;
 		if (sx>DZE)
 		{/* check radial y0 to 0 */
+<<<<<<< HEAD
 			sx=((yw/2)-dtt-(wr*(1-sin(priv->centre.th))))/sx;
+=======
+			sx=((yw/2)-dtt-((priv->wr)*(1-sin(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			if (sx<(priv->s)) (priv->s)=sx;
 		}
 		sx=dr1+drc;
 		if (sx>DZE)
 		{/* check radial x0 to 0 */
+<<<<<<< HEAD
 			sx=((xw/2)-dtt-(wr*(1+cos(priv->centre.th))))/sx;
+=======
+			sx=((xw/2)-dtt-((priv->wr)*(1+cos(priv->centre.th))))/sx;
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			if (sx<(priv->s)) (priv->s)=sx;
 		}
 		sx=dr1+drs;
 		if (sx>DZE)
 		{/* check radial y0 to yw */
+<<<<<<< HEAD
 			sx=((yw/2)-dtt-(wr*(1+sin(priv->centre.th))))/sx;
 			if (sx<(priv->s)) (priv->s)=sx;
 		}
 		(priv->flaga)=4;
 		(priv->x0)=(xw/2)-(drc*(priv->s))-(wr*cos(priv->centre.th));
 		(priv->y0)=(yw/2)+(drs*(priv->s))+(wr*sin(priv->centre.th));
+=======
+			sx=((yw/2)-dtt-((priv->wr)*(1+sin(priv->centre.th))))/sx;
+			if (sx<(priv->s)) (priv->s)=sx;
+		}
+		(priv->flaga)=4;
+		(priv->x0)=(xw/2)-(drc*(priv->s))-((priv->wr)*cos(priv->centre.th));
+		(priv->y0)=(yw/2)+(drs*(priv->s))+((priv->wr)*sin(priv->centre.th));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 		sx=0;
 		kx=1<<(priv->ticks.z2m);
 		dz=MY_2PI/(kx*(priv->ticks.zin));
 		dt=4;
 		cairo_save(cr);
 		cairo_set_dash(cr, &dt, 1, 0);
+<<<<<<< HEAD
 		cairo_move_to(cr, (priv->x0)+(wr/3), (priv->y0));
 		cairo_line_to(cr, (priv->x0)+wr, (priv->y0));
 		cairo_stroke(cr);
 		cairo_restore(cr);
 		cairo_line_to(cr, (priv->x0)+wr+((priv->s)*dr1), (priv->y0));
+=======
+		cairo_move_to(cr, (priv->x0)+((priv->wr)/3), (priv->y0));
+		cairo_line_to(cr, (priv->x0)+(priv->wr), (priv->y0));
+		cairo_stroke(cr);
+		cairo_restore(cr);
+		cairo_line_to(cr, (priv->x0)+(priv->wr)+((priv->s)*dr1), (priv->y0));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 		if (((plot->flags)&1)==0)
 		{
 			for (j=1; j<(priv->ticks.zin); j++)
@@ -1509,8 +2031,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx+=dz;/* additional azimuthal ticks */
 					csx=cos(sx);
 					ssx=sin(sx);
+<<<<<<< HEAD
 					cairo_move_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
 					cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
+=======
+					cairo_move_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				}
 				sx+=dz/* inner radial lines to tick */;
 				csx=cos(sx);
@@ -1518,6 +2045,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_stroke(cr);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
+<<<<<<< HEAD
 				cairo_move_to(cr, (priv->x0)+((wr/3)*csx), (priv->y0)-((wr/3)*ssx));
 				cairo_line_to(cr, (priv->x0)+(wr*csx), (priv->y0)-(wr*ssx));
 				cairo_stroke(cr);
@@ -1527,6 +2055,17 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				g_snprintf(lbl, (priv->thcs), "%d", (gint) round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
 				cairo_text_extents(cr, lbl, &extents);
 				rl=wr+tt+((priv->s)*dr1);
+=======
+				cairo_move_to(cr, (priv->x0)+(((priv->wr)/3)*csx), (priv->y0)-(((priv->wr)/3)*ssx));
+				cairo_line_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
+				cairo_stroke(cr);
+				cairo_restore(cr);
+				cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+				cairo_stroke(cr);
+				g_snprintf(lbl, (priv->thcs), "%d", (gint) round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
+				cairo_text_extents(cr, lbl, &extents);
+				rl=(priv->wr)+tt+((priv->s)*dr1);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_move_to(cr, (priv->x0)+(rl*csx)-((extents.width)/2)-(extents.x_bearing), (priv->y0)-(rl*ssx)-((extents.height)/2)-(extents.y_bearing));
 				cairo_show_text(cr, lbl);
 			}
@@ -1548,8 +2087,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx+=dz;/* additional azimuthal ticks */
 					csx=cos(sx);
 					ssx=sin(sx);
+<<<<<<< HEAD
 					cairo_move_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
 					cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
+=======
+					cairo_move_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				}
 				sx+=dz;/* inner radial lines to tick */
 				csx=cos(sx);
@@ -1557,12 +2101,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_stroke(cr);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
+<<<<<<< HEAD
 				cairo_move_to(cr, (priv->x0)+(wr*csx/3), (priv->y0)-(wr*ssx/3));
 				cairo_line_to(cr, (priv->x0)+(wr*csx), (priv->y0)-(wr*ssx));
 				cairo_stroke(cr);
 				cairo_restore(cr);
 				cairo_move_to(cr, (priv->x0)+(wr*csx), (priv->y0)-(wr*ssx));
 				cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
+=======
+				cairo_move_to(cr, (priv->x0)+((priv->wr)*csx/3), (priv->y0)-((priv->wr)*ssx/3));
+				cairo_line_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
+				cairo_stroke(cr);
+				cairo_restore(cr);
+				cairo_move_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
+				cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_stroke(cr);
 				if ((j+j0)==0) str3=g_strdup("0");
 				else if ((j+j0)==1) str3=g_strconcat("π/", str2, NULL);
@@ -1578,7 +2131,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				pango_layout_set_font_description(lyt, dscr2);
 				pango_layout_set_text(lyt, str3, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
+<<<<<<< HEAD
 				rl=wr+tt+((priv->s)*dr1);
+=======
+				rl=(priv->wr)+tt+((priv->s)*dr1);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_move_to(cr, (priv->x0)+(rl*csx)-(wd/2), (priv->y0)-(rl*ssx)-(hg/2));
 				pango_cairo_show_layout(cr, lyt);
 				g_object_unref(lyt);
@@ -1604,8 +2161,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					sx+=dz;/* additional azimuthal ticks */
 					csx=cos(sx);
 					ssx=sin(sx);
+<<<<<<< HEAD
 					cairo_move_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
 					cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
+=======
+					cairo_move_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				}
 				sx+=dz;/* inner radial lines to tick */
 				csx=cos(sx);
@@ -1613,12 +2175,21 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_stroke(cr);
 				cairo_save(cr);
 				cairo_set_dash(cr, &dt, 1, 0);
+<<<<<<< HEAD
 				cairo_move_to(cr, (priv->x0)+(wr*csx/3), (priv->y0)-(wr*ssx/3));
 				cairo_line_to(cr, (priv->x0)+(wr*csx), (priv->y0)-(wr*ssx));
 				cairo_stroke(cr);
 				cairo_restore(cr);
 				cairo_move_to(cr, (priv->x0)+(wr*csx), (priv->y0)-(wr*ssx));
 				cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
+=======
+				cairo_move_to(cr, (priv->x0)+((priv->wr)*csx/3), (priv->y0)-((priv->wr)*ssx/3));
+				cairo_line_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
+				cairo_stroke(cr);
+				cairo_restore(cr);
+				cairo_move_to(cr, (priv->x0)+((priv->wr)*csx), (priv->y0)-((priv->wr)*ssx));
+				cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_stroke(cr);
 				if ((j+j0)==0) str3=g_strdup("0");
 				else if ((j+j0)==1) str3=g_strconcat("π/", str2, NULL);
@@ -1634,7 +2205,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				pango_layout_set_font_description(lyt, dscr2);
 				pango_layout_set_text(lyt, str3, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
+<<<<<<< HEAD
 				rl=wr+tt+((priv->s)*dr1);
+=======
+				rl=(priv->wr)+tt+((priv->s)*dr1);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				cairo_move_to(cr, (priv->x0)+(rl*csx)-(wd/2), (priv->y0)-(rl*ssx)-(hg/2));
 				pango_cairo_show_layout(cr, lyt);
 				g_object_unref(lyt);
@@ -1648,6 +2223,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			sx+=dz;/* additional azimuthal ticks */
 			csx=cos(sx);
 			ssx=sin(sx);
+<<<<<<< HEAD
 			cairo_move_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
 			cairo_line_to(cr, (priv->x0)+((wr+JT+((priv->s)*dr1))*csx), (priv->y0)-((wr+JT+((priv->s)*dr1))*ssx));
 		}
@@ -1655,6 +2231,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		cairo_new_sub_path(cr);
 		cairo_arc(cr, (priv->x0), (priv->y0), wr, NMY_PI, G_PI);
 		rt=wr;
+=======
+			cairo_move_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+			cairo_line_to(cr, (priv->x0)+(((priv->wr)+JT+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+JT+((priv->s)*dr1))*ssx));
+		}
+		cairo_stroke(cr);
+		cairo_new_sub_path(cr);
+		cairo_arc(cr, (priv->x0), (priv->y0), (priv->wr), NMY_PI, G_PI);
+		rt=(priv->wr);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 		dwr=dr1*(priv->s)/(priv->ticks.r);
 		kx=1;
 		for (j=1; j<(priv->ticks.r); j++)
@@ -1669,19 +2254,31 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				csx=cos(sx);
 				ssx=sin(sx);
 				cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 				cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+				cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				for (k=1; k<(kx*(priv->ticks.zin)); k++)
 				{
 					sx+=dz;
 					csx=cos(sx);
 					ssx=sin(sx);
 					cairo_move_to(cr, (priv->x0)+(rt*csx), (priv->y0)-(rt*ssx));
+<<<<<<< HEAD
 					cairo_line_to(cr, (priv->x0)+((wr+((priv->s)*dr1))*csx), (priv->y0)-((wr+((priv->s)*dr1))*ssx));
+=======
+					cairo_line_to(cr, (priv->x0)+(((priv->wr)+((priv->s)*dr1))*csx), (priv->y0)-(((priv->wr)+((priv->s)*dr1))*ssx));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				}
 				kx*=2;
 			}
 			cairo_stroke(cr);
+<<<<<<< HEAD
 			g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-wr)/(priv->s)));
+=======
+			g_snprintf(lbl, (priv->rcs), "%f", (priv->bounds.rmin)+((rt-(priv->wr))/(priv->s)));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			cairo_text_extents(cr, lbl, &extents);
 			cairo_move_to(cr, (priv->x0)+rt-((extents.width)/2)-(extents.x_bearing), (priv->y0)+JTI-(extents.y_bearing));
 			cairo_show_text(cr, lbl);/* draw radial tick labels*/
@@ -1694,7 +2291,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		pango_layout_set_font_description(lyt, dscr1);
 		pango_layout_set_text(lyt, (plot->rlab), -1);
 		pango_layout_get_pixel_size(lyt, &wd, &hg);
+<<<<<<< HEAD
 		cairo_move_to(cr, (priv->x0)+wr+(((dr1*(priv->s))-wd)/2), (priv->y0)+dtr-hg);
+=======
+		cairo_move_to(cr, (priv->x0)+(priv->wr)+(((dr1*(priv->s))-wd)/2), (priv->y0)+dtr-hg);
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 		pango_cairo_show_layout(cr, lyt);
 		g_object_unref(lyt);
 		lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
@@ -1732,7 +2333,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						else
 						{
 							xs=0;
+<<<<<<< HEAD
 							drs=wr+((r-(priv->bounds.rmin))*(priv->s));
+=======
+							drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							x=(priv->x0)+(drs*cos(th));
 							y=(priv->y0)-(drs*sin(th));
 							cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
@@ -1750,16 +2355,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									if (xs==0)
 									{
 										drs=r-rn;
+<<<<<<< HEAD
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmin)); y=(priv->y0)-(wr*sin(priv->bounds.thmin));}
+=======
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										else
 										{
 											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 											drs+=th;
+<<<<<<< HEAD
 											if (drs>=thn) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}/* check wrapping */
 											else
 											{
 												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
 												drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+											if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+											else
+											{
+												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											}
@@ -1769,6 +2386,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									}
 									else if (xs==2)
 									{
+<<<<<<< HEAD
 										drs=th-thn;
 										if ((drs>DZE)||(drs<NZE))
 										{
@@ -1783,6 +2401,24 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 												if (drs>(priv->bounds.rmin))
 												{
 													drs=wr+((drs-(priv->bounds.rmin))*(priv->s));
+=======
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+											drs+=rn;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												csx+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 												}
@@ -1790,8 +2426,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 												{
 													drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
 													drs+=tn;
+<<<<<<< HEAD
 													x=(priv->x0)+(wr*cos(drs));
 													y=(priv->y0)-(wr*sin(drs));
+=======
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												}
 												cairo_line_to(cr, x, y);
 												cairo_stroke(cr);
@@ -1805,16 +2446,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									if (xs==0)
 									{
 										drs=r-rn;
+<<<<<<< HEAD
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmax)); y=(priv->y0)-(wr*sin(priv->bounds.thmax));}
+=======
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										else
 										{
 											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 											drs+=th;
+<<<<<<< HEAD
 											if (drs<=thx) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}
 											else
 											{
 												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
 												drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+											if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+											else
+											{
+												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											}
@@ -1822,6 +2475,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==2)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+											drs+=r;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												csx+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+													drs+=tn;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=9;
 								}
 								else
@@ -1831,47 +2520,162 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs=r-rn;
 										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 										drs+=th;
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 									else if (xs==4) /* check for cutting across */
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xs==2)
+									{
+										csx=(th-tn)/(r-rn);
+										drs=csx*((priv->bounds.rmax)-r);
+										drs+=th;
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=csx*((priv->bounds.rmin)-rn);
+										drs+=tn;
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xs==4)
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									{
 										drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
 										if (drs>0)
 										{
+<<<<<<< HEAD
 											drs=wr+(drs*(priv->s));
+=======
+											drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											cairo_move_to(cr, x, y);
 											drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
 											drs+=th;
+<<<<<<< HEAD
 											x=(priv->x0)+(wr*cos(drs));
 											y=(priv->y0)-(wr*sin(drs));
+=======
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											cairo_line_to(cr, x, y);
 											cairo_stroke(cr);
 										}
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==6)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+											drs+=r;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												csx+=tn;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													drs+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else if (xs==8)
 									{
 										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
 										if (drs>0)
 										{
+<<<<<<< HEAD
 											drs=wr+(drs*(priv->s));
+=======
+											drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											cairo_move_to(cr, x, y);
 											drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
 											drs+=th;
+<<<<<<< HEAD
 											x=(priv->x0)+(wr*cos(drs));
 											y=(priv->y0)-(wr*sin(drs));
+=======
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											cairo_line_to(cr, x, y);
 											cairo_stroke(cr);
 										}
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==10)
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+											drs+=rn;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												csx+=tn;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													drs+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=1;
 								}
 							}
@@ -1884,7 +2688,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs=rn-r;
 										if ((drs<DZE)&&(drs>NZE))
 										{
+<<<<<<< HEAD
 											drs=wr+(dr1*(priv->s));
+=======
+											drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -1894,14 +2702,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											drs+=th;
 											if (drs>=thn)
 											{
+<<<<<<< HEAD
 												drc=wr+(dr1*(priv->s));
+=======
+												drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drc*cos(drs));
 												y=(priv->y0)-(drc*sin(drs));
 											}
 											else
 											{
 												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+<<<<<<< HEAD
 												drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											}
@@ -1909,6 +2725,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==1)
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+											drs+=rn;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												csx+=th;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													drs+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=6;
 								}
 								else if (tn>(priv->bounds.thmax))
@@ -1918,7 +2770,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs=rn-r;
 										if ((drs<DZE)&&(drs>NZE))
 										{
+<<<<<<< HEAD
 											drs=wr+(dr1*(priv->s));
+=======
+											drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -1928,14 +2784,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											drs+=th;
 											if (drs<=thx)
 											{
+<<<<<<< HEAD
 												drc=wr+(dr1*(priv->s));
+=======
+												drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drc*cos(drs));
 												y=(priv->y0)-(drc*sin(drs));
 											}
 											else
 											{
 												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+<<<<<<< HEAD
 												drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											}
@@ -1943,6 +2807,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==1)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+											drs+=r;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												csx+=th;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													drs+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=10;
 								}
 								else
@@ -1952,9 +2852,31 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs=rn-r;
 										drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
 										drs+=th;
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xs==1)
+									{
+										csx=(tn-th)/(rn-r);
+										drs=csx*((priv->bounds.rmax)-rn);
+										drs+=tn;
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=csx*((priv->bounds.rmin)-r);
+										drs+=th;
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
@@ -1964,38 +2886,126 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs+=r-(priv->bounds.rmin);
 										if (drs<dr1)
 										{
+<<<<<<< HEAD
 											drs=wr+(drs*(priv->s));
+=======
+											drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											cairo_move_to(cr, x, y);
 											drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
 											drs+=th;
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 											cairo_line_to(cr, x, y);
 											cairo_stroke(cr);
 										}
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==5)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+											drs+=r;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												csx+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													drs+=th;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else if (xs==8)
 									{
 										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
 										if (drs<dr1)
 										{
+<<<<<<< HEAD
 											drs=wr+(drs*(priv->s));
+=======
+											drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											cairo_move_to(cr, x, y);
 											drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
 											drs+=th;
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 											cairo_line_to(cr, x, y);
 											cairo_stroke(cr);
 										}
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==9)
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+											drs+=rn;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												csx+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													drs+=th;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=2;
 								}
 							}
@@ -2004,7 +3014,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								if (xs==0)
 								{
 									drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+<<<<<<< HEAD
 									drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									cairo_line_to(cr, x, y);
@@ -2016,11 +3030,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs+=tn;
 									if (drs>(priv->bounds.thmin))
 									{
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
 										drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										cairo_line_to(cr, x, y);
@@ -2033,12 +3055,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs+=tn;
 									if (drs>(priv->bounds.thmin))
 									{
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+<<<<<<< HEAD
 										drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										cairo_line_to(cr, x, y);
@@ -2052,7 +3082,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								if (xs==0)
 								{
 									drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+<<<<<<< HEAD
 									drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									cairo_line_to(cr, x, y);
@@ -2064,11 +3098,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs+=tn;
 									if (drs<(priv->bounds.thmax))
 									{
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
 										drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										cairo_line_to(cr, x, y);
@@ -2081,12 +3123,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs+=tn;
 									if (drs<(priv->bounds.thmax))
 									{
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+<<<<<<< HEAD
 										drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										cairo_line_to(cr, x, y);
@@ -2102,16 +3152,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=rn-r;
 									if ((xs&4)!=0)
 									{
+<<<<<<< HEAD
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmin)); y=(priv->y0)-(wr*sin(priv->bounds.thmin));}
+=======
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										else
 										{
 											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 											drs+=tn;
+<<<<<<< HEAD
 											if (drs>=thn) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}/* check wrapping */
 											else
 											{
 												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
 												drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+											if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+											else
+											{
+												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											}
@@ -2119,16 +3181,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									}
 									else if ((xs&8)!=0)
 									{
+<<<<<<< HEAD
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmax)); y=(priv->y0)-(wr*sin(priv->bounds.thmax));}
+=======
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										else
 										{
 											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 											drs+=tn;
+<<<<<<< HEAD
 											if (drs<=thx) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}
 											else
 											{
 												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
 												drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+											if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+											else
+											{
+												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											}
@@ -2138,8 +3212,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									{
 										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 										drs+=tn;
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									}
 									cairo_move_to(cr, x, y);
 								}
@@ -2150,7 +3229,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									{
 										if ((drs<DZE)&&(drs>NZE))
 										{
+<<<<<<< HEAD
 											drs=wr+(dr1*(priv->s));
+=======
+											drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -2160,14 +3243,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											drs+=tn;
 											if (drs>=thn)
 											{
+<<<<<<< HEAD
 												drc=wr+(dr1*(priv->s));
+=======
+												drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drc*cos(drs));
 												y=(priv->y0)-(drc*sin(drs));
 											}
 											else
 											{
 												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+<<<<<<< HEAD
 												drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											}
@@ -2177,7 +3268,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									{
 										if ((drs<DZE)&&(drs>NZE))
 										{
+<<<<<<< HEAD
 											drs=wr+(dr1*(priv->s));
+=======
+											drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -2187,14 +3282,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											drs+=tn;
 											if (drs<=thx)
 											{
+<<<<<<< HEAD
 												drc=wr+(dr1*(priv->s));
+=======
+												drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drc*cos(drs));
 												y=(priv->y0)-(drc*sin(drs));
 											}
 											else
 											{
 												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+<<<<<<< HEAD
 												drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											}
@@ -2204,7 +3307,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									{
 										drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
 										drs+=tn;
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 									}
@@ -2213,7 +3320,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								else if ((xs&4)!=0)
 								{
 									drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+<<<<<<< HEAD
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									cairo_move_to(cr, x, y);
@@ -2221,12 +3332,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								else if ((xs&8)!=0)
 								{
 									drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+<<<<<<< HEAD
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									cairo_move_to(cr, x, y);
 								}
+<<<<<<< HEAD
 								drs=wr+((rn-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(tn));
 								y=(priv->y0)-(drs*sin(tn));
 								cairo_line_to(cr, x, y);
@@ -2240,7 +3359,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							th=tn;
 						}
 					}
+<<<<<<< HEAD
 				{
+=======
+				}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 				else /* spline interpolation to polar transform */
 				{
 					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
@@ -2264,7 +3387,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						else
 						{
 							xs=0;
+<<<<<<< HEAD
 							drs=wr+((r-(priv->bounds.rmin))*(priv->s));
+=======
+							drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							x=(priv->x0)+(drs*cos(th));
 							y=(priv->y0)-(drs*sin(th));
 							cairo_arc(cr, x, y, (plot->ptsize), 0, MY_2PI);
@@ -2282,16 +3409,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									if (xs==0)
 									{
 										drs=r-rn;
+<<<<<<< HEAD
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmin)); y=(priv->y0)-(wr*sin(priv->bounds.thmin));}
+=======
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										else
 										{
 											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 											drs+=th;
+<<<<<<< HEAD
 											if (drs>=thn) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}/* check wrapping */
 											else
 											{
 												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
 												drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+											if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+											else
+											{
+												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											}
@@ -2299,6 +3438,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==2)
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+											drs+=rn;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												csx+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+													drs+=tn;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=5;
 								}
 								else if (tn>(priv->bounds.thmax))
@@ -2306,16 +3481,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									if (xs==0)
 									{
 										drs=r-rn;
+<<<<<<< HEAD
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmax)); y=(priv->y0)-(wr*sin(priv->bounds.thmax));}
+=======
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										else
 										{
 											drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 											drs+=th;
+<<<<<<< HEAD
 											if (drs<=thx) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}
 											else
 											{
 												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
 												drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+											if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+											else
+											{
+												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											}
@@ -2323,6 +3510,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==2)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+											drs+=r;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												csx+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+													drs+=tn;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=9;
 								}
 								else
@@ -2332,47 +3555,162 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs=r-rn;
 										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 										drs+=th;
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 									else if (xs==4) /* check for cutting across */
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xs==2)
+									{
+										csx=(th-tn)/(r-rn);
+										drs=csx*((priv->bounds.rmax)-r);
+										drs+=th;
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=csx*((priv->bounds.rmin)-rn);
+										drs+=tn;
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+									else if (xs==4)
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									{
 										drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
 										if (drs>0)
 										{
+<<<<<<< HEAD
 											drs=wr+(drs*(priv->s));
+=======
+											drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											cairo_move_to(cr, x, y);
 											drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
 											drs+=th;
+<<<<<<< HEAD
 											x=(priv->x0)+(wr*cos(drs));
 											y=(priv->y0)-(wr*sin(drs));
+=======
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											cairo_line_to(cr, x, y);
 											cairo_stroke(cr);
 										}
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==6)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+											drs+=r;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												csx+=tn;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													drs+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else if (xs==8)
 									{
 										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
 										if (drs>0)
 										{
+<<<<<<< HEAD
 											drs=wr+(drs*(priv->s));
+=======
+											drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											cairo_move_to(cr, x, y);
 											drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
 											drs+=th;
+<<<<<<< HEAD
 											x=(priv->x0)+(wr*cos(drs));
 											y=(priv->y0)-(wr*sin(drs));
+=======
+											x=(priv->x0)+((priv->wr)*cos(drs));
+											y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											cairo_line_to(cr, x, y);
 											cairo_stroke(cr);
 										}
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==10)
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+											drs+=rn;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												csx+=tn;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+													drs+=th;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=1;
 								}
 							}
@@ -2385,7 +3723,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs=rn-r;
 										if ((drs<DZE)&&(drs>NZE))
 										{
+<<<<<<< HEAD
 											drs=wr+(dr1*(priv->s));
+=======
+											drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -2395,14 +3737,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											drs+=th;
 											if (drs>=thn)
 											{
+<<<<<<< HEAD
 												drc=wr+(dr1*(priv->s));
+=======
+												drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drc*cos(drs));
 												y=(priv->y0)-(drc*sin(drs));
 											}
 											else
 											{
 												drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+<<<<<<< HEAD
 												drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											}
@@ -2410,6 +3760,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==1)
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+											drs+=rn;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												csx+=th;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													drs+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=6;
 								}
 								else if (tn>(priv->bounds.thmax))
@@ -2419,7 +3805,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs=rn-r;
 										if ((drs<DZE)&&(drs>NZE))
 										{
+<<<<<<< HEAD
 											drs=wr+(dr1*(priv->s));
+=======
+											drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -2429,14 +3819,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											drs+=th;
 											if (drs<=thx)
 											{
+<<<<<<< HEAD
 												drc=wr+(dr1*(priv->s));
+=======
+												drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drc*cos(drs));
 												y=(priv->y0)-(drc*sin(drs));
 											}
 											else
 											{
 												drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+<<<<<<< HEAD
 												drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+												drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											}
@@ -2444,6 +3842,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==1)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+											drs+=r;
+											if (drs>(priv->bounds.rmin))
+											{
+												csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												csx+=th;
+												x=(priv->x0)+((priv->wr)*cos(csx));
+												y=(priv->y0)-((priv->wr)*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs<(priv->bounds.rmax))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+													drs+=tn;
+													drc=(priv->wr)+(dr1*(priv->s));
+													x=(priv->x0)+(drc*cos(drs));
+													y=(priv->y0)-(drc*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=10;
 								}
 								else
@@ -2453,50 +3887,161 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs=rn-r;
 										drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
 										drs+=th;
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==1)
+									{
+										csx=(tn-th)/(rn-r);
+										drs=csx*((priv->bounds.rmax)-rn);
+										drs+=tn;
+										drc=(priv->wr)+(dr1*(priv->s));
+										x=(priv->x0)+(drc*cos(drs));
+										y=(priv->y0)-(drc*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=csx*((priv->bounds.rmin)-r);
+										drs+=th;
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_line_to(cr, x, y);
+										cairo_stroke(cr);
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else if (xs==4)
 									{
 										drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
 										if (drs<dr1)
 										{
+<<<<<<< HEAD
 											drs=wr+(drs*(priv->s));
+=======
+											drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											cairo_move_to(cr, x, y);
 											drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
 											drs+=th;
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 											cairo_line_to(cr, x, y);
 											cairo_stroke(cr);
 										}
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==5)
+									{
+										drs=tn-th;
+										if (drs>DZE)
+										{
+											drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+											drs+=r;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												csx+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													drs+=th;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else if (xs==8)
 									{
 										drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 										drs+=r-(priv->bounds.rmin);
 										if (drs<dr1)
 										{
+<<<<<<< HEAD
 											drs=wr+(drs*(priv->s));
+=======
+											drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											cairo_move_to(cr, x, y);
 											drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
 											drs+=th;
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 											cairo_line_to(cr, x, y);
 											cairo_stroke(cr);
 										}
 									}
+<<<<<<< HEAD
+=======
+									else if (xs==9)
+									{
+										drs=th-tn;
+										if (drs>DZE)
+										{
+											drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+											drs+=rn;
+											if (drs<(priv->bounds.rmax))
+											{
+												csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												csx+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(csx));
+												y=(priv->y0)-(drc*sin(csx));
+												cairo_move_to(cr, x, y);
+												if (drs>(priv->bounds.rmin))
+												{
+													drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+													x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+													y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+												}
+												else
+												{
+													drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+													drs+=th;
+													x=(priv->x0)+((priv->wr)*cos(drs));
+													y=(priv->y0)-((priv->wr)*sin(drs));
+												}
+												cairo_line_to(cr, x, y);
+												cairo_stroke(cr);
+											}
+										}
+									}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									xs=2;
 								}
 							}
@@ -2505,7 +4050,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								if (xs==0)
 								{
 									drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+<<<<<<< HEAD
 									drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									cairo_line_to(cr, x, y);
@@ -2517,11 +4066,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs+=tn;
 									if (drs>(priv->bounds.thmin))
 									{
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
 										drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										cairo_line_to(cr, x, y);
@@ -2534,12 +4091,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs+=tn;
 									if (drs>(priv->bounds.thmin))
 									{
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+<<<<<<< HEAD
 										drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										cairo_line_to(cr, x, y);
@@ -2553,7 +4118,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								if (xs==0)
 								{
 									drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+<<<<<<< HEAD
 									drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									cairo_line_to(cr, x, y);
@@ -2565,11 +4134,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs+=tn;
 									if (drs<(priv->bounds.thmax))
 									{
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
 										drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+										cairo_move_to(cr, x, y);
+										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										cairo_line_to(cr, x, y);
@@ -2582,12 +4159,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs+=tn;
 									if (drs<(priv->bounds.thmax))
 									{
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+<<<<<<< HEAD
 										drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										cairo_line_to(cr, x, y);
@@ -2603,16 +4188,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=rn-r;
 									if ((xs&4)!=0)
 									{
+<<<<<<< HEAD
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmin)); y=(priv->y0)-(wr*sin(priv->bounds.thmin));}
+=======
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										else
 										{
 											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 											drs+=tn;
+<<<<<<< HEAD
 											if (drs>=thn) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}/* check wrapping */
 											else
 											{
 												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
 												drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+											if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+											else
+											{
+												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											}
@@ -2620,16 +4217,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									}
 									else if ((xs&8)!=0)
 									{
+<<<<<<< HEAD
 										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmax)); y=(priv->y0)-(wr*sin(priv->bounds.thmax));}
+=======
+										if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										else
 										{
 											drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 											drs+=tn;
+<<<<<<< HEAD
 											if (drs<=thx) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}
 											else
 											{
 												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
 												drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+											if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+											else
+											{
+												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											}
@@ -2639,8 +4248,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									{
 										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 										drs+=tn;
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									}
 									cairo_move_to(cr, x, y);
 								}
@@ -2651,7 +4265,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									{
 										if ((drs<DZE)&&(drs>NZE))
 										{
+<<<<<<< HEAD
 											drs=wr+(dr1*(priv->s));
+=======
+											drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -2661,14 +4279,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											drs+=tn;
 											if (drs>=thn)
 											{
+<<<<<<< HEAD
 												drc=wr+(dr1*(priv->s));
+=======
+												drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drc*cos(drs));
 												y=(priv->y0)-(drc*sin(drs));
 											}
 											else
 											{
 												drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+<<<<<<< HEAD
 												drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 											}
@@ -2678,7 +4304,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									{
 										if ((drs<DZE)&&(drs>NZE))
 										{
+<<<<<<< HEAD
 											drs=wr+(dr1*(priv->s));
+=======
+											drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -2688,14 +4318,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 											drs+=tn;
 											if (drs<=thx)
 											{
+<<<<<<< HEAD
 												drc=wr+(dr1*(priv->s));
+=======
+												drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drc*cos(drs));
 												y=(priv->y0)-(drc*sin(drs));
 											}
 											else
 											{
 												drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+<<<<<<< HEAD
 												drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+												drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 											}
@@ -2705,7 +4343,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									{
 										drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
 										drs+=tn;
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 									}
@@ -2714,7 +4356,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								else if ((xs&4)!=0)
 								{
 									drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+<<<<<<< HEAD
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									cairo_move_to(cr, x, y);
@@ -2722,12 +4368,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								else if ((xs&8)!=0)
 								{
 									drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+<<<<<<< HEAD
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									cairo_move_to(cr, x, y);
 								}
+<<<<<<< HEAD
 								drs=wr+((rn-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(tn));
 								y=(priv->y0)-(drs*sin(tn));
 								cairo_line_to(cr, x, y);
@@ -2742,7 +4396,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						}
 					}
 				}
+<<<<<<< HEAD
 			{
+=======
+			}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 			else if (((plot->flags)&8)==0) /* straight lines only */
 			{
 				for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
@@ -2766,7 +4424,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					else
 					{
 						xs=0;
+<<<<<<< HEAD
 							drs=wr+((r-(priv->bounds.rmin))*(priv->s));
+=======
+						drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						x=(priv->x0)+(drs*cos(th));
 						y=(priv->y0)-(drs*sin(th));
 						cairo_move_to(cr, x, y);
@@ -2782,16 +4444,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								if (xs==0)
 								{
 									drs=r-rn;
+<<<<<<< HEAD
 									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmin)); y=(priv->y0)-(wr*sin(priv->bounds.thmin));}
+=======
+									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else
 									{
 										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 										drs+=th;
+<<<<<<< HEAD
 										if (drs>=thn) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}/* check wrapping */
 										else
 										{
 											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
 											drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+										if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+										else
+										{
+											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -2799,6 +4473,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==2)
+								{
+									drs=th-tn;
+									if (drs>DZE)
+									{
+										drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+										drs+=rn;
+										if (drs<(priv->bounds.rmax))
+										{
+											csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+											csx+=tn;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(csx));
+											y=(priv->y0)-(drc*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs>(priv->bounds.rmin))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												drs+=tn;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=5;
 							}
 							else if (tn>(priv->bounds.thmax))
@@ -2806,16 +4516,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								if (xs==0)
 								{
 									drs=r-rn;
+<<<<<<< HEAD
 									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmax)); y=(priv->y0)-(wr*sin(priv->bounds.thmax));}
+=======
+									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else
 									{
 										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 										drs+=th;
+<<<<<<< HEAD
 										if (drs<=thx) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}
 										else
 										{
 											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
 											drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+										if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+										else
+										{
+											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -2823,6 +4545,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==2)
+								{
+									drs=tn-th;
+									if (drs>DZE)
+									{
+										drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+										drs+=r;
+										if (drs<(priv->bounds.rmax))
+										{
+											csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+											csx+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(csx));
+											y=(priv->y0)-(drc*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs>(priv->bounds.rmin))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												drs+=tn;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=9;
 							}
 							else
@@ -2832,47 +4590,162 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=r-rn;
 									drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 									drs+=th;
+<<<<<<< HEAD
 									x=(priv->x0)+(wr*cos(drs));
 									y=(priv->y0)-(wr*sin(drs));
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
 								else if (xs==4) /* check for cutting across */
+=======
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+								}
+								else if (xs==2)
+								{
+									csx=(th-tn)/(r-rn);
+									drs=csx*((priv->bounds.rmax)-r);
+									drs+=th;
+									drc=(priv->wr)+(dr1*(priv->s));
+									x=(priv->x0)+(drc*cos(drs));
+									y=(priv->y0)-(drc*sin(drs));
+									cairo_move_to(cr, x, y);
+									drs=csx*((priv->bounds.rmin)-rn);
+									drs+=tn;
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+								}
+								else if (xs==4)
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								{
 									drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
 									drs+=r-(priv->bounds.rmin);
 									if (drs>0)
 									{
+<<<<<<< HEAD
 										drs=wr+(drs*(priv->s));
+=======
+										drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
 										drs+=th;
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==6)
+								{
+									drs=tn-th;
+									if (drs>DZE)
+									{
+										drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+										drs+=r;
+										if (drs>(priv->bounds.rmin))
+										{
+											csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+											csx+=tn;
+											x=(priv->x0)+((priv->wr)*cos(csx));
+											y=(priv->y0)-((priv->wr)*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs<(priv->bounds.rmax))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												drs+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								else if (xs==8)
 								{
 									drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 									drs+=r-(priv->bounds.rmin);
 									if (drs>0)
 									{
+<<<<<<< HEAD
 										drs=wr+(drs*(priv->s));
+=======
+										drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
 										drs+=th;
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==10)
+								{
+									drs=th-tn;
+									if (drs>DZE)
+									{
+										drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+										drs+=rn;
+										if (drs>(priv->bounds.rmin))
+										{
+											csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+											csx+=tn;
+											x=(priv->x0)+((priv->wr)*cos(csx));
+											y=(priv->y0)-((priv->wr)*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs<(priv->bounds.rmax))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												drs+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=1;
 							}
 						}
@@ -2885,7 +4758,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=rn-r;
 									if ((drs<DZE)&&(drs>NZE))
 									{
+<<<<<<< HEAD
 										drs=wr+(dr1*(priv->s));
+=======
+										drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									}
@@ -2895,14 +4772,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs+=th;
 										if (drs>=thn)
 										{
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 										}
 										else
 										{
 											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+<<<<<<< HEAD
 											drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -2910,6 +4795,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==1)
+								{
+									drs=th-tn;
+									if (drs>DZE)
+									{
+										drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+										drs+=rn;
+										if (drs>(priv->bounds.rmin))
+										{
+											csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+											csx+=th;
+											x=(priv->x0)+((priv->wr)*cos(csx));
+											y=(priv->y0)-((priv->wr)*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs<(priv->bounds.rmax))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												drs+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=6;
 							}
 							else if (tn>(priv->bounds.thmax))
@@ -2919,7 +4840,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=rn-r;
 									if ((drs<DZE)&&(drs>NZE))
 									{
+<<<<<<< HEAD
 										drs=wr+(dr1*(priv->s));
+=======
+										drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									}
@@ -2929,14 +4854,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs+=th;
 										if (drs<=thx)
 										{
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 										}
 										else
 										{
 											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+<<<<<<< HEAD
 											drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -2944,6 +4877,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==1)
+								{
+									drs=tn-th;
+									if (drs>DZE)
+									{
+										drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+										drs+=r;
+										if (drs>(priv->bounds.rmin))
+										{
+											csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+											csx+=th;
+											x=(priv->x0)+((priv->wr)*cos(csx));
+											y=(priv->y0)-((priv->wr)*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs<(priv->bounds.rmax))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												drs+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=10;
 							}
 							else
@@ -2953,50 +4922,161 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=rn-r;
 									drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
 									drs+=th;
+<<<<<<< HEAD
 									drc=wr+(dr1*(priv->s));
+=======
+									drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drc*cos(drs));
 									y=(priv->y0)-(drc*sin(drs));
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==1)
+								{
+									csx=(tn-th)/(rn-r);
+									drs=csx*((priv->bounds.rmax)-rn);
+									drs+=tn;
+									drc=(priv->wr)+(dr1*(priv->s));
+									x=(priv->x0)+(drc*cos(drs));
+									y=(priv->y0)-(drc*sin(drs));
+									cairo_move_to(cr, x, y);
+									drs=csx*((priv->bounds.rmin)-r);
+									drs+=th;
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								else if (xs==4)
 								{
 									drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
 									drs+=r-(priv->bounds.rmin);
 									if (drs<dr1)
 									{
+<<<<<<< HEAD
 										drs=wr+(drs*(priv->s));
+=======
+										drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
 										drs+=th;
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==5)
+								{
+									drs=tn-th;
+									if (drs>DZE)
+									{
+										drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+										drs+=r;
+										if (drs<(priv->bounds.rmax))
+										{
+											csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+											csx+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(csx));
+											y=(priv->y0)-(drc*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs>(priv->bounds.rmin))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												drs+=th;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								else if (xs==8)
 								{
 									drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 									drs+=r-(priv->bounds.rmin);
 									if (drs<dr1)
 									{
+<<<<<<< HEAD
 										drs=wr+(drs*(priv->s));
+=======
+										drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
 										drs+=th;
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==9)
+								{
+									drs=th-tn;
+									if (drs>DZE)
+									{
+										drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+										drs+=rn;
+										if (drs<(priv->bounds.rmax))
+										{
+											csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+											csx+=tn;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(csx));
+											y=(priv->y0)-(drc*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs>(priv->bounds.rmin))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												drs+=th;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=2;
 							}
 						}
@@ -3005,7 +5085,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							if (xs==0)
 							{
 								drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+<<<<<<< HEAD
 								drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 								y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 								cairo_line_to(cr, x, y);
@@ -3017,11 +5101,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								drs+=tn;
 								if (drs>(priv->bounds.thmin))
 								{
+<<<<<<< HEAD
 									x=(priv->x0)+(wr*cos(drs));
 									y=(priv->y0)-(wr*sin(drs));
 									cairo_move_to(cr, x, y);
 									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+									cairo_move_to(cr, x, y);
+									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									cairo_line_to(cr, x, y);
@@ -3034,12 +5126,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								drs+=tn;
 								if (drs>(priv->bounds.thmin))
 								{
+<<<<<<< HEAD
 									drc=wr+(dr1*(priv->s));
+=======
+									drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drc*cos(drs));
 									y=(priv->y0)-(drc*sin(drs));
 									cairo_move_to(cr, x, y);
 									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+<<<<<<< HEAD
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									cairo_line_to(cr, x, y);
@@ -3053,7 +5153,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							if (xs==0)
 							{
 								drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+<<<<<<< HEAD
 								drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 								y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 								cairo_line_to(cr, x, y);
@@ -3065,11 +5169,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								drs+=tn;
 								if (drs<(priv->bounds.thmax))
 								{
+<<<<<<< HEAD
 									x=(priv->x0)+(wr*cos(drs));
 									y=(priv->y0)-(wr*sin(drs));
 									cairo_move_to(cr, x, y);
 									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+									cairo_move_to(cr, x, y);
+									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									cairo_line_to(cr, x, y);
@@ -3082,12 +5194,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								drs+=tn;
 								if (drs<(priv->bounds.thmax))
 								{
+<<<<<<< HEAD
 									drc=wr+(dr1*(priv->s));
+=======
+									drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drc*cos(drs));
 									y=(priv->y0)-(drc*sin(drs));
 									cairo_move_to(cr, x, y);
 									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+<<<<<<< HEAD
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									cairo_line_to(cr, x, y);
@@ -3103,16 +5223,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								drs=rn-r;
 								if ((xs&4)!=0)
 								{
+<<<<<<< HEAD
 									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmin)); y=(priv->y0)-(wr*sin(priv->bounds.thmin));}
+=======
+									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else
 									{
 										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 										drs+=tn;
+<<<<<<< HEAD
 										if (drs>=thn) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}/* check wrapping */
 										else
 										{
 											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
 											drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+										else
+										{
+											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -3120,16 +5252,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								}
 								else if ((xs&8)!=0)
 								{
+<<<<<<< HEAD
 									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmax)); y=(priv->y0)-(wr*sin(priv->bounds.thmax));}
+=======
+									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else
 									{
 										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 										drs+=tn;
+<<<<<<< HEAD
 										if (drs<=thx) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}
 										else
 										{
 											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
 											drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+										else
+										{
+											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -3139,8 +5283,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								{
 									drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 									drs+=tn;
+<<<<<<< HEAD
 									x=(priv->x0)+(wr*cos(drs));
 									y=(priv->y0)-(wr*sin(drs));
+=======
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								}
 								cairo_move_to(cr, x, y);
 							}
@@ -3151,7 +5300,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								{
 									if ((drs<DZE)&&(drs>NZE))
 									{
+<<<<<<< HEAD
 										drs=wr+(dr1*(priv->s));
+=======
+										drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									}
@@ -3161,14 +5314,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs+=tn;
 										if (drs>=thn)
 										{
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 										}
 										else
 										{
 											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+<<<<<<< HEAD
 											drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -3178,7 +5339,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								{
 									if ((drs<DZE)&&(drs>NZE))
 									{
+<<<<<<< HEAD
 										drs=wr+(dr1*(priv->s));
+=======
+										drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									}
@@ -3188,14 +5353,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs+=tn;
 										if (drs<=thx)
 										{
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 										}
 										else
 										{
 											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+<<<<<<< HEAD
 											drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -3205,7 +5378,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								{
 									drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
 									drs+=tn;
+<<<<<<< HEAD
 									drc=wr+(dr1*(priv->s));
+=======
+									drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drc*cos(drs));
 									y=(priv->y0)-(drc*sin(drs));
 								}
@@ -3214,7 +5391,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							else if ((xs&4)!=0)
 							{
 								drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+<<<<<<< HEAD
 								drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 								y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 								cairo_move_to(cr, x, y);
@@ -3222,12 +5403,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							else if ((xs&8)!=0)
 							{
 								drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+<<<<<<< HEAD
 								drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 								y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 								cairo_move_to(cr, x, y);
 							}
+<<<<<<< HEAD
 							drs=wr+((rn-(priv->bounds.rmin))*(priv->s));
+=======
+							drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							x=(priv->x0)+(drs*cos(tn));
 							y=(priv->y0)-(drs*sin(tn));
 							cairo_line_to(cr, x, y);
@@ -3262,7 +5451,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					else
 					{
 						xs=0;
+<<<<<<< HEAD
 						drs=wr+((r-(priv->bounds.rmin))*(priv->s));
+=======
+						drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						x=(priv->x0)+(drs*cos(th));
 						y=(priv->y0)-(drs*sin(th));
 						cairo_move_to(cr, x, y);
@@ -3278,16 +5471,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								if (xs==0)
 								{
 									drs=r-rn;
+<<<<<<< HEAD
 									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmin)); y=(priv->y0)-(wr*sin(priv->bounds.thmin));}
+=======
+									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else
 									{
 										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 										drs+=th;
+<<<<<<< HEAD
 										if (drs>=thn) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}/* check wrapping */
 										else
 										{
 											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
 											drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+										if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+										else
+										{
+											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -3295,6 +5500,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==2)
+									{
+									drs=th-tn;
+									if (drs>DZE)
+									{
+										drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+										drs+=rn;
+										if (drs<(priv->bounds.rmax))
+										{
+											csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+											csx+=tn;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(csx));
+											y=(priv->y0)-(drc*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs>(priv->bounds.rmin))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												drs+=tn;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=5;
 							}
 							else if (tn>(priv->bounds.thmax))
@@ -3302,16 +5543,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								if (xs==0)
 								{
 									drs=r-rn;
+<<<<<<< HEAD
 									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmax)); y=(priv->y0)-(wr*sin(priv->bounds.thmax));}
+=======
+									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else
 									{
 										drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 										drs+=th;
+<<<<<<< HEAD
 										if (drs<=thx) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}
 										else
 										{
 											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
 											drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+										if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+										else
+										{
+											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -3319,6 +5572,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==2)
+								{
+									drs=tn-th;
+									if (drs>DZE)
+									{
+										drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+										drs+=r;
+										if (drs<(priv->bounds.rmax))
+										{
+											csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+											csx+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(csx));
+											y=(priv->y0)-(drc*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs>(priv->bounds.rmin))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+												drs+=tn;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=9;
 							}
 							else
@@ -3328,47 +5617,162 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=r-rn;
 									drs=((tn-th)*(r-(priv->bounds.rmin)))/drs;
 									drs+=th;
+<<<<<<< HEAD
 									x=(priv->x0)+(wr*cos(drs));
 									y=(priv->y0)-(wr*sin(drs));
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
 								else if (xs==4) /* check for cutting across */
+=======
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+								}
+								else if (xs==2)
+								{
+									csx=(th-tn)/(r-rn);
+									drs=csx*((priv->bounds.rmax)-r);
+									drs+=th;
+									drc=(priv->wr)+(dr1*(priv->s));
+									x=(priv->x0)+(drc*cos(drs));
+									y=(priv->y0)-(drc*sin(drs));
+									cairo_move_to(cr, x, y);
+									drs=csx*((priv->bounds.rmin)-rn);
+									drs+=tn;
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+								}
+								else if (xs==4)
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								{
 									drs=((priv->bounds.thmin)-th)*(rn-r)/(tn-th);
 									drs+=r-(priv->bounds.rmin);
 									if (drs>0)
 									{
+<<<<<<< HEAD
 										drs=wr+(drs*(priv->s));
+=======
+										drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
 										drs+=th;
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==6)
+								{
+									drs=tn-th;
+									if (drs>DZE)
+									{
+										drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+										drs+=r;
+										if (drs>(priv->bounds.rmin))
+										{
+											csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+											csx+=tn;
+											x=(priv->x0)+((priv->wr)*cos(csx));
+											y=(priv->y0)-((priv->wr)*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs<(priv->bounds.rmax))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												drs+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								else if (xs==8)
 								{
 									drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 									drs+=r-(priv->bounds.rmin);
 									if (drs>0)
 									{
+<<<<<<< HEAD
 										drs=wr+(drs*(priv->s));
+=======
+										drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.rmin)-r)*(tn-th)/(rn-r);
 										drs+=th;
+<<<<<<< HEAD
 										x=(priv->x0)+(wr*cos(drs));
 										y=(priv->y0)-(wr*sin(drs));
+=======
+										x=(priv->x0)+((priv->wr)*cos(drs));
+										y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==10)
+								{
+									drs=th-tn;
+									if (drs>DZE)
+									{
+										drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+										drs+=rn;
+										if (drs>(priv->bounds.rmin))
+										{
+											csx=(th-tn)*((priv->bounds.rmin)-rn)/(r-rn);
+											csx+=tn;
+											x=(priv->x0)+((priv->wr)*cos(csx));
+											y=(priv->y0)-((priv->wr)*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs<(priv->bounds.rmax))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+												drs+=th;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=1;
 							}
 						}
@@ -3381,7 +5785,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=rn-r;
 									if ((drs<DZE)&&(drs>NZE))
 									{
+<<<<<<< HEAD
 										drs=wr+(dr1*(priv->s));
+=======
+										drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									}
@@ -3391,14 +5799,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs+=th;
 										if (drs>=thn)
 										{
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 										}
 										else
 										{
 											drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+<<<<<<< HEAD
 											drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -3406,6 +5822,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==1)
+								{
+									drs=th-tn;
+									if (drs>DZE)
+									{
+										drs=(r-rn)*((priv->bounds.thmin)-tn)/drs;
+										drs+=rn;
+										if (drs>(priv->bounds.rmin))
+										{
+											csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+											csx+=th;
+											x=(priv->x0)+((priv->wr)*cos(csx));
+											y=(priv->y0)-((priv->wr)*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs<(priv->bounds.rmax))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												drs+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=6;
 							}
 							else if (tn>(priv->bounds.thmax))
@@ -3415,7 +5867,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=rn-r;
 									if ((drs<DZE)&&(drs>NZE))
 									{
+<<<<<<< HEAD
 										drs=wr+(dr1*(priv->s));
+=======
+										drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									}
@@ -3425,14 +5881,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs+=th;
 										if (drs<=thx)
 										{
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 										}
 										else
 										{
 											drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+<<<<<<< HEAD
 											drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+											drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -3440,6 +5904,42 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==1)
+								{
+									drs=tn-th;
+									if (drs>DZE)
+									{
+										drs=(rn-r)*((priv->bounds.thmax)-th)/drs;
+										drs+=r;
+										if (drs>(priv->bounds.rmin))
+										{
+											csx=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+											csx+=th;
+											x=(priv->x0)+((priv->wr)*cos(csx));
+											y=(priv->y0)-((priv->wr)*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs<(priv->bounds.rmax))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+												drs+=tn;
+												drc=(priv->wr)+(dr1*(priv->s));
+												x=(priv->x0)+(drc*cos(drs));
+												y=(priv->y0)-(drc*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=10;
 							}
 							else
@@ -3449,9 +5949,31 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs=rn-r;
 									drs=((tn-th)*((priv->bounds.rmax)-r))/drs;
 									drs+=th;
+<<<<<<< HEAD
 									drc=wr+(dr1*(priv->s));
 									x=(priv->x0)+(drc*cos(drs));
 									y=(priv->y0)-(drc*sin(drs));
+=======
+									drc=(priv->wr)+(dr1*(priv->s));
+									x=(priv->x0)+(drc*cos(drs));
+									y=(priv->y0)-(drc*sin(drs));
+									cairo_line_to(cr, x, y);
+									cairo_stroke(cr);
+								}
+								else if (xs==1)
+								{
+									csx=(tn-th)/(rn-r);
+									drs=csx*((priv->bounds.rmax)-rn);
+									drs+=tn;
+									drc=(priv->wr)+(dr1*(priv->s));
+									x=(priv->x0)+(drc*cos(drs));
+									y=(priv->y0)-(drc*sin(drs));
+									cairo_move_to(cr, x, y);
+									drs=csx*((priv->bounds.rmin)-r);
+									drs+=th;
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									cairo_line_to(cr, x, y);
 									cairo_stroke(cr);
 								}
@@ -3461,38 +5983,126 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									drs+=r-(priv->bounds.rmin);
 									if (drs<dr1)
 									{
+<<<<<<< HEAD
 										drs=wr+(drs*(priv->s));
+=======
+										drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
 										drs+=th;
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==5)
+								{
+									drs=tn-th;
+									if (drs>DZE)
+									{
+										drs=(rn-r)*((priv->bounds.thmin)-th)/drs;
+										drs+=r;
+										if (drs<(priv->bounds.rmax))
+										{
+											csx=(tn-th)*((priv->bounds.rmax)-r)/(rn-r);
+											csx+=th;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(csx));
+											y=(priv->y0)-(drc*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs>(priv->bounds.rmin))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmin));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmin));
+											}
+											else
+											{
+												drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												drs+=th;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								else if (xs==8)
 								{
 									drs=((priv->bounds.thmax)-th)*(rn-r)/(tn-th);
 									drs+=r-(priv->bounds.rmin);
 									if (drs<dr1)
 									{
+<<<<<<< HEAD
 										drs=wr+(drs*(priv->s));
+=======
+										drs=(priv->wr)+(drs*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										cairo_move_to(cr, x, y);
 										drs=((priv->bounds.rmax)-r)*(tn-th)/(rn-r);
 										drs+=th;
+<<<<<<< HEAD
 										drc=wr+(dr1*(priv->s));
+=======
+										drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drc*cos(drs));
 										y=(priv->y0)-(drc*sin(drs));
 										cairo_line_to(cr, x, y);
 										cairo_stroke(cr);
 									}
 								}
+<<<<<<< HEAD
+=======
+								else if (xs==9)
+								{
+									drs=th-tn;
+									if (drs>DZE)
+									{
+										drs=(r-rn)*((priv->bounds.thmax)-tn)/drs;
+										drs+=rn;
+										if (drs<(priv->bounds.rmax))
+										{
+											csx=(th-tn)*((priv->bounds.rmax)-rn)/(r-rn);
+											csx+=tn;
+											drc=(priv->wr)+(dr1*(priv->s));
+											x=(priv->x0)+(drc*cos(csx));
+											y=(priv->y0)-(drc*sin(csx));
+											cairo_move_to(cr, x, y);
+											if (drs>(priv->bounds.rmin))
+											{
+												drs=(priv->wr)+((drs-(priv->bounds.rmin))*(priv->s));
+												x=(priv->x0)+(drs*cos(priv->bounds.thmax));
+												y=(priv->y0)-(drs*sin(priv->bounds.thmax));
+											}
+											else
+											{
+												drs=(tn-th)*((priv->bounds.rmin)-r)/(rn-r);
+												drs+=th;
+												x=(priv->x0)+((priv->wr)*cos(drs));
+												y=(priv->y0)-((priv->wr)*sin(drs));
+											}
+											cairo_line_to(cr, x, y);
+											cairo_stroke(cr);
+										}
+									}
+								}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								xs=2;
 							}
 						}
@@ -3501,7 +6111,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							if (xs==0)
 							{
 								drs=((rn-r)*(th-(priv->bounds.thmin)))/(th-tn);
+<<<<<<< HEAD
 								drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 								y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 								cairo_line_to(cr, x, y);
@@ -3513,11 +6127,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								drs+=tn;
 								if (drs>(priv->bounds.thmin))
 								{
+<<<<<<< HEAD
 									x=(priv->x0)+(wr*cos(drs));
 									y=(priv->y0)-(wr*sin(drs));
 									cairo_move_to(cr, x, y);
 									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+									cairo_move_to(cr, x, y);
+									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									cairo_line_to(cr, x, y);
@@ -3530,12 +6152,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								drs+=tn;
 								if (drs>(priv->bounds.thmin))
 								{
+<<<<<<< HEAD
 									drc=wr+(dr1*(priv->s));
+=======
+									drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drc*cos(drs));
 									y=(priv->y0)-(drc*sin(drs));
 									cairo_move_to(cr, x, y);
 									drs=((priv->bounds.thmin)-tn)*(rn-r)/(tn-th);
+<<<<<<< HEAD
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									cairo_line_to(cr, x, y);
@@ -3549,7 +6179,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							if (xs==0)
 							{
 								drs=((rn-r)*((priv->bounds.thmax)-th))/(tn-th);
+<<<<<<< HEAD
 								drs=wr+((drs+r-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((drs+r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 								y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 								cairo_line_to(cr, x, y);
@@ -3561,11 +6195,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								drs+=tn;
 								if (drs<(priv->bounds.thmax))
 								{
+<<<<<<< HEAD
 									x=(priv->x0)+(wr*cos(drs));
 									y=(priv->y0)-(wr*sin(drs));
 									cairo_move_to(cr, x, y);
 									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+									cairo_move_to(cr, x, y);
+									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									cairo_line_to(cr, x, y);
@@ -3578,12 +6220,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								drs+=tn;
 								if (drs<(priv->bounds.thmax))
 								{
+<<<<<<< HEAD
 									drc=wr+(dr1*(priv->s));
+=======
+									drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drc*cos(drs));
 									y=(priv->y0)-(drc*sin(drs));
 									cairo_move_to(cr, x, y);
 									drs=((priv->bounds.thmax)-tn)*(rn-r)/(tn-th);
+<<<<<<< HEAD
 									drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+									drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 									y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									cairo_line_to(cr, x, y);
@@ -3599,16 +6249,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							drs=rn-r;
 								if ((xs&4)!=0)
 								{
+<<<<<<< HEAD
 									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmin)); y=(priv->y0)-(wr*sin(priv->bounds.thmin));}
+=======
+									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmin)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmin));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else
 									{
 										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 										drs+=tn;
+<<<<<<< HEAD
 										if (drs>=thn) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}/* check wrapping */
 										else
 										{
 											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
 											drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										if (drs>=thn) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}/* check wrapping */
+										else
+										{
+											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -3616,16 +6278,28 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								}
 								else if ((xs&8)!=0)
 								{
+<<<<<<< HEAD
 									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+(wr*cos(priv->bounds.thmax)); y=(priv->y0)-(wr*sin(priv->bounds.thmax));}
+=======
+									if ((drs<DZE)&&(drs>NZE)) {x=(priv->x0)+((priv->wr)*cos(priv->bounds.thmax)); y=(priv->y0)-((priv->wr)*sin(priv->bounds.thmax));}
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									else
 									{
 										drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 										drs+=tn;
+<<<<<<< HEAD
 										if (drs<=thx) {x=(priv->x0)+(wr*cos(drs)); y=(priv->y0)-(wr*sin(drs));}
 										else
 										{
 											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
 											drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+										if (drs<=thx) {x=(priv->x0)+((priv->wr)*cos(drs)); y=(priv->y0)-((priv->wr)*sin(drs));}
+										else
+										{
+											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -3635,8 +6309,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								{
 									drs=((th-tn)*(rn-(priv->bounds.rmin)))/drs;
 									drs+=tn;
+<<<<<<< HEAD
 									x=(priv->x0)+(wr*cos(drs));
 									y=(priv->y0)-(wr*sin(drs));
+=======
+									x=(priv->x0)+((priv->wr)*cos(drs));
+									y=(priv->y0)-((priv->wr)*sin(drs));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								}
 								cairo_move_to(cr, x, y);
 							}
@@ -3647,7 +6326,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								{
 									if ((drs<DZE)&&(drs>NZE))
 									{
+<<<<<<< HEAD
 										drs=wr+(dr1*(priv->s));
+=======
+										drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 									}
@@ -3657,14 +6340,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs+=tn;
 										if (drs>=thn)
 										{
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 										}
 										else
 										{
 											drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+<<<<<<< HEAD
 											drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 										}
@@ -3674,7 +6365,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								{
 									if ((drs<DZE)&&(drs>NZE))
 									{
+<<<<<<< HEAD
 										drs=wr+(dr1*(priv->s));
+=======
+										drs=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 										x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 										y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 									}
@@ -3684,14 +6379,22 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 										drs+=tn;
 										if (drs<=thx)
 										{
+<<<<<<< HEAD
 											drc=wr+(dr1*(priv->s));
+=======
+											drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drc*cos(drs));
 											y=(priv->y0)-(drc*sin(drs));
 										}
 										else
 										{
 											drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+<<<<<<< HEAD
 											drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+											drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 											x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 											y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 										}
@@ -3701,7 +6404,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								{
 									drs=((th-tn)*((priv->bounds.rmax)-rn))/drs;
 									drs+=tn;
+<<<<<<< HEAD
 									drc=wr+(dr1*(priv->s));
+=======
+									drc=(priv->wr)+(dr1*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 									x=(priv->x0)+(drc*cos(drs));
 									y=(priv->y0)-(drc*sin(drs));
 								}
@@ -3710,7 +6417,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							else if ((xs&4)!=0)
 							{
 								drs=((r-rn)*(tn-(priv->bounds.thmin)))/(tn-th);
+<<<<<<< HEAD
 								drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(priv->bounds.thmin));
 								y=(priv->y0)-(drs*sin(priv->bounds.thmin));
 								cairo_move_to(cr, x, y);
@@ -3718,12 +6429,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							else if ((xs&8)!=0)
 							{
 								drs=((r-rn)*((priv->bounds.thmax)-tn))/(th-tn);
+<<<<<<< HEAD
 								drs=wr+((drs+rn-(priv->bounds.rmin))*(priv->s));
+=======
+								drs=(priv->wr)+((drs+rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 								x=(priv->x0)+(drs*cos(priv->bounds.thmax));
 								y=(priv->y0)-(drs*sin(priv->bounds.thmax));
 								cairo_move_to(cr, x, y);
 							}
+<<<<<<< HEAD
 							drs=wr+((rn-(priv->bounds.rmin))*(priv->s));
+=======
+							drs=(priv->wr)+((rn-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							x=(priv->x0)+(drs*cos(tn));
 							y=(priv->y0)-(drs*sin(tn));
 							cairo_line_to(cr, x, y);
@@ -3749,7 +6468,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						dwr=th+MY_2PI;
 						if ((dwr>=(priv->bounds.thmin))&&(dwr<=(priv->bounds.thmax)))
 						{
+<<<<<<< HEAD
 							drs=wr+((r-(priv->bounds.rmin))*(priv->s));
+=======
+							drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							x=(priv->x0)+(drs*cos(th));
 							y=(priv->y0)-(drs*sin(th));
 							cairo_move_to(cr, x, y);
@@ -3762,7 +6485,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						dwr=th-MY_2PI;
 						if ((dwr>=(priv->bounds.thmin))&&(dwr<=(priv->bounds.thmax)))
 						{
+<<<<<<< HEAD
 							drs=wr+((r-(priv->bounds.rmin))*(priv->s));
+=======
+							drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 							x=(priv->x0)+(drs*cos(th));
 							y=(priv->y0)-(drs*sin(th));
 							cairo_move_to(cr, x, y);
@@ -3772,7 +6499,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					}
 					else
 					{
+<<<<<<< HEAD
 						drs=wr+((r-(priv->bounds.rmin))*(priv->s));
+=======
+						drs=(priv->wr)+((r-(priv->bounds.rmin))*(priv->s));
+>>>>>>> fdb4fbcf17db8709d558d2ac221b3ea95b368f8c
 						x=(priv->x0)+(drs*cos(th));
 						y=(priv->y0)-(drs*sin(th));
 						cairo_move_to(cr, x, y);
