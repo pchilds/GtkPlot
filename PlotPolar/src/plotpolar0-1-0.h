@@ -42,22 +42,22 @@ typedef struct _PlotPolar PlotPolar;
 typedef struct _PlotPolarClass PlotPolarClass;
 
 struct _PlotPolar
-  {
-  GtkDrawingArea parent;
-  GArray *rdata, *thdata; /* radial and azimuthal data values */
-  gchar *rlab, *thlab; /* labels for the radial and azimuthal axis */
-  gdouble rps, thps; /* radial and azimuthal position of mouse */
-  guint afsize, lfsize, ptsize, linew; /* font size for the tick mark and axis labels, the point radii and line width */
-  gint zmode; /* zoom mode flags xxxx0b/xxxx1b = zoom in/out,1001xb = zoom radial only, 1010xb = zoom azimuthal only, 1011xb = zoom both, 0xxxxb = cartesian shift mode, x1xxxb = single click zoom */
-  gint size; /* number of data points to display */
-  gint flags; /* flags: 01xb = lines only, 10xb = points only, 11x = both, xx0b/xx1b = Degrees/Radians */
-  };
+{
+	GtkDrawingArea parent;
+	GArray *rdata, *thdata; /* radial and azimuthal data values */
+	gchar *rlab, *thlab; /* labels for the radial and azimuthal axis */
+	gdouble rps, thps; /* radial and azimuthal position of mouse */
+	guint afsize, lfsize, ptsize, linew; /* font size for the tick mark and axis labels, the point radii and line width */
+	gint zmode; /* zoom mode flags xxxx0b/xxxx1b = zoom in/out,1001xb = zoom radial only, 1010xb = zoom azimuthal only, 1011xb = zoom both, 0xxxxb = cartesian shift mode, x1xxxb = single click zoom */
+	gint size; /* number of data points to display */
+	gint flags; /* flags: 01xb = lines only, 10xb = points only, 11x = both, xx0b/xx1b = Degrees/Radians */
+};
 
 struct _PlotPolarClass
-  {
-  GtkDrawingAreaClass parent_class;
-  void (*moved) (PlotPolar *plot);
-  };
+{
+	GtkDrawingAreaClass parent_class;
+	void (*moved) (PlotPolar *plot);
+};
 
 GType plot_polar_get_type (void);
 gboolean plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, gdouble thn, gdouble thx, gdouble tcn, gdouble thc);
