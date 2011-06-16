@@ -61,6 +61,7 @@
 		PangoFontDescription *afont, *lfont; /* font descriptions for the tick mark and axis labels */
 		gdouble rps, thps; /* radial and azimuthal position of mouse */
 		guint ptsize, linew; /* point radii and line width */
+		guint rdp, thdp; /* number of decimal points for axes */
 		gint zmode; /* zoom mode flags xxxx0b/xxxx1b = zoom in/out,1001xb = zoom radial only, 1010xb = zoom azimuthal only, 1011xb = zoom both, 0xxxxb = cartesian shift mode, x1xxxb = single click zoom */
 		gint flagd; /* data displayflags: x01xb = lines only, x10xb = points only, x11x = both, xxx0b/xxx1b = Degrees/Radians 0xxxb/1xxxb = Connect the dots/Polar interpolation */
 	};

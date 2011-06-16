@@ -1,13 +1,9 @@
 Known Bugs/Issues
 -----------------
 * (Polar) Radial label and tick labels not shown when single click zoom in.
-* (Linear) Truncation of digits/decimal on scales when jumping above a power of 10 boundary.
-* (Linear) Poor rounding when snapping to grid.
-* (Linear) Reading from alpha array gives errors.
 
 Future Proposals
 ----------------
-* Print to tiff.
 * (Linear) Wiggle seperation between disconnected domains/ranges of multiple plots.
 * (Linear) Click and drag.
 * (Polar) Improved curved fonts on azimuthal labels and polar interpolation.

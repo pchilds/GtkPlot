@@ -57,6 +57,7 @@
 		gchar *xlab, *ylab; /* labels for the x and y axes */
 		PangoFontDescription *afont, *lfont; /* font descriptions for the tick mark and axis labels */
 		guint ptsize, linew; /* radii of the points and line width of the plot line */
+		guint xdp, ydp; /* number of decimal points for axes */
 		gint zmode; /* zoom mode flags */
 		gdouble xps, yps; /* x and y position of mouse */
 		guint flagd; /* data display flags */

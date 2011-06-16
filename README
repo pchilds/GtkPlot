@@ -3,12 +3,11 @@ The Plot Widget Family
 Version 0.1.0, January 2011
 
 PlotLinear provides a widget for automated plotting of data on a linear-linear scale.
-PlotLogLinear, PlotLinearLog provide similar functionality for plotting on a semilog scale.
-PlotLogLog provides similar functionality for plotting on a log-log scale.
+PlotLogLinear, PlotLinearLog will provide similar functionality for plotting on a semilog scale.
+PlotLogLog will provide similar functionality for plotting on a log-log scale.
 PlotPolar provides similar functionality for a polar scale.
 This program is my first attempt to write an object in a non-object-oriented language using object-oriented libraries and coded in as unobject-oriented a fashion as possible.
 The program is coded preferentially to an in-line structure to maximise performance so my apologies to anyone that attempts to modify or understand it.
-As the code is quite long three other widgets for each base plot (e.g. for PlotLinear they are: "PlotLinearLines", "PlotLinearPoints" and "PlotLinearBoth") are included to reduce the amount of code that needs to be linked in if your application only requires one scenario for displaying data.
 
 Motivation; Technology; License
 -------------------------------
@@ -20,23 +19,30 @@ Usage
 In the source code link to the headers with e.g.:
   #include "plotlinear0-1-0.h"
 To the compilation command line add...
-  plotlinear0-1-0.h pltlinear0-1-0.c
+  plotlinear0-1-0.h plotlinear0-1-0.c
 e.g. the test program was compiled with gcc using the command:
   gcc -o testplotlinear testplotlinear0-1-0.c `pkg-config --cflags --libs gtk+-2.0` plotlinear0-1-0.h plotlinear0-1-0.c
 A new plot can be made in gtk+2 using:
   GtkWidget *plotname;
   plotname=plot_linear_new();
+  gtk_widget_show(plotname);
 Data can be sent to the plot using GArray structures as:
   PlotLinear *plot;
-  GArray *xarrayname, *yarrayname;
-  gint arraysize;
+  GArray *xarrayname, *yarrayname, *sizes, *indices;
+  gint arraysize, n=0;
+  ...
   xarrayname=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), arraysize);
   yarrayname=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), arraysize);
   ...
+  sizes=g_array_sized_new(FALSE, FALSE, sizeof(gint), arraysize);
+  g_array_append_val(sizes, arraysize);
+  indices=g_array_sized_new(FALSE, FALSE, sizeof(gint), arraysize);
+  g_array_append_val(indices, n);
   plot=PlotLinear(plotname);
   (plot->xdata)=xname;
   (plot->ydata)=yname;
-  (plot->size)=arraysize;
+  (plot->sizes)=sizes;
+  (plot->ind)=indices;
 (for polar plotting these are xdata and ydata are replaced by rdata and thdata with similar x,y -> r,th replacements throughout)
 Redrawing the axes can be done by:
   gdouble xmin, xmax, ymin, ymax;
@@ -73,11 +79,10 @@ The widget also emits a signal "moved" when the mouse moves over it which is use
     ...
     plot=PlotLinear(plotname);
     g_signal_connect(plot, "moved", G_CALLBACK(pltmv), NULL);
-See the example file testplotlinear0-1-0.c for an example of interacting with the plotlinear widget.
+See the example file testplotlinear0-1-0.c for an example of interacting with the plotlinear widget to its full extent.
 
 Known Bugs/Issues
 -----------------
-As g_snprintf truncates rather than rounds to nearest there is issues with axes that should be say "0.5" displaying as "0.4".
-Lack of unicode support for axis labels.
+Plot Polar scales in an unhelpful manner and is generally very buggy
 
 ----------------------- THE END --------------------------------

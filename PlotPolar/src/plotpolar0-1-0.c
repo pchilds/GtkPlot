@@ -52,6 +52,8 @@
 #define WHP 0.020207259 /* wiggle height proportion */
 #define DZE 0.00001 /* divide by zero threshold */
 #define NZE -0.00001 /* negative of this */
+#define FAC 0.05 /* floating point accuracy check for logarithms etc */
+#define NAC 0.95 /* conjugate of this */
 #define JT 5 /* major tick length */
 #define JTI 6 /* this incremented */
 #define ZS 0.5 /* zoom scale */
@@ -5207,7 +5209,15 @@ gboolean plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble x
 		(priv->bounds.rmax)=(num3*(gdouble)ut);
 		(priv->ticks.r)=tk;
 		if ((priv->bounds.rmax)>=10) (priv->rcs)+=floor(log10(xx));
-		if (num3<1) (priv->rcs)+=1-floor(log10(num3));
+		if (num3<1)
+		{
+			(priv->rcs)++;
+			num=-log10(num3);
+			if (fmod(num,1)<FAC) {num2=(gint)num; (plot->rdp)=(guint)num;}
+			else {num2=(gint)ceil(num); (plot->rdp)=(guint)ceil(num);}
+			(priv->rcs)+=num2;
+		}
+		else (plot->rdp)=0;
 	}
 	if ((priv->rcs)>8) (priv->rcs)=8;
 	if (((plot->flagd)&PLOT_POLAR_DISP_RDN)==0)
@@ -5783,7 +5793,7 @@ static void plot_polar_init(PlotPolar *plot)
 	{(priv->bounds.rmin)=0; (priv->bounds.rmax)=1; (priv->bounds.thmin)=NMY_PI; (priv->bounds.thmax)=G_PI;}
 	{(priv->centre.r)=0.5; (priv->centre.th)=0;}
 	{(priv->ticks.r)=4; (priv->ticks.zin)=12; (priv->ticks.z2m)=2; (priv->ticks.zc)=40.0;}
-	{(priv->rcs)=5; (priv->thcs)=6;}
+	{(priv->rcs)=5; (priv->thcs)=6; (plot->rdp)=2; (plot->thdp)=2;}
 	{(priv->flagr)=0; (priv->flaga)=0;}
 	{(plot->rdata)=NULL; (plot->thdata)=NULL; (plot->ind)=NULL; (plot->sizes)=NULL;}
 	{(plot->rlab)=g_strdup("Amplitude"); (plot->thlab)=g_strdup("Azimuth");}
