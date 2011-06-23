@@ -34,6 +34,7 @@
 #include <gtk/gtk.h>
 #include <math.h>
 #include <cairo-ps.h>
+#include <cairo-svg.h>
 #include "plotlinear0-1-0.h"
 
 #define PLOT_LINEAR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), PLOT_TYPE_LINEAR, PlotLinearPrivate))
