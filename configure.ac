@@ -1,6 +1,7 @@
 AC_PREREQ([2.65])
 AC_INIT([LibGtkPlot],[0.1.0],[pchilds@physics.org],[gtkplot],[https://github.com/pchilds/GtkPlot])
 AC_CONFIG_SRCDIR([gtkplot/plotlinear.h])
+AC_CONFIG_AUX_DIR([confsupp])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC([gcc cc])
 AC_CONFIG_HEADERS([config.h gtkplotconfig.h])
