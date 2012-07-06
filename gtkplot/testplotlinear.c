@@ -49,7 +49,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	gdouble xi, xf, mny, mxy;
 	gchar *str;
 	
-	helpwin=gtk_dialog_new_with_buttons("Dsiplay Properties", GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL, GTK_STOCK_APPLY, GTK_RESPONSE_APPLY, NULL);
+	helpwin=gtk_dialog_new_with_buttons("Display Properties", GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL, GTK_STOCK_APPLY, GTK_RESPONSE_APPLY, NULL);
 	g_signal_connect_swapped(G_OBJECT(helpwin), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(helpwin));
 	gtk_widget_show(helpwin);
 	content=gtk_dialog_get_content_area(GTK_DIALOG(helpwin));
@@ -237,13 +237,8 @@ void opd(GtkWidget *widget, gpointer data)
 				if (!strat[1]) lcl=0;
 				else lcl=g_ascii_strtod(g_strstrip(strat[1]), NULL);
 				if (lc==0) {mny=lcl; mxy=lcl;}
-				else
-				{
-					if (!strat[1]) lcl=0;
-					else lcl=g_ascii_strtod(g_strstrip(strat[1]), NULL);
-					if (lcl<mny) mny=lcl;
-					else if (lcl>mxy) mxy=lcl;
-				}
+				else if (lcl<mny) mny=lcl;
+				else if (lcl>mxy) mxy=lcl;
 				g_array_append_val(y, lcl);
 				g_strfreev(strat);
 				lc++;
@@ -273,8 +268,8 @@ void opd(GtkWidget *widget, gpointer data)
 		g_free(contents);
 		g_free(fin);
 	}
-  gtk_widget_destroy(wfile);
-  }
+	gtk_widget_destroy(wfile);
+}
 
 void ad(GtkWidget *widget, gpointer data)
 {
@@ -345,8 +340,8 @@ void ad(GtkWidget *widget, gpointer data)
 		g_free(contents);
 		g_free(fin);
 	}
-  gtk_widget_destroy(wfile);
-  }
+	gtk_widget_destroy(wfile);
+}
 
 void pltmv(PlotLinear *plt, gpointer data)
 {
