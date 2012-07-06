@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: @PACKAGE_NAME@
+Description: Plotting widgets for GTK2+.
+Requires: @PLOT_GTK_VERSION@
+Version: @PACKAGE_VERSION@
+URL: @PACKAGE_URL@
+Libs: -L${libdir} -lgtkplot-@PLOT_API_VERSION@
+Cflags: -I${includedir}/gtkplot-@PLOT_API_VERSION@ -I${libdir}/gtkplot-@PLOT_API_VERSION@/include

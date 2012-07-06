@@ -28,7 +28,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
-#include "plotpolar0-1-0.h"
+#include "plotpolar.h"
 
 #define NMY_PI -3.1415926535897932384626433832795028841971693993751
 

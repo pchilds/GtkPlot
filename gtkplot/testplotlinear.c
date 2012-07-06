@@ -28,7 +28,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
-#include "plotlinear0-1-0.h"
+#include "plotlinear.h"
 
 #define CM 65535
 #define CMI 0.000015259021897

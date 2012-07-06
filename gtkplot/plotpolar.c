@@ -42,7 +42,7 @@
 #include <math.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>
-#include "plotpolar0-1-0.h"
+#include "plotpolar.h"
 
 #define PLOT_POLAR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), PLOT_TYPE_POLAR, PlotPolarPrivate))
 #define ARP 0.05 /* Proportion of the graph occupied by arrows */
