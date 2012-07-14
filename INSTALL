@@ -24,11 +24,10 @@ the optional part of step 1 below).
 
 The simplest way to compile this package is:
 
-  1. `cd' to the directory named according to the desired plotting
-     function (e.g. `cd PlotPolar') and (optionally) type
-     `autoreconf --install' to create the appropriate scripts and
-     convert the configure and Makefile to something appropriate for
-     your system.
+  1. `cd' to the directory of the package (it should contain this file
+     and (optionally) type `autoreconf --install' to create the
+     appropriate scripts and convert the configure and Makefile to
+     something appropriate for your system.
 
   2. Type `./configure' to configure the package for your system.  If
      you're using `csh' on an old version of System V, you might need
@@ -43,7 +42,13 @@ The simplest way to compile this package is:
   4. Optionally, type `make check' to run any self-tests that come with
      the package.
 
-  5. You can remove the program binaries and object files from the
+  5. Type `make install' to install the programs and any data files and
+     documentation. Keep the package in its current directory so you can
+     later uninstall it with `make uninstall'. These commands require
+     root access which on some systems can be provided by prefixing the
+     commands with 'sudo'
+
+  6. You can remove the program binaries and object files from the
      source code directory by typing `make clean'.  To also remove the
      files that `configure' created (so you can compile the package for
      a different kind of computer), type `make distclean'.  There is
@@ -54,10 +59,15 @@ The simplest way to compile this package is:
 
 Alternately the following should work with gcc:
 
-   cd src
-   gcc -o testplotpolar testplotpolar0-1-0.c \
+   cd gtk2plot
+   gcc -o testplotpolar testplotpolar.c \
        `pkg-config --cflags --libs gtk+-2.0` \
-       plotpolar0-1-0.h plotpolar0-1-0.c
+       plotpolar.h plotpolar.c
+
+If an error finding the shared libraries occurs when trying to run
+programs that link this library, this could be because ldconfig hasn't
+cached the library location yet. This can be fixed with the command
+'ldconfig -v' with root access.
 
 Compilers and Options
 =====================

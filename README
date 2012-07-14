@@ -82,6 +82,7 @@ See the example file testplotlinear.c for an example of interacting with the plo
 
 Known Bugs/Issues
 -----------------
-Plot Polar scales in an unhelpful manner and is generally very buggy
+Plot Polar scales in an unhelpful manner and is generally very buggy, e.g.
+Zoom out azimuthally changes radius limits as well (0:1->0:1.2 when -pi/3:pi/3->-pi/2:pi/2)
 
 ----------------------- THE END --------------------------------

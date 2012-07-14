@@ -53,8 +53,7 @@
 #define WHP 0.020207259 /* wiggle height proportion */
 #define DZE 0.00001 /* divide by zero threshold */
 #define NZE -0.00001 /* negative of this */
-#define FAC 0.05 /* floating point accuracy check for logarithms etc */
-#define NAC 0.95 /* conjugate of this */
+#define FAC 0.15 /* floating point accuracy check for logarithms etc */
 #define JT 5 /* major tick length */
 #define JTI 6 /* this incremented */
 #define ZS 0.5 /* zoom scale */
@@ -5063,7 +5062,7 @@ gboolean plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble x
 	priv=PLOT_POLAR_GET_PRIVATE(widget);
 	plot=PLOT_POLAR(widget);
 	(priv->ticks.zc)=WGS;
-	if (xx<0) {xx=-xx; xn=-xn;}
+	if ((xx+xn)<0) {xx=-xx; xn=-xn;}
 	if (xx<xn) {num=xx; xx=xn; xn=num;}
 	dtt=(((pango_font_description_get_size(plot->afont)+pango_font_description_get_size(plot->lfont))/PANGO_SCALE)+JTI)*(xx-xn)/(((priv->bounds.rmax)-(priv->bounds.rmin))*(priv->s));
 	(priv->rcs)=2; /* determine number of characters needed for radial labels and pretty max/min values */
@@ -5135,14 +5134,14 @@ gboolean plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble x
 		}
 		if (num==0)
 		{
-			lt=floor(xn/num3);
-			ut=ceil(xx/num3);
+			lt=floor(FAC+(xn/num3));
+			ut=ceil((xx/num3)-FAC);
 			tk=(ut-lt);
 			if (tk>5)
 			{
 				num3*=2;
-				lt=floor(xn/num3);
-				ut=ceil(xx/num3);
+				lt=floor(FAC+(xn/num3));
+				ut=ceil((xx/num3)-FAC);
 				tk=(ut-lt);
 			}
 		}
@@ -5150,20 +5149,20 @@ gboolean plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble x
 		{
 			num=exp(G_LN10*num2);
 			num3=2*num;
-			lt=floor(xn/num3);
-			ut=ceil(xx/num3);
+			lt=floor(FAC+(xn/num3));
+			ut=ceil((xx/num3)-FAC);
 			tk=(ut-lt);
 			if (tk>5)
 			{
 				num3=5*num;
-				lt=floor(xn/num3);
-				ut=ceil(xx/num3);
+				lt=floor(FAC+(xn/num3));
+				ut=ceil((xx/num3)-FAC);
 				tk=(ut-lt);
 				if (tk>5)
 				{
 					num3*=2;
-					lt=floor(xn/num3);
-					ut=ceil(xx/num3);
+					lt=floor(FAC+(xn/num3));
+					ut=ceil((xx/num3)-FAC);
 					tk=(ut-lt);
 				}
 			}
@@ -5173,20 +5172,20 @@ gboolean plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble x
 		{
 			num=exp(G_LN10*num2);
 			num3=5*num;
-			lt=floor(xn/num3);
-			ut=ceil(xx/num3);
+			lt=floor(FAC+(xn/num3));
+			ut=ceil((xx/num3)-FAC);
 			tk=(ut-lt);
 			if (tk>5)
 			{
 				num3*=2;
-				lt=floor(xn/num3);
-				ut=ceil(xx/num3);
+				lt=floor(FAC+(xn/num3));
+				ut=ceil((xx/num3)-FAC);
 				tk=(ut-lt);
 				if (tk>5)
 				{
 					num3*=2;
-					lt=floor(xn/num3);
-					ut=ceil(xx/num3);
+					lt=floor(FAC+(xn/num3));
+					ut=ceil((xx/num3)-FAC);
 					tk=(ut-lt);
 				}
 			}
@@ -5195,14 +5194,14 @@ gboolean plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble x
 		{
 			num=G_LN10*(++num2);
 			num3=exp(num);
-			lt=floor(xn/num3);
-			ut=ceil(xx/num3);
+			lt=floor(FAC+(xn/num3));
+			ut=ceil((xx/num3)-FAC);
 			tk=(ut-lt);
 			if (tk>5)
 			{
 				num3*=2;
-				lt=floor(xn/num3);
-				ut=ceil(xx/num3);
+				lt=floor(FAC+(xn/num3));
+				ut=ceil((xx/num3)-FAC);
 				tk=(ut-lt);
 			}
 		}
