@@ -1,5 +1,6 @@
 Known Bugs/Issues
 -----------------
+* Add man pages for plot:linear and plot:polar (maybe rename the plot to gtkplot)
 * (Polar) Radial label and tick labels not shown when single click zoom in.
 
 Future Proposals

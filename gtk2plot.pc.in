@@ -8,5 +8,5 @@ Description: Plotting widgets for GTK2+.
 Requires: @PLOT_GTK_VERSION@
 Version: @PACKAGE_VERSION@
 URL: @PACKAGE_URL@
-Libs: -L${libdir} -lgtkplot-@PLOT_API_VERSION@
-Cflags: -I${includedir}/gtkplot-@PLOT_API_VERSION@ -I${libdir}/gtkplot-@PLOT_API_VERSION@/include
+Libs: -L${libdir} -lgtk2plot-@PLOT_API_VERSION@
+Cflags: -I${includedir}/gtk2plot-@PLOT_API_VERSION@ -I${libdir}/gtk2plot-@PLOT_API_VERSION@/include

@@ -7,22 +7,21 @@ PlotLogLinear, PlotLinearLog will provide similar functionality for plotting on 
 PlotLogLog will provide similar functionality for plotting on a log-log scale.
 PlotPolar provides similar functionality for a polar scale.
 This program is my first attempt to write an object in a non-object-oriented language using object-oriented libraries and coded in as unobject-oriented a fashion as possible.
-The program is coded preferentially to an in-line structure to maximise performance so my apologies to anyone that attempts to modify or understand it.
+The program is coded preferentially to an in-line structure to maximise performance so my apologies to anyone that attempts to modify or understand it, but I like that my >10000 point graphs load fast unlike other OO acronyms.
 
 Motivation; Technology; License
 -------------------------------
 Plot builds upon GtkDrawingArea. It compiles & works under gtk+2. As drawing is performed using cairo graphics, upgrading to be compatible with gtk+3 in the near future should be trivial.
-This code is released under the GNU GPL version 2 or (at your option) any later versions, making it suitable for free software development.
+This code is released under the GNU LGPL version 2 or (at your option) any later versions, making it suitable for pretty much anything.
 
 Usage
 -----
-In the source code link to the headers with e.g.:
-  #include "plotlinear0-1-0.h"
-To the compilation command line add...
-  plotlinear0-1-0.h plotlinear0-1-0.c
-e.g. the test program was compiled with gcc using the command:
-  gcc -o testplotlinear testplotlinear0-1-0.c `pkg-config --cflags --libs gtk+-2.0` plotlinear0-1-0.h plotlinear0-1-0.c
-A new plot can be made in gtk+2 using:
+Once the library is installed (see the INSTALL file) you can link to the shared library by:
+1) In the source code link to the headers with, e.g.:
+  #include <gtk2plot/plotlinear.h>
+2) Compile your program by identifying gtk2plot-1.0 with pkgconfig, e.g.:
+  gcc -o testplotlinear testplotlinear0-1-0.c `pkg-config --cflags --libs gtk+-2.0 gtk2plot-1.0`
+A new plot can be made in gtk+2 using, e.g.:
   GtkWidget *plotname;
   plotname=plot_linear_new();
   gtk_widget_show(plotname);
@@ -43,7 +42,7 @@ Data can be sent to the plot using GArray structures as:
   (plot->ydata)=yname;
   (plot->sizes)=sizes;
   (plot->ind)=indices;
-(for polar plotting these are xdata and ydata are replaced by rdata and thdata with similar x,y -> r,th replacements throughout)
+(for polar plotting these xdata and ydata arrays are replaced by rdata and thdata with similar x,y -> r,th replacements throughout)
 Redrawing the axes can be done by:
   gdouble xmin, xmax, ymin, ymax;
   plot_linear_update_scale(plotname, xmin, xmax, ymin, ymax);
@@ -54,8 +53,8 @@ to get the best fit of six or less major tick divisions at multiples of 1, 2 or 
 Properties can be changed or accessed using:
   g_object_set(G_OBJECT(plotname), "propertyname", value, ..., NULL);
   g_object_get(G_OBJECT(plotname), "propertyname", value, ..., NULL);
-respectively, where the propertyname's are explained in the _class_init function.
-Publically accessable variables described in the _PlotLinear struct in the plotlinear0-1-0.h header file can be accessed with:
+respectively, where the propertyname's are explained in the _class_init function (multiple propertyname-value pairs can be entered but there must always be a NULL at the end regardless).
+Publically accessable variables described in the _PlotLinear struct in the plotlinear.h header file can be accessed with:
   PlotLinear *plot;
   gchar *label;
   guint mode;
@@ -79,7 +78,7 @@ The widget also emits a signal "moved" when the mouse moves over it which is use
     ...
     plot=PlotLinear(plotname);
     g_signal_connect(plot, "moved", G_CALLBACK(pltmv), NULL);
-See the example file testplotlinear0-1-0.c for an example of interacting with the plotlinear widget to its full extent.
+See the example file testplotlinear.c for an example of interacting with the plotlinear widget to its full extent.
 
 Known Bugs/Issues
 -----------------
