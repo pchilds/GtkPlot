@@ -62,7 +62,7 @@ Alternately the following should work with gcc:
    cd gtk2plot
    gcc -o testplotpolar testplotpolar.c \
        `pkg-config --cflags --libs gtk+-2.0` \
-       plotpolar.h plotpolar.c
+       gtkplotpolar.h gtkplotpolar.c
 
 If an error finding the shared libraries occurs when trying to run
 programs that link this library, this could be because ldconfig hasn't

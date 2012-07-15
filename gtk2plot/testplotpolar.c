@@ -28,7 +28,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
-#include "plotpolar.h"
+#include "gtkplotpolar.h"
 
 #define NMY_PI -3.1415926535897932384626433832795028841971693993751
 
@@ -41,7 +41,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	GtkWidget *helpwin, *content, *table, *entry1, *entry2, *label, *butt1, *butt2, *colour;
 	GtkAdjustment *adj1, *adj2;
 	GdkColor cl;
-	PlotPolar *plt;
+	GtkPlotPolar *plt;
 	gdouble *ptr;
 	gint j;
 	gdouble xi, xf, mny, mxy, r0, th0;
@@ -67,7 +67,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 6, 7, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
 	entry1=gtk_entry_new();
 	entry2=gtk_entry_new();
-	plt=PLOT_POLAR(plot);
+	plt=GTK_PLOT_POLAR(plot);
 	str=g_strdup(plt->thlab);
 	gtk_entry_set_text(GTK_ENTRY(entry1), str);
 	g_free(str);
@@ -118,7 +118,7 @@ void dpr(GtkWidget *widget, gpointer data)
 		(plt->afont)=pango_font_description_from_string(str);
 		g_free(str);
 		g_object_get(G_OBJECT(plot), "thmin", &xi, "thmax", &xf, "rmin", &mny, "rmax", &mxy, "rcnt", &r0, "thcnt", &th0, NULL);
-		plot_polar_update_scale(plot, mny, mxy, xi, xf, r0, th0);
+		gtk_plot_polar_update_scale(plot, mny, mxy, xi, xf, r0, th0);
 	}
 	gtk_widget_destroy(helpwin);
 }
@@ -159,29 +159,29 @@ void prt(GtkWidget *widget, gpointer data)
 		filt=gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(wfile));
 		if (filt==epsfilt)
 		{
-			if (g_str_has_suffix(fout, ".eps")) plot_linear_print_eps(plot, fout);
+			if (g_str_has_suffix(fout, ".eps")) gtk_plot_linear_print_eps(plot, fout);
 			else
 			{
 				fout2=g_strconcat(fout, ".eps", NULL);
-				plot_linear_print_eps(plot, fout2);
+				gtk_plot_linear_print_eps(plot, fout2);
 				g_free(fout2);
 			}
 		}
 		else if (filt==svgfilt)
 		{
-			if (g_str_has_suffix(fout, ".svg")) plot_linear_print_svg(plot, fout);
+			if (g_str_has_suffix(fout, ".svg")) gtk_plot_linear_print_svg(plot, fout);
 			else
 			{
 				fout2=g_strconcat(fout, ".svg", NULL);
-				plot_linear_print_svg(plot, fout2);
+				gtk_plot_linear_print_svg(plot, fout2);
 				g_free(fout2);
 			}
 		}
-		else if (g_str_has_suffix(fout, ".png")) plot_linear_print_png(plot, fout);
+		else if (g_str_has_suffix(fout, ".png")) gtk_plot_linear_print_png(plot, fout);
 		else
 		{
 			fout2=g_strconcat(fout, ".png", NULL);
-			plot_linear_print_png(plot, fout2);
+			gtk_plot_linear_print_png(plot, fout2);
 			g_free(fout2);
 		}
 		g_free(fout);
@@ -191,7 +191,7 @@ void prt(GtkWidget *widget, gpointer data)
 
 void opd(GtkWidget *widget, gpointer data)
 {
-	PlotPolar *plt;
+	GtkPlotPolar *plt;
 	GtkWidget *wfile;
 	gdouble xi, xf, lcl, mny, mxy;
 	guint k, sal;
@@ -245,7 +245,7 @@ void opd(GtkWidget *widget, gpointer data)
 			str=g_strdup_printf("File: %s successfully loaded", fin);
 			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
 			g_free(str);
-			plt=PLOT_POLAR(plot);
+			plt=GTK_PLOT_POLAR(plot);
 			g_array_append_val(sz, lc);
 			(plt->sizes)=sz;
 			k=0;
@@ -255,7 +255,7 @@ void opd(GtkWidget *widget, gpointer data)
 			(plt->ind)=nx;
 			xi=g_array_index(x, gdouble, 0);
 			xf=g_array_index(x, gdouble, (lc-1));
-			plot_polar_update_scale(plot, mny, mxy, xi, xf, 0, 0);
+			gtk_plot_polar_update_scale(plot, mny, mxy, xi, xf, 0, 0);
 		}
 		else
 		{
@@ -271,7 +271,7 @@ void opd(GtkWidget *widget, gpointer data)
 
 void ad(GtkWidget *widget, gpointer data)
 {
-	PlotPolar *plt;
+	GtkPlotPolar *plt;
 	GtkWidget *wfile;
 	gdouble xi, xf, lcl, mny, mxy;
 	guint k, sal;
@@ -292,7 +292,7 @@ void ad(GtkWidget *widget, gpointer data)
 		fin=gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(wfile));
 		if (g_file_get_contents(fin, &contents, NULL, &Err))
 		{
-			plt=PLOT_POLAR(plot);
+			plt=GTK_PLOT_POLAR(plot);
 			g_object_get(G_OBJECT(plot), "thmin", &xi, "thmax", &xf, "rmin", &mny, "rmax", &mxy, NULL);
 			k=(x->len);
 			g_array_append_val(nx, k);
@@ -327,7 +327,7 @@ void ad(GtkWidget *widget, gpointer data)
 			(plt->ind)=nx;
 			(plt->thdata)=x;
 			(plt->rdata)=y;
-			plot_polar_update_scale(plot, mny, mxy, xi, xf, 0, 0);
+			gtk_plot_polar_update_scale(plot, mny, mxy, xi, xf, 0, 0);
 		}
 		else
 		{
@@ -341,7 +341,7 @@ void ad(GtkWidget *widget, gpointer data)
 	gtk_widget_destroy(wfile);
 }
 
-void pltmv(PlotPolar *plt, gpointer data)
+void pltmv(GtkPlotPolar *plt, gpointer data)
 {
 	gchar *str;
 
@@ -352,21 +352,21 @@ void pltmv(PlotPolar *plt, gpointer data)
 
 void upg(GtkWidget *widget, gpointer data)
 {
-	PlotPolar *plt;
+	GtkPlotPolar *plt;
 	gint d;
 	gdouble xn, xx, yn, yx, r0, th0;
 
-	plt=PLOT_POLAR(plot);
+	plt=GTK_PLOT_POLAR(plot);
 	d=gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	d++;
 	(plt->flagd)=(2*d)+1;
 	g_object_get(G_OBJECT(plot), "rmin", &xn, "rmax", &xx, "thmin", &yn, "thmax", &yx, "rcnt", &r0, "thcnt", &th0, NULL);
-	plot_polar_update_scale(plot, xn, xx, yn, yx, r0, th0);
+	gtk_plot_polar_update_scale(plot, xn, xx, yn, yx, r0, th0);
 }
 
 int main(int argc, char *argv[])
 {
-	PlotPolar *plt;
+	GtkPlotPolar *plt;
 	GtkWidget *vbox, *vbox2, *mnb, *mnu, *mni, *hpane, *butt;
 	GtkAdjustment *adj;
 	guint j;
@@ -444,13 +444,13 @@ int main(int argc, char *argv[])
 	gtk_box_pack_start(GTK_BOX(vbox2), jind, FALSE, FALSE, 2);
 	gtk_widget_show(jind);
 	gtk_paned_add1(GTK_PANED(hpane), vbox2);
-	plot=plot_polar_new();
+	plot=gtk_plot_polar_new();
 	g_signal_connect(plot, "moved", G_CALLBACK(pltmv), NULL);
 	x=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 1024);
 	y=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 1024);
 	sz=g_array_new(FALSE, FALSE, sizeof(gint));
 	nx=g_array_new(FALSE, FALSE, sizeof(gint));
-	plt=PLOT_POLAR(plot);
+	plt=GTK_PLOT_POLAR(plot);
 	(plt->flagd)=7;
 	j=0;
 	g_array_append_val(nx, j);

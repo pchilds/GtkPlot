@@ -1,6 +1,6 @@
 AC_PREREQ([2.65])
 AC_INIT([Gtk2Plot],[0.1.0],[pchilds@physics.org],[gtk2plot],[https://github.com/pchilds/GtkPlot])
-AC_CONFIG_SRCDIR([gtk2plot/plotlinear.h])
+AC_CONFIG_SRCDIR([gtk2plot/gtkplotlinear.h])
 AC_CONFIG_AUX_DIR([confsupp])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])

@@ -1,32 +1,32 @@
-The Plot Widget Family
+The GtkPlot Widget Family
 ----------------------
 Version 0.1.0, January 2011
 
-PlotLinear provides a widget for automated plotting of data on a linear-linear scale.
-PlotLogLinear, PlotLinearLog will provide similar functionality for plotting on a semilog scale.
-PlotLogLog will provide similar functionality for plotting on a log-log scale.
-PlotPolar provides similar functionality for a polar scale.
+GtkPlotLinear provides a widget for automated plotting of data on a linear-linear scale.
+GtkPlotLogLinear, PlotLinearLog will provide similar functionality for plotting on a semilog scale.
+GtkPlotLogLog will provide similar functionality for plotting on a log-log scale.
+GtkPlotPolar provides similar functionality for a polar scale.
 This program is my first attempt to write an object in a non-object-oriented language using object-oriented libraries and coded in as unobject-oriented a fashion as possible.
-The program is coded preferentially to an in-line structure to maximise performance so my apologies to anyone that attempts to modify or understand it, but I like that my >10000 point graphs load fast unlike other OO acronyms.
+The program is coded preferentially to an in-line structure to maximise performance so my apologies to anyone that attempts to modify or understand it, but I like that my >10000 point graphs load fast.
 
 Motivation; Technology; License
 -------------------------------
-Plot builds upon GtkDrawingArea. It compiles & works under gtk+2. As drawing is performed using cairo graphics, upgrading to be compatible with gtk+3 in the near future should be trivial.
+GtkPlot builds upon GtkDrawingArea. It compiles & works under gtk+2. As drawing is performed using cairo graphics, upgrading to be compatible with gtk+3 in the near future should be trivial.
 This code is released under the GNU LGPL version 2 or (at your option) any later versions, making it suitable for pretty much anything.
 
 Usage
 -----
 Once the library is installed (see the INSTALL file) you can link to the shared library by:
 1) In the source code link to the headers with, e.g.:
-  #include <gtk2plot/plotlinear.h>
+  #include <gtk2plot/gtkplotlinear.h>
 2) Compile your program by identifying gtk2plot-1.0 with pkgconfig, e.g.:
-  gcc -o testplotlinear testplotlinear0-1-0.c `pkg-config --cflags --libs gtk+-2.0 gtk2plot-1.0`
+  gcc -o testplotlinear testplotlinear.c `pkg-config --cflags --libs gtk+-2.0 gtk2plot-1.0`
 A new plot can be made in gtk+2 using, e.g.:
   GtkWidget *plotname;
-  plotname=plot_linear_new();
+  plotname=gtk_plot_linear_new();
   gtk_widget_show(plotname);
 Data can be sent to the plot using GArray structures as:
-  PlotLinear *plot;
+  GtkPlotLinear *plot;
   GArray *xarrayname, *yarrayname, *sizes, *indices;
   gint arraysize, n=0;
   ...
@@ -37,7 +37,7 @@ Data can be sent to the plot using GArray structures as:
   g_array_append_val(sizes, arraysize);
   indices=g_array_sized_new(FALSE, FALSE, sizeof(gint), arraysize);
   g_array_append_val(indices, n);
-  plot=PlotLinear(plotname);
+  plot=GTK_PLOT_LINEAR(plotname);
   (plot->xdata)=xname;
   (plot->ydata)=yname;
   (plot->sizes)=sizes;
@@ -45,27 +45,27 @@ Data can be sent to the plot using GArray structures as:
 (for polar plotting these xdata and ydata arrays are replaced by rdata and thdata with similar x,y -> r,th replacements throughout)
 Redrawing the axes can be done by:
   gdouble xmin, xmax, ymin, ymax;
-  plot_linear_update_scale(plotname, xmin, xmax, ymin, ymax);
+  gtk_plot_linear_update_scale(plotname, xmin, xmax, ymin, ymax);
 to get strict axis bounds or:
   gdouble xmin, xmax, ymin, ymax;
-  plot_linear_update_scale_pretty(plotname, xmin, xmax, ymin, ymax);
+  gtk_plot_linear_update_scale_pretty(plotname, xmin, xmax, ymin, ymax);
 to get the best fit of six or less major tick divisions at multiples of 1, 2 or 5 times a power of 10.
 Properties can be changed or accessed using:
   g_object_set(G_OBJECT(plotname), "propertyname", value, ..., NULL);
   g_object_get(G_OBJECT(plotname), "propertyname", value, ..., NULL);
 respectively, where the propertyname's are explained in the _class_init function (multiple propertyname-value pairs can be entered but there must always be a NULL at the end regardless).
 Publically accessable variables described in the _PlotLinear struct in the plotlinear.h header file can be accessed with:
-  PlotLinear *plot;
+  GtkPlotLinear *plot;
   gchar *label;
   guint mode;
   ...
   mode=2;
   label="Frequency (Hz)";
-  plot=PlotLinear(plotname);
+  plot=GTK_PLOT_LINEAR(plotname);
   (plot->xlab)=g_strdup(label);
   (plot->flagd)=mode;
 The widget also emits a signal "moved" when the mouse moves over it which is useful for getting the corresponding location in the graph as:
-  void pltmv(PlotLinear *plot, gpointer data)
+  void pltmv(GtkPlotLinear *plot, gpointer data)
     {
     gdouble x,y;
     
@@ -74,15 +74,14 @@ The widget also emits a signal "moved" when the mouse moves over it which is use
     }
   ...
   int main(int argc, char *argv[])
-    PlotLinear *plot;
+    GtkPlotLinear *plot;
     ...
-    plot=PlotLinear(plotname);
+    plot=GTK_PLOT_LINEAR(plotname);
     g_signal_connect(plot, "moved", G_CALLBACK(pltmv), NULL);
-See the example file testplotlinear.c for an example of interacting with the plotlinear widget to its full extent.
+See the example file testplotlinear.c for an example of interacting with the GtkPlotLinear widget to its full extent.
 
 Known Bugs/Issues
 -----------------
-Plot Polar scales in an unhelpful manner and is generally very buggy, e.g.
-Zoom out azimuthally changes radius limits as well (0:1->0:1.2 when -pi/3:pi/3->-pi/2:pi/2)
+GtkPlotPolar scales in an unhelpful manner and is generally very buggy (see TODO)
 
 ----------------------- THE END --------------------------------
