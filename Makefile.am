@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-SUBDIRS= gtk2plot
+SUBDIRS= ${PLOT_SDIR}
 ACLOCAL_AMFLAGS=-I m4 ${ACLOCAL_FLAGS}
 
 pkgconfigdir=$(libdir)/pkgconfig
