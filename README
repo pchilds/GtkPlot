@@ -18,9 +18,9 @@ Usage
 -----
 Once the library is installed (see the INSTALL file) you can link to the shared library by:
 1) In the source code link to the headers with, e.g.:
-  #include <gtk2plot/gtkplotlinear.h>
-2) Compile your program by identifying gtk2plot-1.0 with pkgconfig, e.g.:
-  gcc -o testplotlinear testplotlinear.c `pkg-config --cflags --libs gtk+-2.0 gtk2plot-1.0`
+  #include <gtkplot-2.0/gtkplotlinear.h>
+2) Compile your program by identifying gtkplot-2.0 with pkgconfig, e.g.:
+  gcc -o testplotlinear testplotlinear.c `pkg-config --cflags --libs gtk+-2.0 gtk2plot-2.0`
 A new plot can be made in gtk+2 using, e.g.:
   GtkWidget *plotname;
   plotname=gtk_plot_linear_new();
