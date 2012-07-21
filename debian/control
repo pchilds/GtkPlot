@@ -1,0 +1,31 @@
+Source: libgtkplot
+Priority: optional
+Maintainer: Paul Childs <pchilds@physics.org>
+Build-Depends: debhelper (>= 7), autotools-dev, dh-autoreconf, pkg-config, libgtk2.0-dev
+Standards-Version: 3.8.3
+Section: libs
+Homepage: <https://github.com/pchilds/GtkPlot>
+
+Package: libgtkplot-dev
+Section: libdevel
+Architecture: any
+Depends: libgtkplot2 (= ${binary:Version})
+Description: Provides headers for the libgtkplot2 package
+ libgtkplot2 makes available to gtk+2 programs, a linear and polar
+ plotting widget. The widget features multiplot capability, zoom
+ control, smart range setting and mouse location tracking.
+ Processing is optimised towards speed for large data sets as
+ commonly occurs in scientific applications and outputs to a neat
+ publication ready format.
+
+Package: libgtkplot2
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Provides shared libraries for plotting with gtk+2
+ libgtkplot2 makes available to gtk+2 programs, a linear and polar
+ plotting widget. The widget features multiplot capability, zoom
+ control, smart range setting and mouse location tracking.
+ Processing is optimised towards speed for large data sets as
+ commonly occurs in scientific applications and outputs to a neat
+ publication ready format.

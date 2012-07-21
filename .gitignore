@@ -13,3 +13,10 @@ stamp*
 *.lo
 *.la
 *~
+debian/libgtkplot2/*
+debian/libgtkplot-dev/*
+debian/tmp
+debian/autoreconf*
+debian/files
+debian/*.debhelper*
+debian/*.substvars
