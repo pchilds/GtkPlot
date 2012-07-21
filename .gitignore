@@ -1,0 +1,15 @@
+autom4te.cache
+gtk2plot/.deps
+gtk2plot/.libs
+=
+*config.h
+config.log
+config.status
+*.pc
+libtool
+Makefile
+stamp*
+*.o
+*.lo
+*.la
+*~

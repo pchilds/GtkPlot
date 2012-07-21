@@ -20,13 +20,20 @@ AC_CONFIG_AUX_DIR([confsupp])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC([gcc cc])
-LT_INIT()
+LT_PREREQ([2.2])
+LT_INIT([win32-dll])
 AC_SUBST([LT_CURRENT], [gtkplot_lt_current])
 AC_SUBST([LT_REVISION], [gtkplot_lt_revision])
 AC_SUBST([LT_AGE], [gtkplot_lt_age])
 AC_SUBST([PLOT_API_VERSION], [gtk_major_dependency.gtk_api_revision])
 AC_SUBST([PLOT_GTK_VERSION], [gtk_req])
 AC_SUBST([PLOT_SDIR], [sdir])
+lt_enable_auto_import=""
+case "$host_os" in
+   mingw*)
+      lt_enable_auto_import="-Wl,--enable-auto-import"
+esac
+AC_SUBST([lt_enable_auto_import])
 PKG_CHECK_MODULES([PLOT], [gtk_req])
 AC_CONFIG_FILES([Makefile ${PLOT_SDIR}/Makefile gtkplot-${PLOT_API_VERSION}.pc])
 AC_OUTPUT()
