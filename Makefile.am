@@ -6,7 +6,5 @@ MAINTAINERCLEANFILES=Makefile.in configure =
 pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA=gtkplot-${PLOT_API_VERSION}.pc
 
-##notrans_dist_man3_MANS=plot:linear.3 plot:polar.3
-
 
 

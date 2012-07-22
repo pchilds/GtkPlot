@@ -108,12 +108,10 @@ struct _GtkPlotPolarPrivate {struct xs bounds, rescale; struct pt centre; struct
 static void drawz(GtkWidget *widget, cairo_t *cr)
 {
 	GtkPlotPolar *plot;
-	GtkAllocation alloc;
 	gint xw;
 	gdouble dt;
 
-	gtk_widget_get_allocation(widget, &alloc);
-	xw=alloc.width;
+	xw=gtk_widget_get_allocated_width(widget);
 	plot=GTK_PLOT_POLAR(widget);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_set_line_width(cr, 1);
@@ -181,19 +179,18 @@ static void drawz(GtkWidget *widget, cairo_t *cr)
 
 static void draw(GtkWidget *widget, cairo_t *cr)
 {
+	GdkRGBA vv;
 	GtkPlotPolarPrivate *priv;
 	GtkPlotPolar *plot;
-	GtkAllocation alloc;
 	gint j, k, xw, yw, kx, j0, jl, xt, wd, hg, ft, lt;
-	gdouble dtt, tt, dtr, thx, thn, dt, sx, csx, ssx, dr1, drs, drc, dz, rt, dwr, rl, ctx, ctn, stx, stn, r, th, rn, tn, x, y, vv, wv, xv, yv;
+	gdouble dtt, tt, dtr, thx, thn, dt, sx, csx, ssx, dr1, drs, drc, dz, rt, dwr, rl, ctx, ctn, stx, stn, r, th, rn, tn, x, y;
 	gchar lbl[10];
 	gchar *str1=NULL, *str2=NULL, *str3;
 	PangoLayout *lyt;
 	cairo_matrix_t mtr;
 
-	gtk_widget_get_allocation(widget, &alloc);
-	xw=alloc.width;
-	yw=alloc.height;
+	xw=gtk_widget_get_allocated_width(widget);
+	yw=gtk_widget_get_allocated_height(widget);
 	plot=GTK_PLOT_POLAR(widget);
 	priv=GTK_PLOT_POLAR_GET_PRIVATE(plot);/* determine scale and fit for graph */
 	if ((priv->bounds.rmax)<0) {(priv->bounds.rmax)=-(priv->bounds.rmax); (priv->bounds.rmin)=-(priv->bounds.rmin);}
@@ -1750,9 +1747,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				{
 					for (k=0; k<(plot->ind->len); k++)
 					{
-						ft=fmod(k,(plot->rd->len));
-						{vv=g_array_index((plot->rd), gdouble, ft); wv=g_array_index((plot->gr), gdouble, ft); xv=g_array_index((plot->bl), gdouble, ft); yv=g_array_index((plot->al), gdouble, ft);}
-						cairo_set_source_rgba(cr, vv, wv, xv, yv);
+						ft=fmod(k,(plot->cl->len));
+						vv=g_array_index((plot->cl), GdkRGBA, ft);
+						cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 						ft=g_array_index((plot->ind), gint, k);
 						lt=g_array_index((plot->sizes), gint, k)+ft;
 						for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
@@ -2470,12 +2467,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				{
 					for (k=0; k<(plot->ind->len); k++)
 					{
-						ft=fmod(k,(plot->rd->len));
-						vv=g_array_index((plot->rd), gdouble, ft);
-						wv=g_array_index((plot->gr), gdouble, ft);
-						xv=g_array_index((plot->bl), gdouble, ft);
-						yv=g_array_index((plot->al), gdouble, ft);
-						cairo_set_source_rgba(cr, vv, wv, xv, yv);
+						ft=fmod(k,(plot->cl->len));
+						vv=g_array_index((plot->cl), GdkRGBA, ft);
+						cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 						ft=g_array_index((plot->ind), gint, k);
 						lt=g_array_index((plot->sizes), gint, k)+ft;
 						for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
@@ -3279,14 +3273,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				for (k=0; k<(plot->ind->len); k++)
 				{
-						ft=fmod(k,(plot->rd->len));
-						vv=g_array_index((plot->rd), gdouble, ft);
-						wv=g_array_index((plot->gr), gdouble, ft);
-						xv=g_array_index((plot->bl), gdouble, ft);
-						yv=g_array_index((plot->al), gdouble, ft);
-						cairo_set_source_rgba(cr, vv, wv, xv, yv);
-						ft=g_array_index((plot->ind), gint, k);
-						lt=g_array_index((plot->sizes), gint, k)+ft;
+					ft=fmod(k,(plot->cl->len));
+					vv=g_array_index((plot->cl), GdkRGBA, ft);
+					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
+					ft=g_array_index((plot->ind), gint, k);
+					lt=g_array_index((plot->sizes), gint, k)+ft;
 					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 					{
 						r=g_array_index((plot->rdata), gdouble, ft);
@@ -4082,14 +4073,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				for (k=0; k<(plot->ind->len); k++)
 				{
-						ft=fmod(k,(plot->rd->len));
-						vv=g_array_index((plot->rd), gdouble, ft);
-						wv=g_array_index((plot->gr), gdouble, ft);
-						xv=g_array_index((plot->bl), gdouble, ft);
-						yv=g_array_index((plot->al), gdouble, ft);
-						cairo_set_source_rgba(cr, vv, wv, xv, yv);
-						ft=g_array_index((plot->ind), gint, k);
-						lt=g_array_index((plot->sizes), gint, k)+ft;
+					ft=fmod(k,(plot->cl->len));
+					vv=g_array_index((plot->cl), GdkRGBA, ft);
+					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
+					ft=g_array_index((plot->ind), gint, k);
+					lt=g_array_index((plot->sizes), gint, k)+ft;
 					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 					{
 						r=g_array_index((plot->rdata), gdouble, ft);
@@ -4886,12 +4874,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		{
 			for (k=0; k<(plot->ind->len); k++)
 			{
-				ft=fmod(k,(plot->rd->len));
-				vv=g_array_index((plot->rd), gdouble, ft);
-				wv=g_array_index((plot->gr), gdouble, ft);
-				xv=g_array_index((plot->bl), gdouble, ft);
-				yv=g_array_index((plot->al), gdouble, ft);
-				cairo_set_source_rgba(cr, vv, wv, xv, yv);
+				ft=fmod(k,(plot->cl->len));
+				vv=g_array_index((plot->cl), GdkRGBA, ft);
+				cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 				ft=g_array_index((plot->ind), gint, k);
 				lt=g_array_index((plot->sizes), gint, k)+ft;
 				for (j=ft; j<lt; j++)
@@ -4944,15 +4929,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 
 static void gtk_plot_polar_redraw(GtkWidget *widget)
 {
-	GdkRegion *region;
+	cairo_region_t *region;
 	GdkWindow *wdw;
 
 	wdw=gtk_widget_get_window(widget);
 	if (!wdw) return;
-	region=gdk_drawable_get_clip_region(wdw);
+	region=gdk_window_get_clip_region(wdw);
 	gdk_window_invalidate_region(wdw, region, TRUE);
 	gdk_window_process_updates(wdw, TRUE);
-	gdk_region_destroy(region);
+	cairo_region_destroy(region);
 }
 
 gboolean gtk_plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, gdouble thn, gdouble thx, gdouble rcn, gdouble thc)
@@ -5304,10 +5289,8 @@ gboolean gtk_plot_polar_print_eps(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	GtkAllocation alloc;
 
-	gtk_widget_get_allocation(plot, &alloc);
-	surface=cairo_ps_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
+	surface=cairo_ps_surface_create(fout, (gdouble) gtk_widget_get_allocated_width(plot), (gdouble) gtk_widget_get_allocated_height(plot));
 	cairo_ps_surface_set_eps(surface, TRUE);
 	cairo_ps_surface_restrict_to_level(surface, CAIRO_PS_LEVEL_2);
 	cr=cairo_create(surface);
@@ -5323,10 +5306,8 @@ gboolean gtk_plot_polar_print_png(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	GtkAllocation alloc;
 
-	gtk_widget_get_allocation(plot, &alloc);
-	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) (alloc.width), (gdouble) (alloc.height));
+	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) gtk_widget_get_allocated_width(plot), (gdouble) gtk_widget_get_allocated_height(plot));
 	cr=cairo_create(surface);
 	draw(plot, cr);
 	cairo_surface_write_to_png(surface, fout);
@@ -5339,10 +5320,8 @@ gboolean gtk_plot_polar_print_svg(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	GtkAllocation alloc;
 
-	gtk_widget_get_allocation(plot, &alloc);
-	surface=cairo_svg_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
+	surface=cairo_svg_surface_create(fout, (gdouble) gtk_widget_get_allocated_width(plot), (gdouble) gtk_widget_get_allocated_height(plot));
 	cr=cairo_create(surface);
 	draw(plot, cr);
 	cairo_destroy(cr);
@@ -5354,14 +5333,12 @@ static gboolean gtk_plot_polar_button_press(GtkWidget *widget, GdkEventButton *e
 {
 	GtkPlotPolarPrivate *priv;
 	GtkPlotPolar *plot;
-	GtkAllocation alloc;
 	gdouble dy, dx, dt;
 	gint xw;
-
-	gtk_widget_get_allocation(widget, &alloc);	
+	
 	priv=GTK_PLOT_POLAR_GET_PRIVATE(widget);
 	plot=GTK_PLOT_POLAR(widget);
-	xw=(alloc.width);
+	xw=gtk_widget_get_allocated_width(widget);
 	if (((priv->flagr)==0)&&(((event->x)<xw-22)||((event->y)>11)))
 	{
 		(priv->rescale.rmax)=(priv->bounds.rmax);
@@ -5437,7 +5414,6 @@ static gboolean gtk_plot_polar_button_release(GtkWidget *widget, GdkEventButton 
 {
 	GtkPlotPolarPrivate *priv;
 	GtkPlotPolar *plot;
-	GtkAllocation alloc;
 	gint xw;
 	gdouble dy, dx, dt, xn, xx, yn, yx, s;
 
@@ -5517,8 +5493,7 @@ static gboolean gtk_plot_polar_button_release(GtkWidget *widget, GdkEventButton 
 	}
 	else if ((event->y)<=11)
 	{
-		gtk_widget_get_allocation(widget, &alloc);
-		xw=(alloc.width);
+		xw=gtk_widget_get_allocated_width(widget);
 		if ((event->x)>=xw-22)
 		{
 			if ((event->x)>=xw-11) (plot->zmode)^=GTK_PLOT_POLAR_ZOOM_OUT;
@@ -5543,10 +5518,7 @@ static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
 	if (plot->thdata) g_free(plot->thdata);
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	if (plot->rd) g_array_free((plot->rd), FALSE);
-	if (plot->gr) g_array_free((plot->gr), FALSE);
-	if (plot->bl) g_array_free((plot->bl), FALSE);
-	if (plot->al) g_array_free((plot->al), FALSE);
+	if (plot->rd) g_array_free((plot->cl), TRUE);
 }
 
 static void gtk_plot_polar_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -5659,45 +5631,21 @@ static void gtk_plot_polar_init(GtkPlotPolar *plot)
 	{pango_font_description_set_family((plot->afont), "sans"); pango_font_description_set_family((plot->lfont), "sans");}
 	{pango_font_description_set_style((plot->afont), PANGO_STYLE_NORMAL); pango_font_description_set_style((plot->lfont), PANGO_STYLE_NORMAL);}
 	{pango_font_description_set_size((plot->afont), 12*PANGO_SCALE); pango_font_description_set_size((plot->lfont), 12*PANGO_SCALE);}
-	(plot->rd)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
-	(plot->gr)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
-	(plot->bl)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
-	(plot->al)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
-	val=0;
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	g_array_append_val((plot->bl), val);
-	val=1;
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	val=0;
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	g_array_append_val((plot->rd), val);
-	val=1.0;
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	val=0;
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	val=1;
-	g_array_append_val((plot->rd), val);
-	val=0.8;
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
+	(plot->cl)=g_array_sized_new(FALSE, FALSE, sizeof(GdkRGBA), 7);
+	{cl.red=0; cl.green=0; cl.blue=0; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=1; cl.green=0; cl.blue=0; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=0; cl.green=1; cl.blue=0; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=0; cl.green=0; cl.blue=1; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=1; cl.green=1; cl.blue=0; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=0; cl.green=1; cl.blue=1; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=1; cl.green=0; cl.blue=1; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
 }
 
 GtkWidget *gtk_plot_polar_new(void) {return g_object_new(GTK_PLOT_TYPE_POLAR, NULL);}

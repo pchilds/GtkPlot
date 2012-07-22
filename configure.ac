@@ -26,6 +26,7 @@ AC_SUBST([LT_CURRENT], [gtkplot_lt_current])
 AC_SUBST([LT_REVISION], [gtkplot_lt_revision])
 AC_SUBST([LT_AGE], [gtkplot_lt_age])
 AC_SUBST([PLOT_API_VERSION], [gtk_major_dependency.gtk_api_revision])
+AC_SUBST([PLOT_GTK_MAJOR], [gtk_major_dependency])
 AC_SUBST([PLOT_GTK_VERSION], [gtk_req])
 AC_SUBST([PLOT_SDIR], [sdir])
 lt_enable_auto_import=""
@@ -35,5 +36,5 @@ case "$host_os" in
 esac
 AC_SUBST([lt_enable_auto_import])
 PKG_CHECK_MODULES([PLOT], [gtk_req])
-AC_CONFIG_FILES([Makefile ${PLOT_SDIR}/Makefile gtkplot-${PLOT_API_VERSION}.pc])
+AC_CONFIG_FILES([Makefile ${PLOT_SDIR}/Makefile gtkplot-${PLOT_API_VERSION}.pc:gtkplot.pc.in])
 AC_OUTPUT()
