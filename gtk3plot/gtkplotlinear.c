@@ -85,11 +85,9 @@ static void drawz(GtkWidget *widget, cairo_t *cr)
 {
 	gint xw;
 	gdouble dt;
-	GtkAllocation alloc;
 	GtkPlotLinear *plot;
 
-	gtk_widget_get_allocation(widget, &alloc);
-	xw=alloc.width;
+	xw=gtk_widget_get_allocated_width(widget);
 	plot=GTK_PLOT_LINEAR(widget);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_set_line_width(cr, 1);
@@ -159,9 +157,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 {
 	GtkPlotLinearPrivate *priv;
 	GtkPlotLinear *plot;
-	GtkAllocation alloc;
+	GdkRGBA vv;
 	gint j, k, xw, yw, xr, xr2, yr, yr2, xa, ya, xl, yl, xu, yu, tf, tz, to, tn, tnn, xv, yv, xvn, yvn, dtt, tx, wd, hg, ft, lt, xt;
-	gdouble vv, wv, zv, av, dt, lr1, lr2, delx, dely;
+	gdouble dt, lr1, lr2, delx, dely;
 	guint lr3;
 	gchar *str1=NULL, *str2=".", *str3=NULL;
 	gchar lbl[10];
@@ -171,9 +169,8 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	{mtr2.xx=0; mtr2.xy=1; mtr2.yx=-1; mtr2.yy=0; mtr2.x0=0; mtr2.y0=0;}/* initialise */
 	{mtr3.xx=0; mtr3.xy=-1; mtr3.yx=1; mtr3.yy=0; mtr3.x0=0; mtr3.y0=0;}
 	plot=GTK_PLOT_LINEAR(widget);
-	gtk_widget_get_allocation(widget, &alloc);
-	xw=alloc.width;
-	yw=(alloc.height);
+	xw=gtk_widget_get_allocated_width(widget);
+	yw=gtk_widget_get_allocated_height(widget);
 	priv=GTK_PLOT_LINEAR_GET_PRIVATE(plot);
 	(priv->flaga)&=(GTK_PLOT_LINEAR_AXES_LT|GTK_PLOT_LINEAR_AXES_LR);
 	delx=((priv->bounds.xmax)-(priv->bounds.xmin))/(priv->ticks.xj);
@@ -2822,12 +2819,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				for (k=0; k<(plot->ind->len); k++)
 				{
-					dtt=fmod(k,(plot->rd->len));
-					vv=g_array_index((plot->rd), gdouble, dtt);
-					wv=g_array_index((plot->gr), gdouble, dtt);
-					zv=g_array_index((plot->bl), gdouble, dtt);
-					av=g_array_index((plot->al), gdouble, dtt);
-					cairo_set_source_rgba(cr, vv, wv, zv, av);
+					ft=fmod(k,(plot->cl->len));
+					vv=g_array_index((plot->cl), GdkRGBA, ft);
+					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 					ft=g_array_index((plot->ind), gint, k);
 					lt=g_array_index((plot->sizes), gint, k)+ft;
 					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
@@ -3175,12 +3169,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				for (k=0;k<(plot->ind->len);k++)
 				{
-					dtt=fmod(k,(plot->rd->len));
-					vv=g_array_index((plot->rd), gdouble, dtt);
-					wv=g_array_index((plot->gr), gdouble, dtt);
-					zv=g_array_index((plot->bl), gdouble, dtt);
-					av=g_array_index((plot->al), gdouble, dtt);
-					cairo_set_source_rgba(cr, vv, wv, zv, av);
+					ft=fmod(k,(plot->cl->len));
+					vv=g_array_index((plot->cl), GdkRGBA, ft);
+					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 					ft=g_array_index((plot->ind), gint, k);
 					lt=g_array_index((plot->sizes), gint, k)+ft;
 					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
@@ -3535,12 +3526,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		{
 			for (k=0;k<(plot->ind->len);k++)
 			{
-				dtt=fmod(k,(plot->rd->len));
-				vv=g_array_index((plot->rd), gdouble, dtt);
-				wv=g_array_index((plot->gr), gdouble, dtt);
-				zv=g_array_index((plot->bl), gdouble, dtt);
-				av=g_array_index((plot->al), gdouble, dtt);
-				cairo_set_source_rgba(cr, vv, wv, zv, av);
+				ft=fmod(k,(plot->cl->len));
+				vv=g_array_index((plot->cl), GdkRGBA, ft);
+				cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 				ft=g_array_index((plot->ind), gint, k);
 				lt=g_array_index((plot->sizes), gint, k)+ft;
 				xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
@@ -3567,15 +3555,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 
 static void gtk_plot_linear_redraw(GtkWidget *widget)
 {
-	GdkRegion *region;
+	cairo_region_t *region;
 	GdkWindow *wdw;
 
 	wdw=gtk_widget_get_window(widget);
 	if (!wdw) return;
-	region=gdk_drawable_get_clip_region(wdw);
+	region=gdk_window_get_clip_region(wdw);
 	gdk_window_invalidate_region(wdw, region, TRUE);
 	gdk_window_process_updates(wdw, TRUE);
-	gdk_region_destroy(region);
+	cairo_region_destroy(region);
 }
 
 gboolean gtk_plot_linear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx)
@@ -3819,10 +3807,8 @@ gboolean gtk_plot_linear_print_eps(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	GtkAllocation alloc;
 
-	gtk_widget_get_allocation(plot, &alloc);
-	surface=cairo_ps_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
+	surface=cairo_ps_surface_create(fout, (gdouble) gtk_widget_get_allocated_width(plot), (gdouble) gtk_widget_get_allocated_height(plot));
 	cairo_ps_surface_set_eps(surface, TRUE);
 	cairo_ps_surface_restrict_to_level(surface, CAIRO_PS_LEVEL_2);
 	cr=cairo_create(surface);
@@ -3838,10 +3824,8 @@ gboolean gtk_plot_linear_print_png(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	GtkAllocation alloc;
 
-	gtk_widget_get_allocation(plot, &alloc);
-	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) (alloc.width), (gdouble) (alloc.height));
+	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) gtk_widget_get_allocated_width(plot), (gdouble) gtk_widget_get_allocated_height(plot));
 	cr=cairo_create(surface);
 	draw(plot, cr);
 	cairo_surface_write_to_png(surface, fout);
@@ -3854,10 +3838,8 @@ gboolean gtk_plot_linear_print_svg(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	GtkAllocation alloc;
 
-	gtk_widget_get_allocation(plot, &alloc);
-	surface=cairo_svg_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
+	surface=cairo_svg_surface_create(fout, (gdouble) gtk_widget_get_allocated_width(plot), (gdouble) gtk_widget_get_allocated_height(plot));
 	cr=cairo_create(surface);
 	draw(plot, cr);
 	cairo_destroy(cr);
@@ -3922,7 +3904,6 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 {
 	GtkPlotLinearPrivate *priv;
 	GtkPlotLinear *plot;
-	GtkAllocation alloc;
 	gint d, xw;
 	gdouble xn, xx, yn, yx, s;
 
@@ -4039,8 +4020,7 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 	}
 	else if ((event->y)<=11)
 	{
-		gtk_widget_get_allocation(widget, &alloc);
-		xw=(alloc.width);
+		xw=gtk_widget_get_allocated_width(widget);
 		if ((event->x)>=xw-22)
 		{
 			if ((event->x)>=xw-11)
@@ -4076,10 +4056,7 @@ static void gtk_plot_linear_finalise(GtkPlotLinear *plot)
 	if (plot->ydata) g_array_free((plot->ydata), FALSE);
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	if (plot->rd) g_array_free((plot->rd), FALSE);
-	if (plot->gr) g_array_free((plot->gr), FALSE);
-	if (plot->bl) g_array_free((plot->bl), FALSE);
-	if (plot->al) g_array_free((plot->al), FALSE);
+	if (plot->rd) g_array_free((plot->cl), TRUE);
 }
 
 static void gtk_plot_linear_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -4244,8 +4221,8 @@ static void gtk_plot_linear_class_init(GtkPlotLinearClass *klass)
 
 static void gtk_plot_linear_init(GtkPlotLinear *plot)
 {
+	GdkRGBA cl;
 	GtkPlotLinearPrivate *priv;
-	gdouble val;
 
 	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);
 	priv=GTK_PLOT_LINEAR_GET_PRIVATE(plot);
@@ -4263,45 +4240,21 @@ static void gtk_plot_linear_init(GtkPlotLinear *plot)
 	{pango_font_description_set_family((plot->afont), "sans"); pango_font_description_set_family((plot->lfont), "sans");}
 	{pango_font_description_set_style((plot->afont), PANGO_STYLE_NORMAL); pango_font_description_set_style((plot->lfont), PANGO_STYLE_NORMAL);}
 	{pango_font_description_set_size((plot->afont), 12*PANGO_SCALE); pango_font_description_set_size((plot->lfont), 12*PANGO_SCALE);}
-	(plot->rd)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 7);
-	(plot->gr)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 7);
-	(plot->bl)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 7);
-	(plot->al)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 7);
-	val=0;
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	g_array_append_val((plot->bl), val);
-	val=1;
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	val=0;
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	g_array_append_val((plot->rd), val);
-	val=1.0;
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	g_array_append_val((plot->bl), val);
-	val=0;
-	g_array_append_val((plot->rd), val);
-	g_array_append_val((plot->gr), val);
-	val=1;
-	g_array_append_val((plot->rd), val);
-	val=0.8;
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
-	g_array_append_val((plot->al), val);
+	(plot->cl)=g_array_sized_new(FALSE, FALSE, sizeof(GdkRGBA), 7);
+	{cl.red=0; cl.green=0; cl.blue=0; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=1; cl.green=0; cl.blue=0; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=0; cl.green=1; cl.blue=0; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=0; cl.green=0; cl.blue=1; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=1; cl.green=1; cl.blue=0; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=0; cl.green=1; cl.blue=1; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
+	{cl.red=1; cl.green=0; cl.blue=1; cl.alpha=0.8;}
+	g_array_append_val((plot->cl), cl);
 }
 
 GtkWidget *gtk_plot_linear_new(void) {return g_object_new(GTK_PLOT_TYPE_LINEAR, NULL);}
