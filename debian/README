@@ -1,6 +1,10 @@
 The Debian Package libgtkplot
 ----------------------------
 
-Comments regarding the Package
+This package is developed from a source tree that contains versions for both gtk+2 and gtk+3.
+The autotools are used to generate the appropriate files which includes modification to the debian directory.
+Run 'autoreconf -vif' and './configure' to convert the files into the right format before creating the debian archive.
+The desired version can be changed by editing the fields: [gtk_major_dependency], [gtk_minor_dependency] and [gtk_api_revision] at the top of the configure.ac file. E.g for the use gtk+-2.0 of at least version 2.14 change them to 2, 14, and 0 respectively.
+You may also need to change the name of the root directory as well (e.g. between the -2.0 and -3.0 versions)
 
  -- Paul Childs <pchilds@physics.org>  Sat, 21 Jul 2012 13:34:41 +1000

@@ -1,0 +1,5 @@
+@includedir@/*
+@libdir@/lib*.a
+@libdir@/lib*.so
+@libdir@/pkgconfig/*
+@libdir@/*.la
