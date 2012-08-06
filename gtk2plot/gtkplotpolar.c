@@ -15,16 +15,16 @@
 
 /*
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofpriv->ticks.zin
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Library General Public License for more details.
  * 
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Library General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor Boston, MA 02110-1301,  USA
  */
@@ -82,6 +82,7 @@
 #define I_MY_2_PI 0.1591549430918953357688837633725143620344596457405
 #define L10_2PT5 0.3979400086720376095725222105510139464636202370758
 #define L10_5 0.6989700043360188047862611052755069732318101185379
+#define BFL 10 /*buffer length for axes*/
 typedef enum
 {
 	GTK_PLOT_POLAR_BORDERS_IN = 1 << 0,
@@ -186,7 +187,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	GtkAllocation alloc;
 	gint j, k, xw, yw, kx, j0, jl, xt, wd, hg, ft, lt;
 	gdouble dtt, tt, dtr, thx, thn, dt, sx, csx, ssx, dr1, drs, drc, dz, rt, dwr, rl, ctx, ctn, stx, stn, r, th, rn, tn, x, y, vv, wv, xv, yv;
-	gchar lbl[10];
+	gchar lbl[BFL];
 	gchar *str1=NULL, *str2=NULL, *str3;
 	PangoLayout *lyt;
 	cairo_matrix_t mtr;
@@ -947,7 +948,8 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_stroke(cr);
 				lyt=pango_cairo_create_layout(cr);
 				pango_layout_set_font_description(lyt, (plot->afont));
-				g_ascii_dtostr(lbl, (priv->thcs), round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
+				if (priv->thcs<BFL) g_ascii_dtostr(lbl, (priv->thcs), round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
+				else g_ascii_dtostr(lbl, BFL, round(sx*I180_MY_PI));
 				pango_layout_set_text(lyt, lbl, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				rl=(priv->wr)+tt+((priv->s)*dr1);

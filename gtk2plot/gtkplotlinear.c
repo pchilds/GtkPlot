@@ -17,7 +17,7 @@
 
 /*
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  * 
@@ -26,7 +26,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Library General Public License for more details.
  * 
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Library General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor Boston, MA 02110-1301,  USA
  */
@@ -56,6 +56,9 @@
 #define ZSC 0.5 /* 1 minus this */
 #define UZ 2 /* inverse of this */
 #define UZC 1 /* this minus 1 */
+#define BFL 10 /*buffer length for axes*/
+#define BF3 7 /*buffer length -3*/
+#define BF4 6 /*buffer length -4*/
 typedef enum
 {
 	GTK_PLOT_LINEAR_BORDERS_LT = 1 << 0,
@@ -163,8 +166,8 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	gint j, k, xw, yw, xr, xr2, yr, yr2, xa, ya, xl, yl, xu, yu, tf, tz, to, tn, tnn, xv, yv, xvn, yvn, dtt, tx, wd, hg, ft, lt, xt;
 	gdouble vv, wv, zv, av, dt, lr1, lr2, delx, dely;
 	guint lr3;
-	gchar *str1=NULL, *str2=".", *str3=NULL;
-	gchar lbl[10];
+	gchar *str1=NULL;
+	gchar lbl[BFL];
 	PangoLayout *lyt;
 	cairo_matrix_t mtr2, mtr3;
 
@@ -205,8 +208,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		(priv->flaga)|=GTK_PLOT_LINEAR_AXES_LT;
 		lr3=3;
 		if ((priv->bounds.ymin)<-1) lr3+=floor(log10(-(priv->bounds.ymin)));
-		if ((plot->ydp)!=0) g_snprintf(lbl, lr3+(plot->ydp)+1, "%f", (priv->bounds.ymin));
-		else g_snprintf(lbl, lr3, "%f", (priv->bounds.ymin));
+		if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+		if (lr3<BFL) g_snprintf(lbl, lr3, "%f", (priv->bounds.ymin));
+		else g_snprintf(lbl, BFL, "%f", (priv->bounds.ymin));
 		pango_layout_set_text(lyt, lbl, -1);
 		pango_layout_get_pixel_size(lyt, &wd, &hg);
 		yl=yw-(wd/2)-1; /* allow space for lower label */
@@ -230,8 +234,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		{
 			lr3=3;
 			if ((priv->bounds.ymin)<-1) lr3+=floor(log10(-(priv->bounds.ymin)));
-			if ((plot->ydp)!=0) g_snprintf(lbl, lr3+(plot->ydp)+1, "%f", (priv->bounds.ymin));
-			else g_snprintf(lbl, lr3, "%f", (priv->bounds.ymin));
+			if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+			if (lr3<BFL) g_snprintf(lbl, lr3, "%f", (priv->bounds.ymin));
+			else g_snprintf(lbl, BFL, "%f", (priv->bounds.ymin));
 			pango_layout_set_text(lyt, lbl, -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			yl=yw-(wd/2)-1; /* allow space for lower label */
@@ -265,8 +270,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				lr3=3;
 				if ((priv->bounds.ymin)<-1) lr3+=floor(log10(-(priv->bounds.ymin)));
-				if ((plot->ydp)!=0) g_snprintf(lbl, lr3+(plot->ydp)+1, "%f", (priv->bounds.ymin));
-				else g_snprintf(lbl, lr3, "%f", (priv->bounds.ymin));
+				if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+				if (lr3<BFL) g_snprintf(lbl, lr3, "%f", (priv->bounds.ymin));
+				else g_snprintf(lbl, BFL, "%f", (priv->bounds.ymin));
 				pango_layout_set_text(lyt, lbl, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				yl+=wd/2;
@@ -283,8 +289,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		(priv->flaga)|=GTK_PLOT_LINEAR_AXES_LR;
 		lr3=3;
 		if ((priv->bounds.xmin)<-1) lr3+=floor(log10(-(priv->bounds.xmin)));
-		if ((plot->xdp)!=0) g_snprintf(lbl, lr3+(plot->xdp)+1, "%f", (priv->bounds.xmin));
-		else g_snprintf(lbl, lr3, "%f", (priv->bounds.xmin));
+		if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+		if (lr3<BFL) g_snprintf(lbl, lr3, "%f", (priv->bounds.xmin));
+		else g_snprintf(lbl, BFL, "%f", (priv->bounds.xmin));
 		pango_layout_set_text(lyt, lbl, -1);
 		pango_layout_get_pixel_size(lyt, &wd, &hg);
 		xl=wd/2; /* allow space for left label */
@@ -308,8 +315,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		{
 			lr3=3;
 			if ((priv->bounds.xmin)<-1) lr3+=floor(log10(-(priv->bounds.xmin)));
-			if ((plot->xdp)!=0) g_snprintf(lbl, lr3+(plot->xdp)+1, "%f", (priv->bounds.xmin));
-			else g_snprintf(lbl, lr3, "%f", (priv->bounds.xmin));
+			if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+			if (lr3<BFL) g_snprintf(lbl, lr3, "%f", (priv->bounds.xmin));
+			else g_snprintf(lbl, BFL, "%f", (priv->bounds.xmin));
 			pango_layout_set_text(lyt, lbl, -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			xl=wd/2; /* allow space for left label */
@@ -347,8 +355,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				lr3=3;
 				if ((priv->bounds.xmin)<-1) lr3+=floor(log10(-(priv->bounds.xmin)));
-				if ((plot->xdp)!=0) g_snprintf(lbl, lr3+(plot->xdp)+1, "%f", (priv->bounds.xmin));
-				else g_snprintf(lbl, lr3, "%f", (priv->bounds.xmin));
+				if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+				if (lr3<BFL) g_snprintf(lbl, lr3, "%f", (priv->bounds.xmin));
+				else g_snprintf(lbl, BFL, "%f", (priv->bounds.xmin));
 				pango_layout_set_text(lyt, lbl, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				xl=wd/2; /* allow space for left label */
@@ -423,14 +432,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.xmin)<NZE)
 			{
@@ -438,13 +448,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -483,14 +495,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -498,13 +511,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -539,14 +554,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.xmin)<NZE)
 			{
@@ -554,13 +570,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -599,14 +617,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -614,13 +633,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -659,14 +680,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.xmin)<NZE)
 			{
@@ -674,13 +696,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -719,14 +743,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -734,13 +759,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
+						{lr2=log10(-lr1); lr3=3;}
 						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
 						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -793,14 +820,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.xmin)<NZE)
 			{
@@ -808,13 +836,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -853,14 +883,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -868,13 +899,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -956,14 +989,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -971,13 +1005,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1027,14 +1063,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1042,13 +1079,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1112,14 +1151,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1127,13 +1167,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1183,14 +1225,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1198,13 +1241,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1253,14 +1298,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.xmin)<NZE)
 			{
@@ -1268,13 +1314,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -1313,14 +1361,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1328,13 +1377,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1358,7 +1409,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_move_to(cr, tnn, ya);
 				cairo_line_to(cr, tnn, ya-NT);
 			}
-			cairo_stroke(cr);
+			cairo_stroke(cr);lr3=2;}
 			to=tn;
 			for (j=(tz+1); j<(priv->ticks.xj); j++)
 			{
@@ -1384,14 +1435,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1399,13 +1451,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1447,14 +1501,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.xmin)<NZE)
 			{
@@ -1462,13 +1517,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->xdp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -1507,14 +1564,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1522,13 +1580,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1578,14 +1638,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else if ((plot->xdp)<BF3) g_snprintf(lbl, (plot->xdp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1593,13 +1654,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->xdp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->xdp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->xdp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else if ((plot->xdp)<BF4) g_snprintf(lbl, (plot->xdp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1650,14 +1713,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->ydp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+				else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.ymax)<NZE)
 			{
@@ -1665,13 +1729,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->ydp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+				else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -1716,14 +1782,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1731,13 +1798,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1775,14 +1844,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->ydp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+				else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.ymax)<NZE)
 			{
@@ -1790,13 +1860,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->ydp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+				else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -1841,14 +1913,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1856,13 +1929,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -1929,14 +2004,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -1944,13 +2020,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -2013,14 +2091,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -2028,13 +2107,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -2104,14 +2185,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -2119,13 +2201,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -2178,14 +2262,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -2193,13 +2278,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -2269,14 +2356,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -2284,13 +2372,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -2343,14 +2433,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -2358,13 +2449,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -2416,14 +2509,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->ydp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+				else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.ymin)<NZE)
 			{
@@ -2431,13 +2525,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->ydp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+				else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -2482,14 +2578,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -2497,13 +2594,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -2556,14 +2655,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -2571,13 +2671,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -2622,14 +2724,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->ydp));
 				if (lr1>=1)
 				{
-					lr2=floor(log10(lr1));
-					lr2=log10(lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-					else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+					{lr2=log10(lr1); lr3=2;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+				else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else if ((priv->bounds.ymin)<NZE)
 			{
@@ -2637,13 +2740,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				lr1*=exp(-G_LN10*(plot->ydp));
 				if (lr1<=-1)
 				{
-					lr2=log10(-lr1);
-					if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-					else lr3=(guint)ceil(lr2);
-					if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-					else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+					{lr2=log10(-lr1); lr3=3;}
+					if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+					else lr3+=(guint)ceil(lr2);
+					if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+					if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
-				else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+				else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+				else g_snprintf(lbl, BFL, "%f", lr1);
 			}
 			else g_snprintf(lbl, 2, "%f", 0.0);
 			pango_layout_set_text(lyt, lbl, -1);
@@ -2688,14 +2793,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -2703,13 +2809,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);
@@ -2762,14 +2870,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1>=1)
 					{
-						lr2=floor(log10(lr1));
-						lr2=log10(lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+2, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+3, "%f", lr1);
+						{lr2=log10(lr1); lr3=2;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else if ((plot->ydp)<BF3) g_snprintf(lbl, (plot->ydp)+3, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else if (lr2<NZE)
 				{
@@ -2777,13 +2886,15 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					lr1*=exp(-G_LN10*(plot->ydp));
 					if (lr1<=-1)
 					{
-						lr2=log10(-lr1);
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
-						if ((plot->ydp)==0) g_snprintf(lbl, lr3+3, "%f", lr1);
-						else g_snprintf(lbl, (plot->ydp)+lr3+4, "%f", lr1);
+						{lr2=log10(-lr1); lr3=3;}
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
+						if ((plot->ydp)!=0) lr3+=(plot->ydp)+1;
+						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
+						else g_snprintf(lbl, BFL, "%f", lr1);
 					}
-					else g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else if ((plot->ydp)<BF4) g_snprintf(lbl, (plot->ydp)+4, "%f", lr1);
+					else g_snprintf(lbl, BFL, "%f", lr1);
 				}
 				else g_snprintf(lbl, 2, "%f", 0.0);
 				pango_layout_set_text(lyt, lbl, -1);

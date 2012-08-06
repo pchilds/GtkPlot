@@ -1,6 +1,7 @@
 Known Bugs/Issues
 -----------------
 * Add man pages for gtk:plot:linear and gtk:plot:polar
+* (Linear) Stack smashing bug has been temporarily fixed => move to engineering/scientific notation for large values?
 * (Polar) Poor centering ability.
 * (Polar) Occasionally graph goes off the page and only a very zoomed in portion is seen (undiagnosed).
 * (Polar) Behaviour when azimuth labels all negative (zooming doesn't occur)

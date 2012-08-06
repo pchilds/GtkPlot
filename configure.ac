@@ -36,5 +36,5 @@ case "$host_os" in
 esac
 AC_SUBST([lt_enable_auto_import])
 PKG_CHECK_MODULES([PLOT], [gtk_req])
-AC_CONFIG_FILES([Makefile ${PLOT_SDIR}/Makefile gtkplot-${PLOT_API_VERSION}.pc:gtkplot.pc.in])
+AC_CONFIG_FILES([Makefile ${PLOT_SDIR}/Makefile gtkplot-${PLOT_API_VERSION}.pc:gtkplot.pc.in COPYING:COPYING-${PLOT_API_VERSION}.in])
 AC_OUTPUT()
