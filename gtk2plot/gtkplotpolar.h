@@ -10,7 +10,7 @@
 
 /*
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Library General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  * 
@@ -19,7 +19,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Library General Public License for more details.
  * 
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Library General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor Boston, MA 02110-1301,  USA
  */
@@ -75,6 +75,10 @@
 	gboolean gtk_plot_polar_print_eps(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_polar_print_png(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_polar_print_svg(GtkWidget *widget, gchar *fout);
+	void gtk_plot_linear_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl);
+	void gtk_plot_linear_set_font(GtkPlotPolar *plot, PangoFontDescription *lf, PangoFontDescription *af);
+	void gtk_plot_linear_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz);
+	void gtk_plot_linear_set_colour(GtkPlotPolar *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al);
 	GtkWidget *gtk_plot_polar_new(void);
 	G_END_DECLS
 #endif

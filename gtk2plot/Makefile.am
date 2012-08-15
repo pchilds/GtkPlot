@@ -10,6 +10,7 @@ libgtkplot_@PLOT_API_VERSION@_la_SOURCES=			\
 	gtkplotpolar.c
 libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=			\
 	@lt_enable_auto_import@					\
+	-no-undefined						\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	$(PLOT_LIBS)
 gtkplotincludedir=$(includedir)/gtkplot-$(PLOT_API_VERSION)

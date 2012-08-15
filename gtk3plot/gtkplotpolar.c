@@ -82,6 +82,7 @@
 #define I_MY_2_PI 0.1591549430918953357688837633725143620344596457405
 #define L10_2PT5 0.3979400086720376095725222105510139464636202370758
 #define L10_5 0.6989700043360188047862611052755069732318101185379
+#define BFL 10 /*buffer length for axes*/
 typedef enum
 {
 	GTK_PLOT_POLAR_BORDERS_IN = 1 << 0,
@@ -184,7 +185,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	GtkPlotPolar *plot;
 	gint j, k, xw, yw, kx, j0, jl, xt, wd, hg, ft, lt;
 	gdouble dtt, tt, dtr, thx, thn, dt, sx, csx, ssx, dr1, drs, drc, dz, rt, dwr, rl, ctx, ctn, stx, stn, r, th, rn, tn, x, y;
-	gchar lbl[10];
+	gchar lbl[BFL];
 	gchar *str1=NULL, *str2=NULL, *str3;
 	PangoLayout *lyt;
 	cairo_matrix_t mtr;
@@ -944,7 +945,8 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_stroke(cr);
 				lyt=pango_cairo_create_layout(cr);
 				pango_layout_set_font_description(lyt, (plot->afont));
-				g_ascii_dtostr(lbl, (priv->thcs), round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
+				if (priv->thcs<BFL) g_ascii_dtostr(lbl, (priv->thcs), round(sx*I180_MY_PI));/* draw zaimuthal tick labels */
+				else g_ascii_dtostr(lbl, BFL, round(sx*I180_MY_PI));
 				pango_layout_set_text(lyt, lbl, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				rl=(priv->wr)+tt+((priv->s)*dr1);
@@ -5505,6 +5507,35 @@ static gboolean gtk_plot_polar_button_release(GtkWidget *widget, GdkEventButton 
 	return FALSE;
 }
 
+void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl)
+{
+	if (plot->rlab) g_free(plot->rlab);
+	if (plot->thlab) g_free(plot->thlab);
+	{(plot->rlab)=g_strdup(rl); (plot->thlab)=g_strdup(tl);}
+}
+
+void gtk_plot_polar_set_font(GtkPlotPolar *plot, PangoFontDescription *lf, PangoFontDescription *af)
+{
+	if (plot->afont) pango_font_description_free(plot->afont);
+	if (plot->lfont) pango_font_description_free(plot->lfont);
+	{(plot->afont)=pango_font_description_copy(af); (plot->lfont)=pango_font_description_copy(lf);}
+}
+
+void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz)
+{
+	if (plot->rdata) g_array_free((plot->rdata), FALSE);
+	if (plot->thdata) g_array_free((plot->thdata), FALSE);
+	if (plot->ind) g_array_free((plot->ind), FALSE);
+	if (plot->sizes) g_array_free((plot->sizes), FALSE);
+	{(plot->rdata)=rd; (plot->thdata)=td; (plot->ind)=nd; (plot->sizes)=sz;}
+}
+
+void gtk_plot_polar_set_colour(GtkPlotPolar *plot, GArray *cl)
+{
+	if (plot->cl) g_array_free((plot->cl), FALSE);
+	(plot->cl)=cl;
+}
+
 static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
 {
 	GtkPlotPolarPrivate *priv;
@@ -5518,7 +5549,7 @@ static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
 	if (plot->thdata) g_free(plot->thdata);
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	if (plot->rd) g_array_free((plot->cl), TRUE);
+	if (plot->cl) g_array_free((plot->cl), TRUE);
 }
 
 static void gtk_plot_polar_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
