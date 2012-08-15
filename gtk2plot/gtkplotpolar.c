@@ -5532,6 +5532,38 @@ static gboolean gtk_plot_polar_button_release(GtkWidget *widget, GdkEventButton 
 	return FALSE;
 }
 
+void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl)
+{
+	if (plot->rlab) g_free(plot->rlab);
+	if (plot->thlab) g_free(plot->thlab);
+	{(plot->rlab)=g_strdup(rl); (plot->thlab)=g_strdup(tl);}
+}
+
+void gtk_plot_polar_set_font(GtkPlotPolar *plot, PangoFontDescription *lf, PangoFontDescription *af)
+{
+	if (plot->afont) pango_font_description_free(plot->afont);
+	if (plot->lfont) pango_font_description_free(plot->lfont);
+	{(plot->afont)=pango_font_description_copy(af); (plot->lfont)=pango_font_description_copy(lf);}
+}
+
+void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz)
+{
+	if (plot->rdata) g_array_free((plot->rdata), FALSE);
+	if (plot->thdata) g_array_free((plot->thdata), FALSE);
+	if (plot->ind) g_array_free((plot->ind), FALSE);
+	if (plot->sizes) g_array_free((plot->sizes), FALSE);
+	{(plot->rdata)=rd; (plot->thdata)=td; (plot->ind)=nd; (plot->sizes)=sz;}
+}
+
+void gtk_plot_polar_set_colour(GtkPlotPolar *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al)
+{
+	if (plot->rd) g_array_free((plot->rd), FALSE);
+	if (plot->gr) g_array_free((plot->gr), FALSE);
+	if (plot->bl) g_array_free((plot->bl), FALSE);
+	if (plot->al) g_array_free((plot->al), FALSE);
+	{(plot->rd)=rd; (plot->gr)=gr; (plot->bl)=bl; (plot->al)=al;}
+}
+
 static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
 {
 	GtkPlotPolarPrivate *priv;

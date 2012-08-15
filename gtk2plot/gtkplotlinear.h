@@ -72,6 +72,10 @@
 	gboolean gtk_plot_linear_print_eps(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_linear_print_png(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_linear_print_svg(GtkWidget *widget, gchar *fout);
+	void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl);
+	void gtk_plot_linear_set_font(GtkPlotLinear *plot, PangoFontDescription *lf, PangoFontDescription *af);
+	void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz);
+	void gtk_plot_linear_set_colour(GtkPlotLinear *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al);
 	GtkWidget *gtk_plot_linear_new(void);
 	G_END_DECLS
 #endif

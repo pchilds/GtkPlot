@@ -1409,7 +1409,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				cairo_move_to(cr, tnn, ya);
 				cairo_line_to(cr, tnn, ya-NT);
 			}
-			cairo_stroke(cr);lr3=2;}
+			cairo_stroke(cr);
 			to=tn;
 			for (j=(tz+1); j<(priv->ticks.xj); j++)
 			{
@@ -4172,6 +4172,38 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 		}
 	}
 	return FALSE;
+}
+
+void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl)
+{
+	if (plot->xlab) g_free(plot->xlab);
+	if (plot->ylab) g_free(plot->ylab);
+	{(plot->xlab)=g_strdup(xl); (plot->ylab)=g_strdup(yl);}
+}
+
+void gtk_plot_linear_set_font(GtkPlotLinear *plot, PangoFontDescription *lf, PangoFontDescription *af)
+{
+	if (plot->afont) pango_font_description_free(plot->afont);
+	if (plot->lfont) pango_font_description_free(plot->lfont);
+	{(plot->afont)=pango_font_description_copy(af); (plot->lfont)=pango_font_description_copy(lf);}
+}
+
+void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz)
+{
+	if (plot->xdata) g_array_free((plot->xdata), FALSE);
+	if (plot->ydata) g_array_free((plot->ydata), FALSE);
+	if (plot->ind) g_array_free((plot->ind), FALSE);
+	if (plot->sizes) g_array_free((plot->sizes), FALSE);
+	{(plot->xdata)=xd; (plot->ydata)=yd; (plot->ind)=nd; (plot->sizes)=sz;}
+}
+
+void gtk_plot_linear_set_colour(GtkPlotLinear *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al)
+{
+	if (plot->rd) g_array_free((plot->rd), FALSE);
+	if (plot->gr) g_array_free((plot->gr), FALSE);
+	if (plot->bl) g_array_free((plot->bl), FALSE);
+	if (plot->al) g_array_free((plot->al), FALSE);
+	{(plot->rd)=rd; (plot->gr)=gr; (plot->bl)=bl; (plot->al)=al;}
 }
 
 static void gtk_plot_linear_finalise(GtkPlotLinear *plot)
