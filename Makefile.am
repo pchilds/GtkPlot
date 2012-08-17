@@ -1,7 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 SUBDIRS=${PLOT_SDIR} debian
 ACLOCAL_AMFLAGS=-I m4 ${ACLOCAL_FLAGS}
-MAINTAINERCLEANFILES=Makefile.in configure =
+MAINTAINERCLEANFILES=Makefile.in configure
+DISTCLEANFILES= =
 
 pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA=gtkplot-${PLOT_API_VERSION}.pc
