@@ -39,11 +39,11 @@ PKG_CHECK_MODULES([PLOT], [gtk_req])
 AC_CONFIG_FILES([Makefile ${PLOT_SDIR}/Makefile					\
 	gtkplot-${PLOT_API_VERSION}.pc:gtkplot.pc.in				\
 	COPYING:COPYING-${PLOT_API_VERSION}.in					\
-	debian/Makefile								\
 	debian/libgtkplot${PLOT_GTK_MAJOR}.install:debian/libgtkplot.install.in	\
 	debian/libgtkplot${PLOT_GTK_MAJOR}.dirs:debian/libgtkplot.dirs.in	\
 	debian/libgtkplot-dev.install						\
 	debian/libgtkplot-dev.dirs						\
+	debian/Makefile								\
 	debian/shlibs.local							\
 	debian/control								\
 	debian/copyright])
