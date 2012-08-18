@@ -1,1 +1,1 @@
-libgtkplot @PLOT_API_VERSION@ libgtkplot@PLOT_GTK_MAJOR@
+libgtkplot @PLOT_API_VERSION@ libgtkplot-@PLOT_GTK_MAJOR@

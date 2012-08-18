@@ -35,16 +35,13 @@ case "$host_os" in
       lt_enable_auto_import="-Wl,--enable-auto-import"
 esac
 AC_SUBST([lt_enable_auto_import])
+file=debian/control
 PKG_CHECK_MODULES([PLOT], [gtk_req])
-AC_CONFIG_FILES([Makefile ${PLOT_SDIR}/Makefile					\
-	gtkplot-${PLOT_API_VERSION}.pc:gtkplot.pc.in				\
-	COPYING:COPYING-${PLOT_API_VERSION}.in					\
-	debian/libgtkplot${PLOT_GTK_MAJOR}.install:debian/libgtkplot.install.in	\
-	debian/libgtkplot${PLOT_GTK_MAJOR}.dirs:debian/libgtkplot.dirs.in	\
-	debian/libgtkplot-dev.install						\
-	debian/libgtkplot-dev.dirs						\
-	debian/Makefile								\
-	debian/shlibs.local							\
-	debian/control								\
+AC_CONFIG_FILES([Makefile ${PLOT_SDIR}/Makefile						\
+	gtkplot-${PLOT_API_VERSION}.pc:gtkplot.pc.in					\
+	COPYING:COPYING-${PLOT_API_VERSION}.in						\
+	debian/Makefile									\
+	debian/shlibs.local								\
 	debian/copyright])
+AC_CONFIG_FILES([$file],,[file=$file])
 AC_OUTPUT()
