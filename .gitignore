@@ -1,6 +1,8 @@
 autom4te.cache
 gtk2plot/.deps
 gtk2plot/.libs
+gtk3plot/.deps
+gtk3plot/.libs
 =
 *config.h
 config.log
