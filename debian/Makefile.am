@@ -1,4 +1,4 @@
-MAINTAINERCLEANFILES=Makefile.in control *debhelper* *substvars
+MAINTAINERCLEANFILES=Makefile.in control shlibs.local *debhelper* *substvars
 
 
 

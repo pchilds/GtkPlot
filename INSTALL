@@ -24,8 +24,10 @@ the optional part of step 1 below).
 
 The simplest way to compile this package is:
 
-  1. `cd' to the directory of the package (it should contain this file
-     and (optionally) type `autoreconf --install' to create the
+  1. `cd' to the directory of the package (it should contain this
+     file), (optionally) type `./reversion 2 0 0 0 0' (or whatever
+     version numbers are needed) to regenerate the build files and
+     (also optionally) type `autoreconf --install' to create the
      appropriate scripts and convert the configure and Makefile to
      something appropriate for your system.
 
