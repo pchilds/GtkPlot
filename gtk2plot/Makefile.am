@@ -1,7 +1,7 @@
 AM_CFLAGS=$(PLOT_CFLAGS)
 MAINTAINERCLEANFILES=Makefile.in
 
-gtkplot_libincludedir=$(libdir)/gtkplot-$(PLOT_API_VERSION)/include
+gtkplot_libincludedir=$(libdir)/gtkplot-2.0/include
 nodist_gtkplot_libinclude_HEADERS=../gtkplotconfig.h
 
 lib_LTLIBRARIES=libgtkplot-@PLOT_API_VERSION@.la
@@ -11,9 +11,9 @@ libgtkplot_@PLOT_API_VERSION@_la_SOURCES=			\
 libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=			\
 	@lt_enable_auto_import@					\
 	-no-undefined						\
-	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
+	-version-info 0:0:0	\
 	$(PLOT_LIBS)
-gtkplotincludedir=$(includedir)/gtkplot-$(PLOT_API_VERSION)
+gtkplotincludedir=$(includedir)/gtkplot-2.0
 gtkplotinclude_HEADERS=						\
 	gtkplotlinear.h						\
 	gtkplotpolar.h
