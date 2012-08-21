@@ -5637,7 +5637,7 @@ static void gtk_plot_polar_class_init(GtkPlotPolarClass *klass)
 	(widget_klass->button_press_event)=gtk_plot_polar_button_press;
 	(widget_klass->motion_notify_event)=gtk_plot_polar_motion_notify;
 	(widget_klass->button_release_event)=gtk_plot_polar_button_release;
-	(widget_klass->expose_event)=gtk_plot_polar_expose;
+	(widget_klass->draw)=gtk_plot_polar_expose;
 	gtk_plot_polar_signals[MOVED]=g_signal_new("moved", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET (GtkPlotPolarClass, moved), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
