@@ -5598,13 +5598,8 @@ static void gtk_plot_polar_get_property(GObject *object, guint prop_id, GValue *
 	}
 }
 
-static gboolean gtk_plot_polar_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean gtk_plot_polar_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-	cairo_t *cr;
-
-	cr=gdk_cairo_create(gtk_widget_get_window(widget));
-	cairo_rectangle(cr, (event->area.x), (event->area.y), (event->area.width), (event->area.height));
-	cairo_clip(cr);
 	drawz(widget, cr);
 	draw(widget, cr);
 	cairo_destroy(cr);
@@ -5637,7 +5632,7 @@ static void gtk_plot_polar_class_init(GtkPlotPolarClass *klass)
 	(widget_klass->button_press_event)=gtk_plot_polar_button_press;
 	(widget_klass->motion_notify_event)=gtk_plot_polar_motion_notify;
 	(widget_klass->button_release_event)=gtk_plot_polar_button_release;
-	(widget_klass->draw)=gtk_plot_polar_expose;
+	(widget_klass->draw)=gtk_plot_polar_draw;
 	gtk_plot_polar_signals[MOVED]=g_signal_new("moved", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET (GtkPlotPolarClass, moved), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
@@ -5645,6 +5640,7 @@ static void gtk_plot_polar_init(GtkPlotPolar *plot)
 {
 	GtkPlotPolarPrivate *priv;
 	gdouble val;
+	GdkRGBA cl;
 
 	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);
 	priv=GTK_PLOT_POLAR_GET_PRIVATE(plot);

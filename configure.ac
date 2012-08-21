@@ -22,5 +22,7 @@ case "$host_os" in
 esac
 AC_SUBST([lt_enable_auto_import])
 PKG_CHECK_MODULES([PLOT], [gtk+-2.0 >= 2.14])
-AC_CONFIG_FILES([Makefile gtk2plot/Makefile gtkplot-2.0.pc:gtkplot.pc.in COPYING:COPYING-2.0.in])
+AC_CONFIG_FILES([Makefile gtk2plot/Makefile	\
+	gtkplot-2.0.pc:gtkplot.pc.in		\
+	COPYING:COPYING-2.0.in])
 AC_OUTPUT()
