@@ -10,9 +10,11 @@ if [ $1 -eq 3 ]
 then
 	gmx=3
 	gmn=0
+	gdp="-3"
 else
 	gmx=2
 	gmn=14
+	gdp="2.$2"
 fi
 gar=$2
 lcr=$3
@@ -91,7 +93,7 @@ echo "TestPlotPolar_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
 echo "Source: libgtkplot"
 echo "Priority: optional"
 echo "Maintainer: Paul Childs <pchilds@physics.org>"
-echo "Build-Depends: debhelper (>= 7), autotools-dev, dh-autoreconf, pkg-config, libgtk${gmx}.${gar}-dev"
+echo "Build-Depends: debhelper (>= 7), autotools-dev, dh-autoreconf, pkg-config, libgtk${gdp}-dev"
 echo "Standards-Version: 3.8.3"
 echo "Section: libs"
 echo "Homepage: <https://github.com/pchilds/GtkPlot>"
