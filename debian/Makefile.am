@@ -1,4 +1,4 @@
-MAINTAINERCLEANFILES=Makefile.in control rules shlibs.local *debhelper* *substvars
+MAINTAINERCLEANFILES=Makefile.in control copyright rules shlibs.local *debhelper* *substvars
 
 
 
