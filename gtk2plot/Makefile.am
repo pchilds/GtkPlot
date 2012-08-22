@@ -1,4 +1,4 @@
-AM_CFLAGS=$(PLOT_CFLAGS)
+AM_CFLAGS=$(PLOT_CFLAGS) -g
 MAINTAINERCLEANFILES=Makefile.in
 
 gtkplot_libincludedir=$(libdir)/gtkplot-2.0/include

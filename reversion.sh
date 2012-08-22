@@ -56,7 +56,7 @@ echo "pkgconfigdir=\$(libdir)/pkgconfig"
 echo "pkgconfig_DATA=gtkplot-${gmx}.${gar}.pc"
 } >Makefile.am
 {
-echo "AM_CFLAGS=\$(PLOT_CFLAGS)"
+echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g"
 echo "MAINTAINERCLEANFILES=Makefile.in"
 echo ""
 echo "gtkplot_libincludedir=\$(libdir)/gtkplot-${gmx}.${gar}/include"
