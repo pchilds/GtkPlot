@@ -389,7 +389,7 @@ void ad(GtkWidget *widget, gpointer data)
 	GtkWidget *wfile;
 	gdouble xi, xf, lcl, mny, mxy;
 	guint k, sal;
-	gint lc;
+	gint lc, lc2;
 	gchar *contents, *str, *fin=NULL;
 	gchar **strary, **strat;
 	GError *Err;
@@ -411,22 +411,24 @@ void ad(GtkWidget *widget, gpointer data)
 			y=g_array_new(FALSE, FALSE, sizeof(gdouble));
 			sz=g_array_new(FALSE, FALSE, sizeof(gint));
 			nx=g_array_new(FALSE, FALSE, sizeof(gint));
-			for (sal=0;sal<(plt->sizes->len);sal++)
+			{sal=0; lc=0; lc2=0;}
+			while (sal<(plt->sizes->len))
 			{
-				xi=g_array_index((plt->ind), gdouble, sal);
-				g_array_append_val(nx, xi);
-				xf=g_array_index((plt->sizes), gdouble, sal);
-				g_array_append_val(sz, xf);
-				xf+=xi;
-				for (k=xi;k<xf;k++)
+				lc2=g_array_index((plt->ind), gint, sal);
+				g_array_append_val(nx, lc2);
+				lc=g_array_index((plt->sizes), gint, sal);
+				g_array_append_val(sz, lc);
+				lc+=lc2;
+				for (k=lc2;k<lc;k++)
 				{
 					lcl=g_array_index((plt->xdata), gdouble, k);
 					g_array_append_val(x, lcl);
 					lcl=g_array_index((plt->ydata), gdouble, k);
 					g_array_append_val(y, lcl);
 				}
+				sal++;
 			}
-			g_array_append_val(nx, xf);
+			g_array_append_val(nx, lc);
 			g_object_get(G_OBJECT(plot), "xmin", &xi, "xmax", &xf, "ymin", &mny, "ymax", &mxy, NULL);
 			strary=g_strsplit_set(contents, "\r\n", 0);
 			sal=g_strv_length(strary);
