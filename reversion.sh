@@ -12,7 +12,7 @@ then
 	gmn=0
 else
 	gmx=2
-	gmn=22
+	gmn=18
 fi
 gar=$2
 lcr=$3
