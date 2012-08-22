@@ -5527,13 +5527,13 @@ void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray 
 	if (plot->thdata) g_array_free((plot->thdata), FALSE);
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	{(plot->rdata)=rd; (plot->thdata)=td; (plot->ind)=nd; (plot->sizes)=sz;}
+	{(plot->rdata)=g_object_ref_sink(rd); (plot->thdata)=g_object_ref_sink(td); (plot->ind)=g_object_ref_sink(nd); (plot->sizes)=g_object_ref_sink(sz);}
 }
 
 void gtk_plot_polar_set_colour(GtkPlotPolar *plot, GArray *cl)
 {
 	if (plot->cl) g_array_free((plot->cl), FALSE);
-	(plot->cl)=cl;
+	(plot->cl)=g_object_ref_sink(cl);
 }
 
 static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
@@ -5598,13 +5598,8 @@ static void gtk_plot_polar_get_property(GObject *object, guint prop_id, GValue *
 	}
 }
 
-static gboolean gtk_plot_polar_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean gtk_plot_polar_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-	cairo_t *cr;
-
-	cr=gdk_cairo_create(gtk_widget_get_window(widget));
-	cairo_rectangle(cr, (event->area.x), (event->area.y), (event->area.width), (event->area.height));
-	cairo_clip(cr);
 	drawz(widget, cr);
 	draw(widget, cr);
 	cairo_destroy(cr);
@@ -5637,7 +5632,7 @@ static void gtk_plot_polar_class_init(GtkPlotPolarClass *klass)
 	(widget_klass->button_press_event)=gtk_plot_polar_button_press;
 	(widget_klass->motion_notify_event)=gtk_plot_polar_motion_notify;
 	(widget_klass->button_release_event)=gtk_plot_polar_button_release;
-	(widget_klass->draw)=gtk_plot_polar_expose;
+	(widget_klass->draw)=gtk_plot_polar_draw;
 	gtk_plot_polar_signals[MOVED]=g_signal_new("moved", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET (GtkPlotPolarClass, moved), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
@@ -5645,6 +5640,7 @@ static void gtk_plot_polar_init(GtkPlotPolar *plot)
 {
 	GtkPlotPolarPrivate *priv;
 	gdouble val;
+	GdkRGBA cl;
 
 	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);
 	priv=GTK_PLOT_POLAR_GET_PRIVATE(plot);

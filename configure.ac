@@ -23,5 +23,6 @@ AC_CONFIG_FILES([Makefile gtk2plot/Makefile	\
 	gtkplot-2.0.pc:gtkplot.pc.in		\
 	COPYING:COPYING-2.0.in			\
 	debian/Makefile				\
-	debian/copyright])
+	debian/copyright			\
+	])
 AC_OUTPUT()

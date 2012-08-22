@@ -46,7 +46,8 @@ echo "AC_CONFIG_FILES([Makefile gtk${gmx}plot/Makefile	\\"
 echo "	gtkplot-${gmx}.${gar}.pc:gtkplot.pc.in		\\"
 echo "	COPYING:COPYING-${gmx}.${gar}.in			\\"
 echo "	debian/Makefile				\\"
-echo "	debian/copyright])"
+echo "	debian/copyright			\\"
+echo "	])"
 echo "AC_OUTPUT()"
 } >configure.ac
 {

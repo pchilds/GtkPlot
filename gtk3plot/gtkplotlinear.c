@@ -4174,13 +4174,13 @@ void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArra
 	if (plot->ydata) g_array_free((plot->ydata), FALSE);
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	{(plot->xdata)=xd; (plot->ydata)=yd; (plot->ind)=nd; (plot->sizes)=sz;}
+	{(plot->xdata)=g_object_ref_sink(xd); (plot->ydata)=g_object_ref_sink(yd); (plot->ind)=g_object_ref_sink(nd); (plot->sizes)=g_object_ref_sink(sz);}
 }
 
 void gtk_plot_linear_set_colour(GtkPlotLinear *plot, GArray *cl)
 {
 	if (plot->cl) g_array_free((plot->cl), FALSE);
-	(plot->cl)=cl;
+	(plot->cl)=g_object_ref_sink(cl);
 }
 
 static void gtk_plot_linear_finalise(GtkPlotLinear *plot)
@@ -4319,13 +4319,8 @@ static void gtk_plot_linear_get_property(GObject *object, guint prop_id, GValue 
 	}
 }
 
-static gboolean gtk_plot_linear_expose(GtkWidget *widget, GdkEventExpose *event)
+static gboolean gtk_plot_linear_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-	cairo_t *cr;
-
-	cr=gdk_cairo_create(gtk_widget_get_window(widget));
-	cairo_rectangle(cr, event->area.x, event->area.y, event->area.width, event->area.height);
-	cairo_clip(cr);
 	draw(widget, cr);
 	drawz(widget, cr);
 	cairo_destroy(cr);
@@ -4355,7 +4350,7 @@ static void gtk_plot_linear_class_init(GtkPlotLinearClass *klass)
 	(widget_klass->button_press_event)=gtk_plot_linear_button_press;
 	(widget_klass->motion_notify_event)=gtk_plot_linear_motion_notify;
 	(widget_klass->button_release_event)=gtk_plot_linear_button_release;
-	(widget_klass->draw)=gtk_plot_linear_expose;
+	(widget_klass->draw)=gtk_plot_linear_draw;
 	gtk_plot_linear_signals[MOVED]=g_signal_new("moved", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET (GtkPlotLinearClass, moved), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 

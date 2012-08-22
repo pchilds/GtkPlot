@@ -4194,7 +4194,7 @@ void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArra
 	if (plot->ydata) g_array_free((plot->ydata), FALSE);
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	{(plot->xdata)=xd; (plot->ydata)=yd; (plot->ind)=nd; (plot->sizes)=sz;}
+	{(plot->xdata)=g_object_ref_sink(xd); (plot->ydata)=g_object_ref_sink(yd); (plot->ind)=g_object_ref_sink(nd); (plot->sizes)=g_object_ref_sink(sz);}
 }
 
 void gtk_plot_linear_set_colour(GtkPlotLinear *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al)
@@ -4203,7 +4203,7 @@ void gtk_plot_linear_set_colour(GtkPlotLinear *plot, GArray *rd, GArray *gr, GAr
 	if (plot->gr) g_array_free((plot->gr), FALSE);
 	if (plot->bl) g_array_free((plot->bl), FALSE);
 	if (plot->al) g_array_free((plot->al), FALSE);
-	{(plot->rd)=rd; (plot->gr)=gr; (plot->bl)=bl; (plot->al)=al;}
+	{(plot->rd)=g_object_ref_sink(rd); (plot->gr)=g_object_ref_sink(gr); (plot->bl)=g_object_ref_sink(bl); (plot->al)=g_object_ref_sink(al);}
 }
 
 static void gtk_plot_linear_finalise(GtkPlotLinear *plot)
