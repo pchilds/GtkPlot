@@ -68,7 +68,7 @@ void dph(GtkDialog *dlg, gint response, gpointer data)
 		}
 		j=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jix));
 		gtk_color_selection_get_current_rgba(GTK_COLOR_SELECTION(colour), &cl);
-		ptr=&g_array_index(cla, gdouble, j);
+		ptr=&g_array_index(cla, GdkRGBA, j);
 		*ptr=cl;
 		gtk_plot_linear_set_colour(plt, cla);
 		g_array_unref(cla);

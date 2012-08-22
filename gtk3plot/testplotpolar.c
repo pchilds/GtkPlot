@@ -67,7 +67,7 @@ void dph(GtkDialog *dlg, gint response, gpointer data)
 		}
 		j=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jix));
 		gtk_color_selection_get_current_rgba(GTK_COLOR_SELECTION(colour), &cl);
-		ptr=&g_array_index(cla, gdouble, j);
+		ptr=&g_array_index(cla, GdkRGBA, j);
 		*ptr=cl;
 		gtk_plot_polar_set_colour(plt, cla);
 		g_array_unref(cla);
@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
 	gtk_widget_show(mni);
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(mni), mnu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnb), mni);
-	pane=gtk_paned_new();
+	pane=gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_widget_show(pane);
 	gtk_grid_attach(GTK_GRID(grid), pane, 0, 1, 1, 1);
 	grid2=gtk_grid_new();
