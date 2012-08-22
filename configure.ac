@@ -10,7 +10,7 @@ LT_PREREQ([2.2])
 LT_INIT([win32-dll])
 AC_SUBST([PLOT_API_VERSION], [2.0])
 AC_SUBST([PLOT_GTK_MAJOR], [2])
-AC_SUBST([PLOT_GTK_VERSION], [gtk+-2.0 >= 2.14])
+AC_SUBST([PLOT_GTK_VERSION], [gtk+-2.0 >= 2.22])
 AC_SUBST([PLOT_SDIR], [gtk2plot])
 lt_enable_auto_import=
 case "$host_os" in
@@ -18,7 +18,7 @@ case "$host_os" in
       lt_enable_auto_import="-Wl,--enable-auto-import"
 esac
 AC_SUBST([lt_enable_auto_import])
-PKG_CHECK_MODULES([PLOT], [gtk+-2.0 >= 2.14])
+PKG_CHECK_MODULES([PLOT], [gtk+-2.0 >= 2.22])
 AC_CONFIG_FILES([Makefile gtk2plot/Makefile	\
 	gtkplot-2.0.pc:gtkplot.pc.in		\
 	COPYING:COPYING-2.0.in])
