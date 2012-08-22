@@ -42,7 +42,8 @@ echo "AC_SUBST([lt_enable_auto_import])"
 echo "PKG_CHECK_MODULES([PLOT], [gtk+-${gmx}.${gar} >= ${gmx}.${gmn}])"
 echo "AC_CONFIG_FILES([Makefile gtk${gmx}plot/Makefile	\\"
 echo "	gtkplot-${gmx}.${gar}.pc:gtkplot.pc.in		\\"
-echo "	COPYING:COPYING-${gmx}.${gar}.in])"
+echo "	COPYING:COPYING-${gmx}.${gar}.in			\\"
+echo "	])"
 echo "AC_OUTPUT()"
 } >configure.ac
 {
