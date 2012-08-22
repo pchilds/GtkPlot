@@ -4319,7 +4319,7 @@ static void gtk_plot_linear_get_property(GObject *object, guint prop_id, GValue 
 	}
 }
 
-static gboolean gtk_plot_linear_draw(GtkWidget *widget, cairo_t *cr, gpointer data)
+static gboolean gtk_plot_linear_draw(GtkWidget *widget, CairoContext *cr, gpointer data)
 {
 	draw(widget, cr);
 	drawz(widget, cr);
