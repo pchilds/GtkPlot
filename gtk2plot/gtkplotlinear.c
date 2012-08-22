@@ -3294,7 +3294,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					cairo_set_source_rgba(cr, vv, wv, zv, av);
 					ft=g_array_index((plot->ind), gint, k);
 					lt=g_array_index((plot->sizes), gint, k)+ft;
-					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
+					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));/*segfault here when adding a plot*/
 					yv=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
 					if (xv<xl)
 					{
