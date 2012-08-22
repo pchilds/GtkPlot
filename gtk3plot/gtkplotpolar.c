@@ -5527,13 +5527,13 @@ void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray 
 	if (plot->thdata) g_array_free((plot->thdata), FALSE);
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	{(plot->rdata)=rd; (plot->thdata)=td; (plot->ind)=nd; (plot->sizes)=sz;}
+	{(plot->rdata)=g_object_ref_sink(rd); (plot->thdata)=g_object_ref_sink(td); (plot->ind)=g_object_ref_sink(nd); (plot->sizes)=g_object_ref_sink(sz);}
 }
 
 void gtk_plot_polar_set_colour(GtkPlotPolar *plot, GArray *cl)
 {
 	if (plot->cl) g_array_free((plot->cl), FALSE);
-	(plot->cl)=cl;
+	(plot->cl)=g_object_ref_sink(cl);
 }
 
 static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
