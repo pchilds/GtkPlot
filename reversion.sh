@@ -13,7 +13,7 @@ then
 	gdp="-3"
 else
 	gmx=2
-	gmn=22
+	gmn=18
 	gdp="2.$2"
 fi
 gar=$2
