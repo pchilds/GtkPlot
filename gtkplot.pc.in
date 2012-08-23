@@ -5,7 +5,7 @@ includedir=@includedir@
 
 Name: @PACKAGE_NAME@
 Description: Plotting widgets for GTK@PLOT_GTK_MAJOR@+.
-Requires: @PLOT_GTK_VERSION@
+Requires: gtk+-@PLOT_API_VERSION@ >= @PLOT_GTK_MAJOR@.@PLOT_GTK_MINOR@
 Version: @PACKAGE_VERSION@
 URL: @PACKAGE_URL@
 Libs: -L${libdir} -lgtkplot-@PLOT_API_VERSION@
