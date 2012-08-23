@@ -5598,11 +5598,10 @@ static void gtk_plot_polar_get_property(GObject *object, guint prop_id, GValue *
 	}
 }
 
-static gboolean gtk_plot_polar_draw(GtkWidget *widget, CairoContext *cr, gpointer data)
+static gboolean gtk_plot_polar_draw(GtkWidget *widget, cairo_t *cr)
 {
 	drawz(widget, cr);
 	draw(widget, cr);
-	cairo_destroy(cr);
 	return FALSE;
 }
 
