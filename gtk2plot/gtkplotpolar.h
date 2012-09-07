@@ -75,10 +75,10 @@
 	gboolean gtk_plot_polar_print_eps(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_polar_print_png(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_polar_print_svg(GtkWidget *widget, gchar *fout);
-	void gtk_plot_linear_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl);
-	void gtk_plot_linear_set_font(GtkPlotPolar *plot, PangoFontDescription *lf, PangoFontDescription *af);
-	void gtk_plot_linear_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz);
-	void gtk_plot_linear_set_colour(GtkPlotPolar *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al);
+	void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl);
+	void gtk_plot_polar_set_font(GtkPlotPolar *plot, PangoFontDescription *lf, PangoFontDescription *af);
+	void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz);
+	void gtk_plot_polar_set_colour(GtkPlotPolar *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al);
 	GtkWidget *gtk_plot_polar_new(void);
 	G_END_DECLS
 #endif
