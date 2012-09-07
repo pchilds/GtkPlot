@@ -10,7 +10,7 @@ LT_PREREQ([2.2])
 LT_INIT([win32-dll])
 AC_SUBST([PLOT_API_VERSION], [2.0])
 AC_SUBST([PLOT_GTK_MAJOR], [2])
-AC_SUBST([PLOT_GTK_VERSION], [gtk+-2.0 >= 2.18])
+AC_SUBST([PLOT_GTK_MINOR], [18])
 AC_SUBST([PLOT_SDIR], [gtk2plot])
 lt_enable_auto_import=
 case "$host_os" in
