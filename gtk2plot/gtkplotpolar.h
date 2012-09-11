@@ -27,6 +27,7 @@
 #ifndef __GTK_PLOT_POLAR_H__
 #	define __GTK_PLOT_POLAR_H__
 #	include <gtk/gtk.h>
+#	include "gtkplot.h"
 	G_BEGIN_DECLS
 #	define GTK_PLOT_TYPE_POLAR (gtk_plot_polar_get_type())
 #	define GTK_PLOT_POLAR(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_PLOT_TYPE_POLAR, GtkPlotPolar))
@@ -53,12 +54,10 @@
 	} GtkPlotPolarDisp;
 	struct _GtkPlotPolar
 	{
-		GtkDrawingArea parent;
+		GtkPlot parent;
 		GArray *rdata, *thdata; /* radial and azimuthal data values */
 		GArray *ind, *sizes; /* indices of first element and number of elements for each trace */
-		GArray *rd, *gr, *bl, *al; /* colour and alpha of the plots */
 		gchar *rlab, *thlab; /* labels for the radial and azimuthal axis */
-		PangoFontDescription *afont, *lfont; /* font descriptions for the tick mark and axis labels */
 		gdouble rps, thps; /* radial and azimuthal position of mouse */
 		guint ptsize, linew; /* point radii and line width */
 		guint rdp, thdp; /* number of decimal points for axes */
@@ -67,7 +66,7 @@
 	};
 	struct _GtkPlotPolarClass
 	{
-		GtkDrawingAreaClass parent_class;
+		GtkPlotClass parent_class;
 		void (*moved) (GtkPlotPolar *plot);
 	};
 	gboolean gtk_plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, gdouble thn, gdouble thx, gdouble tcn, gdouble thc);
@@ -76,9 +75,7 @@
 	gboolean gtk_plot_polar_print_png(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_polar_print_svg(GtkWidget *widget, gchar *fout);
 	void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl);
-	void gtk_plot_polar_set_font(GtkPlotPolar *plot, PangoFontDescription *lf, PangoFontDescription *af);
 	void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz);
-	void gtk_plot_polar_set_colour(GtkPlotPolar *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al);
 	GtkWidget *gtk_plot_polar_new(void);
 	G_END_DECLS
 #endif
