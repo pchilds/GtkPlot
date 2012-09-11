@@ -5,16 +5,18 @@ gtkplot_libincludedir=$(libdir)/gtkplot-$(PLOT_API_VERSION)/include
 nodist_gtkplot_libinclude_HEADERS=../gtkplotconfig.h
 
 lib_LTLIBRARIES=libgtkplot-@PLOT_API_VERSION@.la
-libgtkplot_@PLOT_API_VERSION@_la_SOURCES=			\
-	gtkplotlinear.c						\
+libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\
+	gtkplot.c				\
+	gtkplotlinear.c				\
 	gtkplotpolar.c
-libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=			\
-	@lt_enable_auto_import@					\
-	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
+libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\
+	@lt_enable_auto_import@			\
+	-version-info 0:0:0			\
 	$(PLOT_LIBS)
 gtkplotincludedir=$(includedir)/gtkplot-$(PLOT_API_VERSION)
-gtkplotinclude_HEADERS=						\
-	gtkplotlinear.h						\
+gtkplotinclude_HEADERS=				\
+	gtkplot.h				\
+	gtkplotlinear.h				\
 	gtkplotpolar.h
 
 bin_PROGRAMS=TestPlotLinear TestPlotPolar

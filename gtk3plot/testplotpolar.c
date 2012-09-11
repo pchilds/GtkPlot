@@ -38,6 +38,7 @@ gchar* fol=NULL;
 void dph(GtkDialog *dlg, gint response, gpointer data)
 {
 	GArray *cla;
+	GtkPlot *pt;
 	GtkPlotPolar *plt;
 	GdkRGBA cl, iv;
 	gchar *str, *str2;
@@ -50,26 +51,27 @@ void dph(GtkDialog *dlg, gint response, gpointer data)
 	if (response!=GTK_RESPONSE_CLOSE)
 	{
 		plt=GTK_PLOT_POLAR(plot);
+		pt=GTK_PLOT(plot);
 		{str=g_strdup(gtk_entry_get_text(GTK_ENTRY(entry2))); str2=g_strdup(gtk_entry_get_text(GTK_ENTRY(entry1)));}
 		gtk_plot_polar_set_label(plt, str, str2);
 		{g_free(str); g_free(str2);}
 		ds1=pango_font_description_from_string(gtk_font_button_get_font_name(GTK_FONT_BUTTON(butt1)));
 		ds2=pango_font_description_from_string(gtk_font_button_get_font_name(GTK_FONT_BUTTON(butt2)));
-		gtk_plot_polar_set_font(plt, ds1, ds2);
+		gtk_plot_set_font(pt, ds1, ds2);
 		pango_font_description_free(ds1); pango_font_description_free(ds2);
 		k=(plt->ind->len);
 		cla=g_array_sized_new(FALSE, FALSE, sizeof(GdkRGBA), k);
 		for(j=0; j<k; j++)
 		{
-			dx=fmod(j, (plt->cl->len));
-			iv=g_array_index((plt->cl), GdkRGBA, dx);
+			dx=fmod(j, (pt->cl->len));
+			iv=g_array_index((pt->cl), GdkRGBA, dx);
 			g_array_append_val(cla, iv);
 		}
 		j=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jix));
 		gtk_color_selection_get_current_rgba(GTK_COLOR_SELECTION(colour), &cl);
 		ptr=&g_array_index(cla, GdkRGBA, j);
 		*ptr=cl;
-		gtk_plot_polar_set_colour(plt, cla);
+		gtk_plot_set_colour(pt, cla);
 		g_array_unref(cla);
 		g_object_get(G_OBJECT(plot), "thmin", &xi, "thmax", &xf, "rmin", &mny, "rmax", &mxy, "rcnt", &r0, "thcnt", &th0, NULL);
 		gtk_plot_polar_update_scale(plot, mny, mxy, xi, xf, r0, th0);
@@ -81,12 +83,12 @@ void upj(GtkWidget *widget, gpointer data)
 {
 	GdkRGBA cl;
 	gint dx, jdm;
-	GtkPlotPolar *plt;
+	GtkPlot *pt;
 
-	plt=GTK_PLOT_POLAR(plot);
+	plt=GTK_PLOT(plot);
 	jdm=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-	dx=fmod(jdm, (plt->cl->len));
-	cl=g_array_index(plt->cl, GdkRGBA, dx);
+	dx=fmod(jdm, (pt->cl->len));
+	cl=g_array_index(pt->cl, GdkRGBA, dx);
 	gtk_color_selection_set_current_rgba(GTK_COLOR_SELECTION(colour), &cl);
 }
 
@@ -96,6 +98,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	GtkWidget *content, *grid, *label;
 	GtkAdjustment *adj;
 	GdkRGBA cl;
+	GtkPlot *pt;
 	GtkPlotPolar *plt;
 	gdouble *ptr;
 	gint j;
@@ -108,6 +111,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	grid=gtk_grid_new();
 	gtk_widget_show(grid);
 	plt=GTK_PLOT_POLAR(plot);
+	pt=GTK_PLOT(plot);
 	label=gtk_label_new("Azimuthal axis text:");
 	gtk_widget_show(label);
 	gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
@@ -137,7 +141,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	label=gtk_label_new("Text size:");
 	gtk_widget_show(label);
 	gtk_grid_attach(GTK_GRID(grid), label, 0, 4, 1, 1);
-	str=pango_font_description_to_string(plt->lfont);
+	str=pango_font_description_to_string(pt->lfont);
 	butt1=gtk_font_button_new_with_font(str);
 	g_free(str);
 	gtk_widget_show(butt1);
@@ -154,7 +158,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	label=gtk_label_new("Tick label size:");
 	gtk_widget_show(label);
 	gtk_grid_attach(GTK_GRID(grid), label, 0, 6, 1, 1);
-	str=pango_font_description_to_string(plt->afont);
+	str=pango_font_description_to_string(pt->afont);
 	butt2=gtk_font_button_new_with_font(str);
 	g_free(str);
 	gtk_widget_show(butt2);
@@ -182,7 +186,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	atk_object_add_relationship(atk_widget, ATK_RELATION_LABELLED_BY, atk_label);
 	colour=gtk_color_selection_new();
 	gtk_color_selection_set_has_opacity_control(GTK_COLOR_SELECTION(colour), TRUE);
-	cl=g_array_index(plt->cl, GdkRGBA, 0);
+	cl=g_array_index(pt->cl, GdkRGBA, 0);
 	gtk_color_selection_set_current_rgba(GTK_COLOR_SELECTION(colour), &cl);
 	gtk_color_selection_set_has_palette(GTK_COLOR_SELECTION(colour), TRUE);
 	gtk_widget_show(colour);
@@ -451,6 +455,7 @@ int main(int argc, char *argv[])
 	AtkObject *atk_widget, *atk_label;
 	GArray *x, *y, *sz, *nx, *cla;
 	GdkRGBA cl;
+	GtkPlot *pt;
 	GtkPlotPolar *plt;
 	GtkWidget *grid, *grid2, *mnb, *mnu, *mni, *pane, *butt, *label;
 	GtkAdjustment *adj;
@@ -540,6 +545,7 @@ int main(int argc, char *argv[])
 	sz=g_array_new(FALSE, FALSE, sizeof(gint));
 	nx=g_array_new(FALSE, FALSE, sizeof(gint));
 	plt=GTK_PLOT_POLAR(plot);
+	pt=GTK_PLOT(plot);
 	(plt->flagd)=7;
 	j=0;
 	g_array_append_val(nx, j);
@@ -568,7 +574,7 @@ int main(int argc, char *argv[])
 	g_array_append_val(cla, cl);
 	{cl.red=0; cl.green=0; cl.blue=1; cl.alpha=0.8;}
 	g_array_append_val(cla, cl);
-	gtk_plot_polar_set_colour(plt, cla);
+	gtk_plot_set_colour(pt, cla);
 	g_array_unref(cla);
 	gtk_widget_show(plot);
 	gtk_paned_add2(GTK_PANED(pane), plot);

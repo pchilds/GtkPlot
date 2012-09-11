@@ -27,6 +27,7 @@
 #ifndef __GTK_PLOT_LINEAR_H__
 #	define __GTK_PLOT_LINEAR_H__
 #	include <gtk/gtk.h>
+#	include "gtkplot.h"
 	G_BEGIN_DECLS
 #	define GTK_PLOT_TYPE_LINEAR (gtk_plot_linear_get_type())
 #	define GTK_PLOT_LINEAR(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_PLOT_TYPE_LINEAR, GtkPlotLinear))
@@ -50,12 +51,10 @@
 	} GtkPlotLinearDisp;
 	struct _GtkPlotLinear
 	{
-		GtkDrawingArea parent;
+		GtkPlot parent;
 		GArray *xdata, *ydata; /* x and y data sets */
 		GArray *ind, *sizes; /* indices of first element and number of elements for each trace */
-		GArray *cl; /* colour and alpha of the plots */
 		gchar *xlab, *ylab; /* labels for the x and y axes */
-		PangoFontDescription *afont, *lfont; /* font descriptions for the tick mark and axis labels */
 		guint ptsize, linew; /* radii of the points and line width of the plot line */
 		guint xdp, ydp; /* number of decimal points for axes */
 		gint zmode; /* zoom mode flags */
@@ -64,7 +63,7 @@
 	};
 	struct _GtkPlotLinearClass
 	{
-		GtkDrawingAreaClass parent_class;
+		GtkPlotClass parent_class;
 		void (*moved) (GtkPlotLinear *plot);
 	};
 	gboolean gtk_plot_linear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
@@ -73,9 +72,7 @@
 	gboolean gtk_plot_linear_print_png(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_linear_print_svg(GtkWidget *widget, gchar *fout);
 	void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl);
-	void gtk_plot_linear_set_font(GtkPlotLinear *plot, PangoFontDescription *lf, PangoFontDescription *af);
 	void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz);
-	void gtk_plot_linear_set_colour(GtkPlotLinear *plot, GArray *cl);
 	GtkWidget *gtk_plot_linear_new(void);
 	G_END_DECLS
 #endif

@@ -4965,6 +4965,7 @@ gboolean gtk_plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, 
 
 gboolean gtk_plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx)
 {
+	GtkPlot *plt;
 	GtkPlotPolar *plot;
 	GtkPlotPolarPrivate *priv;
 	gdouble num, num3, thn, thx, dtt;
