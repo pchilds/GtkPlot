@@ -1752,13 +1752,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				if (((plot->flagd)&GTK_PLOT_POLAR_DISP_PNT)==0) /* straight lines */
 				{
-					for (k=0; k<(plot->ind->len); k++)
+					for (k=0; k<(plt->ind->len); k++)
 					{
 						ft=fmod(k,(plt->rd->len));
 						{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
 						cairo_set_source_rgba(cr, vv, wv, xv, yv);
-						ft=g_array_index((plot->ind), gint, k);
-						lt=g_array_index((plot->sizes), gint, k)+ft;
+						ft=g_array_index((plt->ind), gint, k);
+						lt=g_array_index((plt->sizes), gint, k)+ft;
 						for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 						{
 							r=g_array_index((plot->rdata), gdouble, ft);
@@ -2472,13 +2472,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				}
 				else /* spline interpolation to polar transform */
 				{
-					for (k=0; k<(plot->ind->len); k++)
+					for (k=0; k<(plt->ind->len); k++)
 					{
 						ft=fmod(k,(plt->rd->len));
 						{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
 						cairo_set_source_rgba(cr, vv, wv, xv, yv);
-						ft=g_array_index((plot->ind), gint, k);
-						lt=g_array_index((plot->sizes), gint, k)+ft;
+						ft=g_array_index((plt->ind), gint, k);
+						lt=g_array_index((plt->sizes), gint, k)+ft;
 						for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 						{
 							r=g_array_index((plot->rdata), gdouble, ft);
@@ -3278,13 +3278,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else if (((plot->flagd)&GTK_PLOT_POLAR_DISP_PNT)==0) /* straight lines only */
 			{
-				for (k=0; k<(plot->ind->len); k++)
+				for (k=0; k<(plt->ind->len); k++)
 				{
 					ft=fmod(k,(plt->rd->len));
 					{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
 					cairo_set_source_rgba(cr, vv, wv, xv, yv);
-					ft=g_array_index((plot->ind), gint, k);
-					lt=g_array_index((plot->sizes), gint, k)+ft;
+					ft=g_array_index((plt->ind), gint, k);
+					lt=g_array_index((plt->sizes), gint, k)+ft;
 					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 					{
 						r=g_array_index((plot->rdata), gdouble, ft);
@@ -4078,13 +4078,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else /* spline interpolation to polar transform */
 			{
-				for (k=0; k<(plot->ind->len); k++)
+				for (k=0; k<(plt->ind->len); k++)
 				{
 					ft=fmod(k,(plt->rd->len));
 					{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
 					cairo_set_source_rgba(cr, vv, wv, xv, yv);
-					ft=g_array_index((plot->ind), gint, k);
-					lt=g_array_index((plot->sizes), gint, k)+ft;
+					ft=g_array_index((plt->ind), gint, k);
+					lt=g_array_index((plt->sizes), gint, k)+ft;
 					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 					{
 						r=g_array_index((plot->rdata), gdouble, ft);
@@ -4879,13 +4879,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		}
 		else if (((plot->flagd)&GTK_PLOT_POLAR_DISP_PTS)!=0) /* points only */
 		{
-			for (k=0; k<(plot->ind->len); k++)
+			for (k=0; k<(plt->ind->len); k++)
 			{
 				ft=fmod(k,(plt->rd->len));
 				{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
 				cairo_set_source_rgba(cr, vv, wv, xv, yv);
-				ft=g_array_index((plot->ind), gint, k);
-				lt=g_array_index((plot->sizes), gint, k)+ft;
+				ft=g_array_index((plt->ind), gint, k);
+				lt=g_array_index((plt->sizes), gint, k)+ft;
 				for (j=ft; j<lt; j++)
 				{
 					r=g_array_index((plot->rdata), gdouble, j);
@@ -5535,67 +5535,159 @@ void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray 
 {
 	if (plot->rdata) g_array_free((plot->rdata), FALSE);
 	if (plot->thdata) g_array_free((plot->thdata), FALSE);
-	if (plot->ind) g_array_free((plot->ind), FALSE);
-	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	{(plot->rdata)=g_array_ref(rd); (plot->thdata)=g_array_ref(td); (plot->ind)=g_array_ref(nd); (plot->sizes)=g_array_ref(sz);}
+	{(plot->rdata)=g_array_ref(rd); (plot->thdata)=g_array_ref(td);}
+	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz);
 }
 
 static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
 {
-	GtkPlotPolarPrivate *priv;
-
-	priv=GTK_PLOT_POLAR_GET_PRIVATE(plot);
 	if (plot->rlab) g_free(plot->rlab);
 	if (plot->thlab) g_free(plot->thlab);
 	if (plot->rdata) g_free(plot->rdata);
 	if (plot->thdata) g_free(plot->thdata);
-	if (plot->ind) g_array_free((plot->ind), FALSE);
-	if (plot->sizes) g_array_free((plot->sizes), FALSE);
 }
 
 static void gtk_plot_polar_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-	GtkPlotPolarPrivate *priv;
-
-	priv=GTK_PLOT_POLAR_GET_PRIVATE(object);
 	switch (prop_id)
 	{
-		case PROP_BRN: {(priv->bounds.rmin)=g_value_get_double(value); break;}
-		case PROP_BRX: {(priv->bounds.rmax)=g_value_get_double(value); break;}
-		case PROP_BTN: {(priv->bounds.thmin)=g_value_get_double(value); break;}
-		case PROP_BTX: {(priv->bounds.thmax)=g_value_get_double(value); break;}
-		case PROP_CR: {(priv->centre.r)=g_value_get_double(value); break;}
-		case PROP_CT: {(priv->centre.th)=g_value_get_double(value); break;}
-		case PROP_RT: {(priv->ticks.r)=g_value_get_uint(value); break;}
-		case PROP_ZIT: {(priv->ticks.zin)=g_value_get_uint(value); break;}
-		case PROP_ZTM: {(priv->ticks.z2m)=g_value_get_uint(value); break;}
-		case PROP_ZC: {(priv->ticks.zc)=g_value_get_uint(value); break;}
-		case PROP_RC: {(priv->rcs)=g_value_get_uint(value); break;}
-		case PROP_TC: {(priv->thcs)=g_value_get_uint(value); break;}
-		default: {G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec); break;}
+		case PROP_BRN:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin)=g_value_get_double(value);
+			break;
+		}
+		case PROP_BRX:
+		{
+		(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax)=g_value_get_double(value);
+			break;
+		}
+		case PROP_BTN:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin)=g_value_get_double(value);
+			break;
+		}
+		case PROP_BTX:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax)=g_value_get_double(value);
+			break;
+		}
+		case PROP_CR:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r)=g_value_get_double(value);
+			break;
+		}
+		case PROP_CT:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th)=g_value_get_double(value);
+			break;
+		}
+		case PROP_RT:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r)=g_value_get_uint(value);
+			break;
+		}
+		case PROP_ZIT:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin)=g_value_get_uint(value);
+			break;
+		}
+		case PROP_ZTM:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m)=g_value_get_uint(value);
+			break;
+		}
+		case PROP_ZC:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc)=g_value_get_uint(value);
+			break;
+		}
+		case PROP_RC:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs)=g_value_get_uint(value);
+			break;
+		}
+		case PROP_TC:
+		{
+			(GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs)=g_value_get_uint(value);
+			break;
+		}
+		default:
+		{
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+		}
 	}
 }
 
 static void gtk_plot_polar_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-	GtkPlotPolarPrivate *priv;
-
-	priv=GTK_PLOT_POLAR_GET_PRIVATE(object);
 	switch (prop_id)
 	{
-		case PROP_BRN: {g_value_set_double(value, (priv->bounds.rmin)); break;}
-		case PROP_BRX: {g_value_set_double(value, (priv->bounds.rmax)); break;}
-		case PROP_BTN: {g_value_set_double(value, (priv->bounds.thmin)); break;}
-		case PROP_BTX: {g_value_set_double(value, (priv->bounds.thmax)); break;}
-		case PROP_CR: {g_value_set_double(value, (priv->centre.r)); break;}
-		case PROP_CT: {g_value_set_double(value, (priv->centre.th)); break;}
-		case PROP_RT: {g_value_set_uint(value, (priv->ticks.r)); break;}
-		case PROP_ZIT: {g_value_set_uint(value, (priv->ticks.zin)); break;}
-		case PROP_ZTM: {g_value_set_uint(value, (priv->ticks.z2m)); break;}
-		case PROP_ZC: {g_value_set_uint(value, (priv->ticks.zc)); break;}
-		case PROP_RC: {g_value_set_uint(value, (priv->rcs)); break;}
-		case PROP_TC: {g_value_set_uint(value, (priv->thcs)); break;}
-		default: {G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec); break;}
+		case PROP_BRN:
+		{
+			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin));
+			break;
+		}
+		case PROP_BRX:
+		{
+			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax));
+			break;
+		}
+		case PROP_BTN:
+		{
+			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin));
+			break;
+		}
+		case PROP_BTX:
+		{
+			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax));
+			break;
+		}
+		case PROP_CR:
+		{
+			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r));
+			break;
+		}
+		case PROP_CT:
+		{
+			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th));
+			break;
+		}
+		case PROP_RT:
+		{
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r));
+			break;
+		}
+		case PROP_ZIT:
+		{
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin));
+			break;
+		}
+		case PROP_ZTM:
+		{
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m));
+			break;
+		}
+		case PROP_ZC:
+		{
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc));
+			break;
+		}
+		case PROP_RC:
+		{
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs));
+			break;
+		}
+		case PROP_TC:
+		{
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs));
+			break;
+		}
+		default:
+		{
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
+		}
 	}
 }
 
@@ -5654,7 +5746,7 @@ static void gtk_plot_polar_init(GtkPlotPolar *plot)
 	{(priv->ticks.r)=4; (priv->ticks.zin)=12; (priv->ticks.z2m)=2; (priv->ticks.zc)=40.0;}
 	{(priv->rcs)=5; (priv->thcs)=6; (plot->rdp)=2; (plot->thdp)=2;}
 	{(priv->flagr)=0; (priv->flaga)=0;}
-	{(plot->rdata)=NULL; (plot->thdata)=NULL; (plot->ind)=NULL; (plot->sizes)=NULL;}
+	{(plot->rdata)=NULL; (plot->thdata)=NULL;}
 	{(plot->rlab)=g_strdup("Amplitude"); (plot->thlab)=g_strdup("Azimuth");}
 	{(plot->flagd)=(GTK_PLOT_POLAR_DISP_PTS|GTK_PLOT_POLAR_DISP_LIN); (plot->ptsize)=5; (plot->linew)=2;}
 	(plot->zmode)=(GTK_PLOT_POLAR_ZOOM_RDL|GTK_PLOT_POLAR_ZOOM_AZM);

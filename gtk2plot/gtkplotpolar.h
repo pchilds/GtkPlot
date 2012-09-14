@@ -56,7 +56,6 @@
 	{
 		GtkPlot parent;
 		GArray *rdata, *thdata; /* radial and azimuthal data values */
-		GArray *ind, *sizes; /* indices of first element and number of elements for each trace */
 		gchar *rlab, *thlab; /* labels for the radial and azimuthal axis */
 		gdouble rps, thps; /* radial and azimuthal position of mouse */
 		guint ptsize, linew; /* point radii and line width */

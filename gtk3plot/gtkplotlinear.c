@@ -2930,13 +2930,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_set_line_width(cr, (plot->linew));
 			if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_PTS)!=0) /* lines and points */
 			{
-				for (k=0; k<(plot->ind->len); k++)
+				for (k=0; k<(pt->ind->len); k++)
 				{
-					ft=fmod(k,(plt->cl->len));
-					vv=g_array_index((plt->cl), GdkRGBA, ft);
+					ft=fmod(k,(pt->cl->len));
+					vv=g_array_index((pt->cl), GdkRGBA, ft);
 					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
-					ft=g_array_index((plot->ind), gint, k);
-					lt=g_array_index((plot->sizes), gint, k)+ft;
+					ft=g_array_index((pt->ind), gint, k);
+					lt=g_array_index((pt->sizes), gint, k)+ft;
 					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
 					yv=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
 					if (xv<xl)
@@ -3280,13 +3280,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else /* lines only */
 			{
-				for (k=0;k<(plot->ind->len);k++)
+				for (k=0;k<(pt->ind->len);k++)
 				{
-					ft=fmod(k,(plt->cl->len));
-					vv=g_array_index((plt->cl), GdkRGBA, ft);
+					ft=fmod(k,(pt->cl->len));
+					vv=g_array_index((pt->cl), GdkRGBA, ft);
 					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
-					ft=g_array_index((plot->ind), gint, k);
-					lt=g_array_index((plot->sizes), gint, k)+ft;
+					ft=g_array_index((pt->ind), gint, k);
+					lt=g_array_index((pt->sizes), gint, k)+ft;
 					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
 					yv=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
 					if (xv<xl)
@@ -3637,13 +3637,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		}
 		else if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_PTS)!=0) /* points only */
 		{
-			for (k=0;k<(plot->ind->len);k++)
+			for (k=0;k<(pt->ind->len);k++)
 			{
-				ft=fmod(k,(plt->cl->len));
-				vv=g_array_index((plt->cl), GdkRGBA, ft);
+				ft=fmod(k,(pt->cl->len));
+				vv=g_array_index((pt->cl), GdkRGBA, ft);
 				cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
-				ft=g_array_index((plot->ind), gint, k);
-				lt=g_array_index((plot->sizes), gint, k)+ft;
+				ft=g_array_index((pt->ind), gint, k);
+				lt=g_array_index((pt->sizes), gint, k)+ft;
 				xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
 				yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
 				if ((yv<=yl)&&(yv>=yu)&&(xv>=xl)&&(xv<=xu))
@@ -4167,74 +4167,65 @@ void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArra
 {
 	if (plot->xdata) g_array_free((plot->xdata), FALSE);
 	if (plot->ydata) g_array_free((plot->ydata), FALSE);
-	if (plot->ind) g_array_free((plot->ind), FALSE);
-	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	{(plot->xdata)=g_array_ref(xd); (plot->ydata)=g_array_ref(yd); (plot->ind)=g_array_ref(nd); (plot->sizes)=g_array_ref(sz);}
+	{(plot->xdata)=g_array_ref(xd); (plot->ydata)=g_array_ref(yd);}
+	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz);
 }
 
 static void gtk_plot_linear_finalise(GtkPlotLinear *plot)
 {
-	GtkPlotLinearPrivate *priv;
-
-	priv=GTK_PLOT_LINEAR_GET_PRIVATE(plot);
 	if (plot->xlab) g_free(plot->xlab);
 	if (plot->ylab) g_free(plot->ylab);
 	if (plot->xdata) g_array_free((plot->xdata), FALSE);
 	if (plot->ydata) g_array_free((plot->ydata), FALSE);
-	if (plot->ind) g_array_free((plot->ind), FALSE);
-	if (plot->sizes) g_array_free((plot->sizes), FALSE);
 }
 
 static void gtk_plot_linear_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
-{
-	GtkPlotLinearPrivate *priv;
-
-	priv=GTK_PLOT_LINEAR_GET_PRIVATE(object);
+{;
 	switch (prop_id)
 	{
 		case PROP_BXN:
 		{
-			priv->bounds.xmin=g_value_get_double(value);
+			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin=g_value_get_double(value);
 			break;
 		}
 		case PROP_BXX:
 		{
-			priv->bounds.xmax=g_value_get_double(value);
+			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax=g_value_get_double(value);
 			break;
 		}
 		case PROP_BYN:
 		{
-			priv->bounds.ymin=g_value_get_double(value);
+			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin=g_value_get_double(value);
 			break;
 		}
 		case PROP_BYX:
 		{
-			priv->bounds.ymax=g_value_get_double(value);
+			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax=g_value_get_double(value);
 			break;
 		}
 		case PROP_XTJ:
 		{
-			priv->ticks.xj=g_value_get_uint(value);
+			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj=g_value_get_uint(value);
 			break;
 		}
 		case PROP_YTJ:
 		{
-			priv->ticks.yj=g_value_get_uint(value);
+			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj=g_value_get_uint(value);
 			break;
 		}
 		case PROP_XTN:
 		{
-			priv->ticks.xn=g_value_get_uint(value);
+			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn=g_value_get_uint(value);
 			break;
 		}
 		case PROP_YTN:
 		{
-			priv->ticks.yn=g_value_get_uint(value);
+			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn=g_value_get_uint(value);
 			break;
 		}
 		case PROP_FA:
 		{
-			priv->flaga=g_value_get_uint(value);
+			GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga=g_value_get_uint(value);
 			break;
 		}
 		default:
@@ -4247,54 +4238,51 @@ static void gtk_plot_linear_set_property(GObject *object, guint prop_id, const G
 
 static void gtk_plot_linear_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-	GtkPlotLinearPrivate *priv;
-
-	priv=GTK_PLOT_LINEAR_GET_PRIVATE(object);
 	switch (prop_id)
 	{
 		case PROP_BXN:
 		{
-			g_value_set_double(value, priv->bounds.xmin);
+			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin);
 			break;
 		}
 		case PROP_BXX:
 		{
-			g_value_set_double(value, priv->bounds.xmax);
+			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax);
 			break;
 		}
 		case PROP_BYN:
 		{
-			g_value_set_double(value, priv->bounds.ymin);
+			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin);
 			break;
 		}
 		case PROP_BYX:
 		{
-			g_value_set_double(value, priv->bounds.ymax);
+			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax);
 			break;
 		}
 		case PROP_XTJ:
 		{
-			g_value_set_uint(value, priv->ticks.xj);
+			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj);
 			break;
 		}
 		case PROP_YTJ:
 		{
-			g_value_set_uint(value, priv->ticks.yj);
+			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj);
 			break;
 		}
 		case PROP_XTN:
 		{
-			g_value_set_uint(value, priv->ticks.xn);
+			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn);
 			break;
 		}
 		case PROP_YTN:
 		{
-			g_value_set_uint(value, priv->ticks.yn);
+			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn);
 			break;
 		}
 		case PROP_FA:
 		{
-			g_value_set_uint(value, priv->flaga);
+			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga);
 			break;
 		}
 		default:
@@ -4351,7 +4339,7 @@ static void gtk_plot_linear_init(GtkPlotLinear *plot)
 	{(priv->range.xj)=0; (priv->range.yj)=0; (priv->range.xn)=1; (priv->range.yn)=1;}
 	{(plot->xdp)=2; (plot->ydp)=2;}
 	{(priv->flaga)=0; (priv->flagr)=0;}
-	{(plot->xdata)=NULL; (plot->ydata)=NULL; (plot->ind)=NULL; (plot->sizes)=NULL;}
+	{(plot->xdata)=NULL; (plot->ydata)=NULL;}
 	{(plot->xlab)=g_strdup("Domain"); (plot->ylab)=g_strdup("Amplitude");}
 	{(plot->flagd)=GTK_PLOT_LINEAR_DISP_LIN; (plot->ptsize)=5; (plot->linew)=2;}
 	(plot->zmode)=(GTK_PLOT_LINEAR_ZOOM_VRT|GTK_PLOT_LINEAR_ZOOM_HZT);
