@@ -60,7 +60,7 @@ void dpa(GtkWidget *widget, gpointer data)
 	ds2=pango_font_description_from_string(gtk_font_button_get_font_name(GTK_FONT_BUTTON(butt2)));
 	gtk_plot_set_font(pt, ds1, ds2);
 	pango_font_description_free(ds1); pango_font_description_free(ds2);
-	k=(plt->ind->len);
+	k=(pt->ind->len);
 	car=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), k);
 	cag=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), k);
 	cab=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), k);
@@ -218,7 +218,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	label=gtk_label_new("Index of Plot:");
 	gtk_widget_show(label);
 	gtk_table_attach(GTK_TABLE(table), label, 0, 1, 8, 9, GTK_FILL|GTK_SHRINK|GTK_EXPAND, GTK_FILL|GTK_SHRINK|GTK_EXPAND, 2, 2);
-	j=(plt->ind->len);
+	j=(pt->ind->len);
 	adj=(GtkAdjustment*) gtk_adjustment_new(0, 0, j-1, 1.0, 5.0, 0.0);
 	jix=gtk_spin_button_new(adj, 0, 0);
 	g_signal_connect(G_OBJECT(jix), "value-changed", G_CALLBACK(upj), NULL);
@@ -389,6 +389,7 @@ void opd(GtkWidget *widget, gpointer data)
 void ad(GtkWidget *widget, gpointer data)
 {
 	GArray *x, *y, *sz, *nx;
+	GtkPlot *pt;
 	GtkPlotLinear *plt;
 	GtkWidget *wfile;
 	gdouble xi, xf, lcl, mny, mxy;
@@ -411,16 +412,17 @@ void ad(GtkWidget *widget, gpointer data)
 		if (g_file_get_contents(fin, &contents, NULL, &Err))
 		{
 			plt=GTK_PLOT_LINEAR(plot);
+			pt=GTK_PLOT(plot);
 			x=g_array_new(FALSE, FALSE, sizeof(gdouble));
 			y=g_array_new(FALSE, FALSE, sizeof(gdouble));
 			sz=g_array_new(FALSE, FALSE, sizeof(gint));
 			nx=g_array_new(FALSE, FALSE, sizeof(gint));
 			{sal=0; lc=0; lc2=0;}
-			while (sal<(plt->sizes->len))
+			while (sal<(pt->sizes->len))
 			{
-				lc2=g_array_index((plt->ind), gint, sal);
+				lc2=g_array_index((pt->ind), gint, sal);
 				g_array_append_val(nx, lc2);
-				lc=g_array_index((plt->sizes), gint, sal);
+				lc=g_array_index((pt->sizes), gint, sal);
 				g_array_append_val(sz, lc);
 				lc+=lc2;
 				for (k=lc2;k<lc;k++)

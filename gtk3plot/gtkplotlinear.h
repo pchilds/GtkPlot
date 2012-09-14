@@ -53,7 +53,6 @@
 	{
 		GtkPlot parent;
 		GArray *xdata, *ydata; /* x and y data sets */
-		GArray *ind, *sizes; /* indices of first element and number of elements for each trace */
 		gchar *xlab, *ylab; /* labels for the x and y axes */
 		guint ptsize, linew; /* radii of the points and line width of the plot line */
 		guint xdp, ydp; /* number of decimal points for axes */
