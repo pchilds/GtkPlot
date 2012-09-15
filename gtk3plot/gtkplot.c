@@ -46,6 +46,7 @@ void gtk_plot_linear_set_indices(GtkPlot *plot, GArray *nd, GArray *sz, GArray *
 {
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
+	if (plot->stride) g_array_free((plot->stride), FALSE);
 	{(plot->ind)=g_array_ref(nd); (plot->sizes)=g_array_ref(sz); (plot->stride)=g_array_ref(st);}
 }
 
