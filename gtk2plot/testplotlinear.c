@@ -633,7 +633,7 @@ int main(int argc, char *argv[])
 		g_array_append_val(y, val);
 	}
 	g_array_append_val(sz, j);
-	gtk_plot_linear_set_data(plt, x, y, nx, sz);
+	gtk_plot_linear_set_data(plt, x, y, nx, sz, st);
 	{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st);}
 	(plt->ptsize)=4;
 	car=g_array_new(FALSE, FALSE, sizeof(gdouble));
