@@ -342,16 +342,12 @@ void opd(GtkWidget *widget, gpointer data)
 
 void ad(GtkWidget *widget, gpointer data)
 {
-<<<<<<< HEAD
-	GArray *x, *y, *sz, *nx;
-=======
 	GArray *nx, *st, *sz, *x, *y;
 	gchar *contents, *fin=NULL, *str;
 	gchar **strary, **strat;
 	gdouble lcl, mny, mxy, xi, xf;
 	GError *Err;
 	gint lc, lc2;
->>>>>>> master
 	GtkPlot *pt;
 	GtkPlotLinear *plt;
 	GtkWidget *wfile;
@@ -381,11 +377,8 @@ void ad(GtkWidget *widget, gpointer data)
 			{sal=0; lc=0;}
 			while (sal<(plt->sizes->len))
 			{
-<<<<<<< HEAD
-=======
 				lc=1;
 				g_array_append_val(st, lc);
->>>>>>> master
 				lc2=g_array_index((pt->ind), gint, sal);
 				g_array_append_val(nx, lc2);
 				lc=g_array_index((pt->sizes), gint, sal);
@@ -473,14 +466,6 @@ int main(int argc, char *argv[])
 	AtkObject *atk_label, *atk_widget;
 	GArray *cla, *nx, *st, *sz, *x, *y;
 	GdkRGBA cl;
-<<<<<<< HEAD
-	GtkPlot *pt;
-	GtkPlotLinear *plt;
-	GtkWidget *grid, *grid2, *mnb, *mnu, *mni, *pane, *butt, *label;
-	GtkAdjustment *adj;
-	guint j;
-=======
->>>>>>> master
 	gdouble val;
 	GtkAccelGroup *accel_group=NULL;
 	GtkAdjustment *adj;

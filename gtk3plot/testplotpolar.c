@@ -341,16 +341,12 @@ void opd(GtkWidget *widget, gpointer data)
 
 void ad(GtkWidget *widget, gpointer data)
 {
-<<<<<<< HEAD
-	GArray *x, *y, *sz, *nx;
-=======
 	GArray *nx, *st, *sz, *x, *y;
 	gchar *contents, *fin=NULL, *str;
 	gchar **strary, **strat;
 	gdouble lcl, mny, mxy, xi, xf;
 	GError *Err;
 	gint lc, lc2;
->>>>>>> master
 	GtkPlot *pt;
 	GtkPlotPolar *plt;
 	GtkWidget *wfile;
@@ -380,11 +376,8 @@ void ad(GtkWidget *widget, gpointer data)
 			{sal=0; lc=0;}
 			while (sal<(plt->sizes->len))
 			{
-<<<<<<< HEAD
-=======
 				lc=1;
 				g_array_append_val(st, lc);
->>>>>>> master
 				lc2=g_array_index((pt->ind), gint, sal);
 				g_array_append_val(nx, lc2);
 				lc=g_array_index((pt->sizes), gint, sal);
@@ -472,20 +465,13 @@ int main(int argc, char *argv[])
 	AtkObject *atk_label, *atk_widget;
 	GArray *cla, *nx, *st, *sz, *x, *y;
 	GdkRGBA cl;
-<<<<<<< HEAD
-	GtkPlot *pt;
-	GtkPlotPolar *plt;
-	GtkWidget *grid, *grid2, *mnb, *mnu, *mni, *pane, *butt, *label;
-	GtkAdjustment *adj;
-=======
->>>>>>> master
-	guint j;
 	gdouble valx, valy;
 	GtkAccelGroup *accel_group=NULL;
 	GtkAdjustment *adj;
 	GtkPlot *pt;
 	GtkPlotPolar *plt;
 	GtkWidget *butt, *grid, *grid2, *label, *mnb, *mni, *mnu, *pane;
+	guint j;
 
 	gtk_init(&argc, &argv);
 	window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -590,13 +576,8 @@ int main(int argc, char *argv[])
 		g_array_append_val(y, valy);
 	}
 	g_array_append_val(sz, j);
-<<<<<<< HEAD
-	gtk_plot_polar_set_data(plt, y, x, nx, sz);
-	{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz);}
-=======
 	gtk_plot_polar_set_data(plt, y, x, nx, sz, st);
 	{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st);}
->>>>>>> master
 	(plt->ptsize)=4;
 	cla=g_array_new(FALSE, FALSE, sizeof(GdkRGBA));
 	{cl.red=0; cl.green=0; cl.blue=0; cl.alpha=0.8;}

@@ -158,15 +158,9 @@ static void drawz(GtkWidget *widget, cairo_t *cr)
 
 static void draw(GtkWidget *widget, cairo_t *cr)
 {
-<<<<<<< HEAD
-	GtkPlot *plt;
-	GtkPlotLinear *plot;
-	GtkPlotLinearPrivate *priv;
-=======
 	cairo_matrix_t mtr2, mtr3;
 	gchar *str1=NULL, *str2=".", *str3=NULL;
 	gchar lbl[BFL];
->>>>>>> master
 	GdkRGBA vv;
 	gdouble dt, lr1, lr2, delx, dely;
 	gint dtt, ft, hg, j, k, lt, st, tf, to, tn, tnn, tx, tz, wd, xa, xl, xr, xr2, xt, xu, xv, xvn, xw, ya, yl, yr, yr2, yu, yv, yvn, yw;
@@ -2942,14 +2936,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					vv=g_array_index((pt->cl), GdkRGBA, ft);
 					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 					ft=g_array_index((pt->ind), gint, k);
-<<<<<<< HEAD
-					lt=g_array_index((pt->sizes), gint, k)+ft;
-=======
 					if (ft>=(plot->ydata->len)) break;
 					st=g_array_index((plt->stride), gint, k);
 					lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
 					if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
->>>>>>> master
 					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
 					yv=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
 					if (xv<xl)
@@ -3299,14 +3289,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					vv=g_array_index((pt->cl), GdkRGBA, ft);
 					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 					ft=g_array_index((pt->ind), gint, k);
-<<<<<<< HEAD
-					lt=g_array_index((pt->sizes), gint, k)+ft;
-=======
 					if (ft>=(plot->ydata->len)) break;
 					st=g_array_index((plt->stride), gint, k);
 					lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
 					if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
->>>>>>> master
 					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
 					yv=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
 					if (xv<xl)
@@ -3663,14 +3649,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				vv=g_array_index((pt->cl), GdkRGBA, ft);
 				cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 				ft=g_array_index((pt->ind), gint, k);
-<<<<<<< HEAD
-				lt=g_array_index((pt->sizes), gint, k)+ft;
-=======
 				if (ft>=(plot->ydata->len)) break;
 				st=g_array_index((plt->stride), gint, k);
 				lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
 				if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
->>>>>>> master
 				xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
 				yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
 				if ((yv<=yl)&&(yv>=yu)&&(xv>=xl)&&(xv<=xu))
