@@ -50,11 +50,12 @@ void gtk_plot_set_colour(GtkPlot *plot, GArray *rd, GArray *gr, GArray *bl, GArr
 	{(plot->rd)=g_array_ref(rd); (plot->gr)=g_array_ref(gr); (plot->bl)=g_array_ref(bl); (plot->al)=g_array_ref(al);}
 }
 
-void gtk_plot_set_indices(GtkPlot *plot, GArray *nx, GArray *sz)
+void gtk_plot_set_indices(GtkPlot *plot, GArray *nx, GArray *sz, GArray *st)
 {
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	{(plot->ind)=g_array_ref(nx); (plot->sizes)=g_array_ref(sz);}
+	if (plot->stride) g_array_free((plot->stride), FALSE);
+	{(plot->ind)=g_array_ref(nx); (plot->sizes)=g_array_ref(sz); (plot->stride)=g_array_ref(st);}
 }
 
 void gtk_plot_set_index(GtkPlot *plot, GArray *nx)
@@ -67,6 +68,7 @@ static void gtk_plot_finalise(GtkPlot *plot)
 {
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
+	if (plot->stride) g_array_free((plot->stride), FALSE);
 	if (plot->afont) pango_font_description_free(plot->afont);
 	if (plot->lfont) pango_font_description_free(plot->lfont);
 	if (plot->rd) g_array_free((plot->rd), FALSE);
@@ -92,7 +94,7 @@ static void gtk_plot_init(GtkPlot *plot)
 	{pango_font_description_set_family((plot->afont), "sans"); pango_font_description_set_family((plot->lfont), "sans");}
 	{pango_font_description_set_style((plot->afont), PANGO_STYLE_NORMAL); pango_font_description_set_style((plot->lfont), PANGO_STYLE_NORMAL);}
 	{pango_font_description_set_size((plot->afont), 12*PANGO_SCALE); pango_font_description_set_size((plot->lfont), 12*PANGO_SCALE);}
-	{(plot->sizes)=NULL; (plot->ind)=NULL;}
+	{(plot->sizes)=NULL; (plot->ind)=NULL; (plot->stride)=NULL;}
 	(plot->rd)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
 	(plot->gr)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);
 	(plot->bl)=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 10);

@@ -42,11 +42,11 @@ void gtk_plot_set_colour(GtkPlot *plot, GArray *cl)
 	(plot->cl)=g_array_ref(cl);
 }
 
-void gtk_plot_linear_set_indices(GtkPlot *plot, GArray *nd, GArray *sz)
+void gtk_plot_linear_set_indices(GtkPlot *plot, GArray *nd, GArray *sz, GArray *st)
 {
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	{(plot->ind)=g_array_ref(nd); (plot->sizes)=g_array_ref(sz);}
+	{(plot->ind)=g_array_ref(nd); (plot->sizes)=g_array_ref(sz); (plot->stride)=g_array_ref(st);}
 }
 
 void gtk_plot_linear_set_index(GtkPlot *plot, GArray *nd)
@@ -59,6 +59,7 @@ static void gtk_plot_finalise(GtkPlot *plot)
 {
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
+	if (plot->stride) g_array_free((plot->stride), FALSE);
 	if (plot->afont) pango_font_description_free(plot->afont);
 	if (plot->lfont) pango_font_description_free(plot->lfont);
 	if (plot->cl) g_array_free((plot->cl), FALSE);
@@ -82,7 +83,7 @@ static void gtk_plot_init(GtkPlot *plot)
 	{pango_font_description_set_style((plot->afont), PANGO_STYLE_NORMAL); pango_font_description_set_style((plot->lfont), PANGO_STYLE_NORMAL);}
 	{pango_font_description_set_size((plot->afont), 12*PANGO_SCALE); pango_font_description_set_size((plot->lfont), 12*PANGO_SCALE);}
 	(plot->cl)=g_array_sized_new(FALSE, FALSE, sizeof(GdkRGBA), 7);
-	{(plot->ind)=NULL; (plot->sizes)=NULL;}
+	{(plot->ind)=NULL; (plot->sizes)=NULL; (plot->stride)=NULL;}
 	{cl.red=0; cl.green=0; cl.blue=0; cl.alpha=0.8;}
 	g_array_append_val((plot->cl), cl);
 	{cl.red=1; cl.green=0; cl.blue=0; cl.alpha=0.8;}
