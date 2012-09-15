@@ -510,8 +510,8 @@ void upg(GtkWidget *widget, gpointer data)
 
 int main(int argc, char *argv[])
 {
-	AtkObject *atk_widget, *atk_label;
-	GArray *x, *y, *sz, *nx, *car, *cab, *cag, *caa;
+	AtkObject *atk_label, *atk_widget;
+	GArray *x, *y, *st, *sz, *nx, *car, *cab, *cag, *caa;
 	gdouble fll, valx, valy;
 	GtkAccelGroup *accel_group=NULL;
 	GtkAdjustment *adj;

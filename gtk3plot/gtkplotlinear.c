@@ -4172,12 +4172,12 @@ void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl)
 	{(plot->xlab)=g_strdup(xl); (plot->ylab)=g_strdup(yl);}
 }
 
-void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz)
+void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st)
 {
 	if (plot->xdata) g_array_free((plot->xdata), FALSE);
 	if (plot->ydata) g_array_free((plot->ydata), FALSE);
 	{(plot->xdata)=g_array_ref(xd); (plot->ydata)=g_array_ref(yd);}
-	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz);
+	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
 }
 
 static void gtk_plot_linear_finalise(GtkPlotLinear *plot)

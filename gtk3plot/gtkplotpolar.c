@@ -1755,10 +1755,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						vv=g_array_index((plt->cl), GdkRGBA, ft);
 						cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 						ft=g_array_index((plt->ind), gint, k);
-						if (ft>=(plot->ydata->len)) break;
+						if (ft>=(plot->rdata->len)) break;
 						st=g_array_index((plt->stride), gint, k);
 						lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
-						if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
+						if (lt>(plot->rdata->len)) lt=(plot->rdata->len);
 						for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 						{
 							r=g_array_index((plot->rdata), gdouble, ft);
@@ -2478,10 +2478,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						vv=g_array_index((plt->cl), GdkRGBA, ft);
 						cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 						ft=g_array_index((plt->ind), gint, k);
-						if (ft>=(plot->ydata->len)) break;
+						if (ft>=(plot->rdata->len)) break;
 						st=g_array_index((plt->stride), gint, k);
 						lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
-						if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
+						if (lt>(plot->rdata->len)) lt=(plot->rdata->len);
 						for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 						{
 							r=g_array_index((plot->rdata), gdouble, ft);
@@ -3287,10 +3287,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					vv=g_array_index((plt->cl), GdkRGBA, ft);
 					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 					ft=g_array_index((plt->ind), gint, k);
-					if (ft>=(plot->ydata->len)) break;
+					if (ft>=(plot->rdata->len)) break;
 					st=g_array_index((plt->stride), gint, k);
 					lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
-					if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
+					if (lt>(plot->rdata->len)) lt=(plot->rdata->len);
 					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 					{
 						r=g_array_index((plot->rdata), gdouble, ft);
@@ -4090,10 +4090,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					vv=g_array_index((plt->cl), GdkRGBA, ft);
 					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 					ft=g_array_index((plt->ind), gint, k);
-					if (ft>=(plot->ydata->len)) break;
+					if (ft>=(plot->rdata->len)) break;
 					st=g_array_index((plt->stride), gint, k);
 					lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
-					if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
+					if (lt>(plot->rdata->len)) lt=(plot->rdata->len);
 					for (ssx=MY_2PI; ssx>-10; ssx-=MY_2PI)
 					{
 						r=g_array_index((plot->rdata), gdouble, ft);
@@ -4894,10 +4894,10 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				vv=g_array_index((plt->cl), GdkRGBA, ft);
 				cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 				ft=g_array_index((plt->ind), gint, k);
-				if (ft>=(plot->ydata->len)) break;
+				if (ft>=(plot->rdata->len)) break;
 				st=g_array_index((plt->stride), gint, k);
 				lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
-				if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
+				if (lt>(plot->rdata->len)) lt=(plot->rdata->len);
 				for (j=ft; j<lt; j+=st)
 				{
 					r=g_array_index((plot->rdata), gdouble, j);
@@ -5533,12 +5533,12 @@ void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl)
 	{(plot->rlab)=g_strdup(rl); (plot->thlab)=g_strdup(tl);}
 }
 
-void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz)
+void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, Garray *st)
 {
 	if (plot->rdata) g_array_free((plot->rdata), FALSE);
 	if (plot->thdata) g_array_free((plot->thdata), FALSE);
 	{(plot->rdata)=g_array_ref(rd); (plot->thdata)=g_array_ref(td);}
-	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz);
+	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
 }
 
 static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
