@@ -39,7 +39,7 @@
 	struct _GtkPlot
 	{
 		GtkDrawingArea parent;
-		GArray *ind, *sizes; /* indices of first element and number of elements for each trace */
+		GArray *ind, *sizes, *stride; /* indices of first element, number of elements for each trace and spacing in array between elements of the same plot*/
 		GArray *rd, *gr, *bl, *al; /* colour and alpha of the plots */
 		PangoFontDescription *afont, *lfont; /* font descriptions for the tick mark and axis labels */
 	};
@@ -49,7 +49,7 @@
 	};
 	void gtk_plot_set_font(GtkPlot *plot, PangoFontDescription *lf, PangoFontDescription *af);
 	void gtk_plot_set_colour(GtkPlot *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al);
-	void gtk_plot_set_indices(GtkPlot *plot, GArray *nd, GArray *sz);
+	void gtk_plot_set_indices(GtkPlot *plot, GArray *nd, GArray *sz, GArray *st);
 	void gtk_plot_set_index(GtkPlot *plot, GArray *nd);
 	GtkWidget *gtk_plot_new(void);
 	G_END_DECLS

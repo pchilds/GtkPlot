@@ -313,7 +313,7 @@ void prt(GtkWidget *widget, gpointer data)
 
 void opd(GtkWidget *widget, gpointer data)
 {
-	GArray *x, *y, *sz, *nx;
+	GArray *nx, *st, *sz, *x, *y;
 	GtkPlotLinear *plt;
 	GtkWidget *wfile;
 	gdouble xi, xf, lcl, mny, mxy;
@@ -339,8 +339,9 @@ void opd(GtkWidget *widget, gpointer data)
 			sal=g_strv_length(strary);
 			x=g_array_new(FALSE, FALSE, sizeof(gdouble));
 			y=g_array_new(FALSE, FALSE, sizeof(gdouble));
-			sz=g_array_new(FALSE, FALSE, sizeof(gint));
-			nx=g_array_new(FALSE, FALSE, sizeof(gint));
+			st=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
+			sz=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
+			nx=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
 			lc=0;
 			for (k=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jind)); k<sal; k++)
 			{
@@ -368,10 +369,12 @@ void opd(GtkWidget *widget, gpointer data)
 			g_array_append_val(sz, lc);
 			k=0;
 			g_array_append_val(nx, k);
+			k=1;
+			g_array_append_val(st, k);
 			xi=g_array_index(x, gdouble, 0);
 			xf=g_array_index(x, gdouble, (lc-1));
-			gtk_plot_linear_set_data(plt, x, y, nx, sz);
-			{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz);}
+			gtk_plot_linear_set_data(plt, x, y, nx, sz, st);
+			{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st);}
 			gtk_plot_linear_update_scale(plot, xi, xf, mny, mxy);
 		}
 		else
@@ -388,16 +391,16 @@ void opd(GtkWidget *widget, gpointer data)
 
 void ad(GtkWidget *widget, gpointer data)
 {
-	GArray *x, *y, *sz, *nx;
+	GArray *nx, *st, *sz, *x, *y;
+	gchar *contents, *fin=NULL, *str;
+	gchar **strary, **strat;
+	gdouble lcl, mny, mxy, xi, xf;
+	GError *Err;
+	gint lc, lc2;
 	GtkPlot *pt;
 	GtkPlotLinear *plt;
 	GtkWidget *wfile;
-	gdouble xi, xf, lcl, mny, mxy;
 	guint k, sal;
-	gint lc, lc2;
-	gchar *contents, *str, *fin=NULL;
-	gchar **strary, **strat;
-	GError *Err;
 
 	wfile=gtk_file_chooser_dialog_new("Select Data File", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	g_signal_connect(G_OBJECT(wfile), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(wfile));
@@ -415,11 +418,16 @@ void ad(GtkWidget *widget, gpointer data)
 			pt=GTK_PLOT(plot);
 			x=g_array_new(FALSE, FALSE, sizeof(gdouble));
 			y=g_array_new(FALSE, FALSE, sizeof(gdouble));
+			st=g_array_new(FALSE, FALSE, sizeof(gint));
 			sz=g_array_new(FALSE, FALSE, sizeof(gint));
 			nx=g_array_new(FALSE, FALSE, sizeof(gint));
-			{sal=0; lc=0; lc2=0;}
+			lc=1;
+			g_array_append_val(st, lc);
+			{sal=0; lc=0;}
 			while (sal<(pt->sizes->len))
 			{
+				lc=1;
+				g_array_append_val(st, lc);
 				lc2=g_array_index((pt->ind), gint, sal);
 				g_array_append_val(nx, lc2);
 				lc=g_array_index((pt->sizes), gint, sal);
@@ -463,8 +471,8 @@ void ad(GtkWidget *widget, gpointer data)
 			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
 			g_free(str);
 			g_array_append_val(sz, lc);
-			gtk_plot_linear_set_data(plt, x, y, nx, sz);
-			{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz);}
+			gtk_plot_linear_set_data(plt, x, y, nx, sz, st);
+			{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st);}
 			gtk_plot_linear_update_scale(plot, xi, xf, mny, mxy);
 		}
 		else
@@ -505,14 +513,14 @@ void upg(GtkWidget *widget, gpointer data)
 int main(int argc, char *argv[])
 {
 	AtkObject *atk_widget, *atk_label;
-	GArray *x, *y, *sz, *nx, *car, *cag, *cab, *caa;
+	GArray *caa, *cab, *cag, *car, *nx, *sz, *x, *y;
+	gdouble fll, val;
+	GtkAccelGroup *accel_group=NULL;
+	GtkAdjustment *adj;
 	GtkPlot *pt;
 	GtkPlotLinear *plt;
 	GtkWidget *vbox, *vbox2, *mnb, *mnu, *mni, *hpane, *butt, *label;
-	GtkAdjustment *adj;
 	guint j;
-	gdouble fll, val;
-	GtkAccelGroup *accel_group=NULL;
 	
 	gtk_init(&argc, &argv);
 	window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -593,11 +601,15 @@ int main(int argc, char *argv[])
 	g_signal_connect(plot, "moved", G_CALLBACK(pltmv), NULL);
 	x=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 75);
 	y=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 75);
-	sz=g_array_new(FALSE, FALSE, sizeof(gint));
-	nx=g_array_new(FALSE, FALSE, sizeof(gint));
+	st=g_array_sized_new(FALSE, FALSE, sizeof(gint), 2);
+	sz=g_array_sized_new(FALSE, FALSE, sizeof(gint), 2);
+	nx=g_array_sized_new(FALSE, FALSE, sizeof(gint), 2);
 	plt=GTK_PLOT_LINEAR(plot);
 	pt=GTK_PLOT(plot);
 	(plt->flagd)=3;
+	j=1;
+	g_array_append_val(st, j);
+	g_array_append_val(st, j);
 	j=0;
 	g_array_append_val(nx, j);
 	while (j<50)
@@ -622,7 +634,7 @@ int main(int argc, char *argv[])
 	}
 	g_array_append_val(sz, j);
 	gtk_plot_linear_set_data(plt, x, y, nx, sz);
-	{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz);}
+	{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st);}
 	(plt->ptsize)=4;
 	car=g_array_new(FALSE, FALSE, sizeof(gdouble));
 	cag=g_array_new(FALSE, FALSE, sizeof(gdouble));
