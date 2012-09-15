@@ -465,13 +465,13 @@ int main(int argc, char *argv[])
 	AtkObject *atk_label, *atk_widget;
 	GArray *cla, *nx, *st, *sz, *x, *y;
 	GdkRGBA cl;
-	guint j;
 	gdouble valx, valy;
 	GtkAccelGroup *accel_group=NULL;
 	GtkAdjustment *adj;
 	GtkPlot *pt;
 	GtkPlotPolar *plt;
 	GtkWidget *butt, *grid, *grid2, *label, *mnb, *mni, *mnu, *pane;
+	guint j;
 
 	gtk_init(&argc, &argv);
 	window=gtk_window_new(GTK_WINDOW_TOPLEVEL);

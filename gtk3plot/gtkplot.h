@@ -49,8 +49,8 @@
 	};
 	void gtk_plot_set_font(GtkPlot *plot, PangoFontDescription *lf, PangoFontDescription *af);
 	void gtk_plot_set_colour(GtkPlot *plot, GArray *cl);
-	void gtk_plot_polar_set_indices(GtkPlot *plot, GArray *nd, GArray *sz, GArray *st);
-	void gtk_plot_polar_set_index(GtkPlot *plot, GArray *nd);
+	void gtk_plot_set_indices(GtkPlot *plot, GArray *nd, GArray *sz, GArray *st);
+	void gtk_plot_set_index(GtkPlot *plot, GArray *nd);
 	GtkWidget *gtk_plot_new(void);
 	G_END_DECLS
 #endif
