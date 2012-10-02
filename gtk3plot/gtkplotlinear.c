@@ -173,28 +173,24 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	{mtr2.xx=0; mtr2.xy=1; mtr2.yx=-1; mtr2.yy=0; mtr2.x0=0; mtr2.y0=0;}/* initialise */
 	{mtr3.xx=0; mtr3.xy=-1; mtr3.yx=1; mtr3.yy=0; mtr3.x0=0; mtr3.y0=0;}
 	plot=GTK_PLOT_LINEAR(widget);
-	pt=GTK_PLOT(widget);
-	xw=gtk_widget_get_allocated_width(widget);
-	yw=gtk_widget_get_allocated_height(widget);
+	plt=GTK_PLOT(widget);
+	{xw=gtk_widget_get_allocated_width(widget); yw=gtk_widget_get_allocated_height(widget);}
 	priv=GTK_PLOT_LINEAR_GET_PRIVATE(plot);
 	(priv->flaga)&=(GTK_PLOT_LINEAR_AXES_LT|GTK_PLOT_LINEAR_AXES_LR);
-	delx=((priv->bounds.xmax)-(priv->bounds.xmin))/(priv->ticks.xj);
-	dely=((priv->bounds.ymax)-(priv->bounds.ymin))/(priv->ticks.yj);
+	{delx=((priv->bounds.xmax)-(priv->bounds.xmin))/(priv->ticks.xj); dely=((priv->bounds.ymax)-(priv->bounds.ymin))/(priv->ticks.yj);}
 	lyt=pango_cairo_create_layout(cr);
 	pango_layout_set_font_description(lyt, (plt->lfont));
 	str1=g_strconcat((plot->xlab), (plot->ylab), NULL);
 	pango_layout_set_text(lyt, str1, -1);
 	pango_layout_get_pixel_size(lyt, &wd, &dtt);
-	g_free(str1);
-	g_object_unref(lyt);
+	{g_free(str1); g_object_unref(lyt);}
 	lyt=pango_cairo_create_layout(cr);
 	pango_layout_set_font_description(lyt, (plt->afont));
 	str1=g_strdup("27");
 	pango_layout_set_text(lyt, str1, -1);
 	pango_layout_get_pixel_size(lyt, &wd, &hg);
 	dtt+=hg;
-	g_free(str1);
-	g_object_unref(lyt);
+	{g_free(str1); g_object_unref(lyt);}
 	xr=MIN(xw*ARP,dtt);
 	xr2=(xr-2)*IRTR;
 	yr=MIN(yw*ARP,dtt);
@@ -224,8 +220,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		ya=yw-dtt;
 		yl=(ya-yu)*((priv->bounds.ymin)/(priv->bounds.ymax));
 		if (yl>yw*WGP) {(priv->flaga)|=GTK_PLOT_LINEAR_AXES_UW; yl=(yw*WGP);}
-		yl=-yl;
-		yl+=ya;
+		yl=ya-yl;
 	}
 	else if (((priv->flaga)&GTK_PLOT_LINEAR_AXES_LT)!=0)
 	{
@@ -239,8 +234,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_layout_set_text(lyt, lbl, -1);
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			yl=yw-(wd/2)-1; /* allow space for lower label */
-			yu=(yl-dtt)*((priv->bounds.ymax)/(priv->bounds.ymin));
-			yu+=dtt;
+			yu=dtt+((yl-dtt)*((priv->bounds.ymax)/(priv->bounds.ymin)));
 			if (yu<yr) {yu=yr; ya=((yl*(priv->bounds.ymax))-(yr*(priv->bounds.ymin)))/((priv->bounds.ymax)-(priv->bounds.ymin));}
 			else ya=dtt;
 		}
@@ -260,8 +254,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	{
 		yu=yr;
 		ya=yw-dtt;
-		yl=(yu-ya)*((priv->bounds.ymin)/(priv->bounds.ymax));
-		yl+=ya;
+		yl=ya+((yu-ya)*((priv->bounds.ymin)/(priv->bounds.ymax)));
 		if (yl>yw)
 		{
 			yl=yw;
@@ -274,8 +267,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				else g_snprintf(lbl, BFL, "%f", (priv->bounds.ymin));
 				pango_layout_set_text(lyt, lbl, -1);
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
-				yl+=wd/2;
-				yl--; /* allow space for lower label */
+				yl=yl-1+(wd/2); /* allow space for lower label */
 			}
 			ya=((yl*(priv->bounds.ymax))-(yu*(priv->bounds.ymin)))/((priv->bounds.ymax)-(priv->bounds.ymin));
 		}
@@ -297,8 +289,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		xa=xw-dtt;
 		xu=(xa-xl)*((priv->bounds.xmax)/(priv->bounds.xmin));
 		if (xu>(xw*WGP)) {(priv->flaga)|=GTK_PLOT_LINEAR_AXES_LW; xu=xw*WGP;}
-		xu=-xu;
-		xu+=xa;
+		xu=xa-xu;
 	}
 	else if (priv->bounds.xmin>=NZE)
 	{
@@ -321,8 +312,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			xl=wd/2; /* allow space for left label */
 			xa=xw-dtt;
-			xu=(xa-xl)*((priv->bounds.xmax)/(priv->bounds.xmin));
-			xu+=dtt;
+			xu=dtt+((xa-xl)*((priv->bounds.xmax)/(priv->bounds.xmin)));
 			if (xu<xr)
 			{
 				xu=xw-xr;
@@ -346,8 +336,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	{
 		xu=xw-xr;
 		xa=dtt;
-		xl=(xu-xa)*((priv->bounds.xmin)/(priv->bounds.xmax));
-		xl+=xa;
+		xl=xa+((xu-xa)*((priv->bounds.xmin)/(priv->bounds.xmax)));
 		if (xl<0)
 		{
 			if ((priv->bounds.xmin)+(priv->bounds.xmax)<=0)
@@ -366,10 +355,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		}
 	}
 	g_object_unref(lyt);
-	(priv->range.xj)=xl;
-	(priv->range.yj)=yu;
-	(priv->range.xn)=xu;
-	(priv->range.yn)=yl;
+	{(priv->range.xj)=xl; (priv->range.yj)=yu; (priv->range.xn)=xu; (priv->range.yn)=yl;}
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_set_line_width(cr, 2);
 	cairo_move_to(cr, 0, ya);
@@ -383,8 +369,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		cairo_line_to(cr, xa+(WFP*xw), ya);
 		cairo_curve_to(cr, xa+(WMP*xw), ya-(WHP*xw), xa+(WMP*xw), ya+(WHP*xw), xa+(WGP*xw), ya);
 	}
-	xr--;
-	xr--;
+	{xr--; xr--;}
 	cairo_line_to(cr, xw, ya); /* draw x axis */
 	cairo_line_to(cr, xw-xr, ya-xr2); /* draw x arrow */
 	cairo_move_to(cr, xw, ya);
@@ -946,9 +931,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	else if ((xu+xl)>=(2*xa))
 	{
 		to=xu;
-		tz=((xu+1-xa)*(priv->ticks.xj))/(xu-xl);
-		if (tz==0) tf=xu;
-		else tf=xu-(((xu-xa)*(priv->ticks.xj))/tz);
+		if (xu==xl) {tz=(priv->ticks.xj); tf=xu;}
+		else
+		{
+			tz=((xu+1-xa)*(priv->ticks.xj))/(xu-xl);
+			if (tz==0) tf=xu;
+			else tf=xu-(((xu-xa)*(priv->ticks.xj))/tz);
+		}
 		if (((priv->flaga)&GTK_PLOT_LINEAR_AXES_LT)!=0)
 		{
 			cairo_move_to(cr, (xu+xa-wd)/2, ya-dtt);
@@ -2930,12 +2919,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			cairo_set_line_width(cr, (plot->linew));
 			if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_PTS)!=0) /* lines and points */
 			{
-				for (k=0; k<(pt->ind->len); k++)
+				for (k=0; k<(plt->ind->len); k++)
 				{
-					ft=fmod(k,(pt->cl->len));
-					vv=g_array_index((pt->cl), GdkRGBA, ft);
+					ft=fmod(k,(plt->cl->len));
+					vv=g_array_index((plt->cl), GdkRGBA, ft);
 					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
-					ft=g_array_index((pt->ind), gint, k);
+					ft=g_array_index((plt->ind), gint, k);
 					if (ft>=(plot->ydata->len)) break;
 					st=g_array_index((plt->stride), gint, k);
 					lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
@@ -3283,12 +3272,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			}
 			else /* lines only */
 			{
-				for (k=0;k<(pt->ind->len);k++)
+				for (k=0;k<(plt->ind->len);k++)
 				{
-					ft=fmod(k,(pt->cl->len));
-					vv=g_array_index((pt->cl), GdkRGBA, ft);
+					ft=fmod(k,(plt->cl->len));
+					vv=g_array_index((plt->cl), GdkRGBA, ft);
 					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
-					ft=g_array_index((pt->ind), gint, k);
+					ft=g_array_index((plt->ind), gint, k);
 					if (ft>=(plot->ydata->len)) break;
 					st=g_array_index((plt->stride), gint, k);
 					lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
@@ -3643,12 +3632,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		}
 		else if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_PTS)!=0) /* points only */
 		{
-			for (k=0;k<(pt->ind->len);k++)
+			for (k=0;k<(plt->ind->len);k++)
 			{
-				ft=fmod(k,(pt->cl->len));
-				vv=g_array_index((pt->cl), GdkRGBA, ft);
+				ft=fmod(k,(plt->cl->len));
+				vv=g_array_index((plt->cl), GdkRGBA, ft);
 				cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
-				ft=g_array_index((pt->ind), gint, k);
+				ft=g_array_index((plt->ind), gint, k);
 				if (ft>=(plot->ydata->len)) break;
 				st=g_array_index((plt->stride), gint, k);
 				lt=(g_array_index((plt->sizes), gint, k)*st)+ft;

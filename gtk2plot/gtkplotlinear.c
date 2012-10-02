@@ -949,9 +949,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	else if ((xu+xl)>=(2*xa))
 	{
 		to=xu;
-		tz=((xu+1-xa)*(priv->ticks.xj))/(xu-xl);
-		if (tz==0) tf=xu;
-		else tf=xu-(((xu-xa)*(priv->ticks.xj))/tz);
+		if (xu==xl) {tz=(priv->ticks.xj); tf=xu;}
+		else
+		{
+			tz=((xu+1-xa)*(priv->ticks.xj))/(xu-xl);
+			if (tz==0) tf=xu;
+			else tf=xu-(((xu-xa)*(priv->ticks.xj))/tz);
+		}
 		if (((priv->flaga)&GTK_PLOT_LINEAR_AXES_LT)!=0)
 		{
 			cairo_move_to(cr, (xu+xa-wd)/2, ya-dtt);

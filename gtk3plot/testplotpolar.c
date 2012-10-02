@@ -85,7 +85,7 @@ void upj(GtkWidget *widget, gpointer data)
 	gint dx, jdm;
 	GtkPlot *pt;
 
-	plt=GTK_PLOT(plot);
+	pt=GTK_PLOT(plot);
 	jdm=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 	dx=fmod(jdm, (pt->cl->len));
 	cl=g_array_index(pt->cl, GdkRGBA, dx);
@@ -374,7 +374,7 @@ void ad(GtkWidget *widget, gpointer data)
 			lc=1;
 			g_array_append_val(st, lc);
 			{sal=0; lc=0;}
-			while (sal<(plt->sizes->len))
+			while (sal<(pt->sizes->len))
 			{
 				lc=1;
 				g_array_append_val(st, lc);
@@ -524,6 +524,7 @@ int main(int argc, char *argv[])
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(mni), mnu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnb), mni);
 	pane=gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+	{gtk_widget_set_hexpand(pane, TRUE); gtk_widget_set_vexpand(pane, TRUE); gtk_widget_set_halign(pane, GTK_ALIGN_FILL); gtk_widget_set_valign(pane, GTK_ALIGN_FILL);}
 	gtk_widget_show(pane);
 	gtk_grid_attach(GTK_GRID(grid), pane, 0, 1, 1, 1);
 	grid2=gtk_grid_new();

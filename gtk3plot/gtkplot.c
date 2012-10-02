@@ -42,7 +42,7 @@ void gtk_plot_set_colour(GtkPlot *plot, GArray *cl)
 	(plot->cl)=g_array_ref(cl);
 }
 
-void gtk_plot_linear_set_indices(GtkPlot *plot, GArray *nd, GArray *sz, GArray *st)
+void gtk_plot_set_indices(GtkPlot *plot, GArray *nd, GArray *sz, GArray *st)
 {
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	if (plot->sizes) g_array_free((plot->sizes), FALSE);
@@ -50,7 +50,7 @@ void gtk_plot_linear_set_indices(GtkPlot *plot, GArray *nd, GArray *sz, GArray *
 	{(plot->ind)=g_array_ref(nd); (plot->sizes)=g_array_ref(sz); (plot->stride)=g_array_ref(st);}
 }
 
-void gtk_plot_linear_set_index(GtkPlot *plot, GArray *nd)
+void gtk_plot_set_index(GtkPlot *plot, GArray *nd)
 {
 	if (plot->ind) g_array_free((plot->ind), FALSE);
 	(plot->ind)=g_array_ref(nd);
@@ -77,6 +77,7 @@ static void gtk_plot_class_init(GtkPlotClass *klass)
 
 static void gtk_plot_init(GtkPlot *plot)
 {
+	GdkRGBA cl;
 	gdouble val;
 
 	{(plot->afont)=pango_font_description_new(); (plot->lfont)=pango_font_description_new();}
