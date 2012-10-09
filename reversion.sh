@@ -6,20 +6,84 @@ then
 	echo "        and x,y,z is the library current, age, and revision versions"
 	exit 1
 fi
+gar=$2
+lcr=$3
+lag=$4
+lrv=$5
 if [ $1 -eq 3 ]
 then
 	gmx=3
 	gmn=0
 	gdp="-3"
+	{
+	echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g"
+	echo "MAINTAINERCLEANFILES=Makefile.in"
+	echo ""
+	echo "gtkplot_libincludedir=\$(libdir)/gtkplot-3.${gar}/include"
+	echo "nodist_gtkplot_libinclude_HEADERS=../gtkplotconfig.h"
+	echo ""
+	echo "lib_LTLIBRARIES=libgtkplot-@PLOT_API_VERSION@.la"
+	echo "libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\\"
+	echo "	gtkplot.c				\\"
+	echo "	gtkplotlinear.c				\\"
+	echo "	gtkplotpolar.c"
+	echo "libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\\"
+	echo "	@lt_enable_auto_import@			\\"
+	echo "	-no-undefined				\\"
+	echo "	-version-info ${lcr}:${lrv}:${lag}			\\"
+	echo "	\$(PLOT_LIBS)"
+	echo "gtkplotincludedir=\$(includedir)/gtkplot-3.${gar}"
+	echo "gtkplotinclude_HEADERS=				\\"
+	echo "	gtkplot.h				\\"
+	echo "	gtkplotlinear.h				\\"
+	echo "	gtkplotpolar.h"
+	echo ""
+	echo "bin_PROGRAMS=TestPlotLinear TestPlotPolar"
+	echo "TestPlotLinear_SOURCES=testplotlinear.c"
+	echo "TestPlotLinear_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
+	echo "TestPlotPolar_SOURCES=testplotpolar.c"
+	echo "TestPlotPolar_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
+	} >gtk3plot/Makefile.am
 else
 	gmx=2
 	gmn=18
 	gdp="2.$2"
+	{
+	echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g"
+	echo "MAINTAINERCLEANFILES=Makefile.in"
+	echo ""
+	echo "gtkplot_libincludedir=\$(libdir)/gtkplot-2.${gar}/include"
+	echo "nodist_gtkplot_libinclude_HEADERS=../gtkplotconfig.h"
+	echo ""
+	echo "lib_LTLIBRARIES=libgtkplot-@PLOT_API_VERSION@.la"
+	echo "libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\\"
+	echo "	gtkplot.c				\\"
+	echo "	gtkplotlinear.c				\\"
+	echo "	gtkplotpolar.c				\\"
+	echo "	a11y/gtkplotaccessible.c		\\"
+	echo "	a11y/gtkplotlinearaccessible.c		\\"
+	echo "	a11y/gtkplotpolaraccessible.c"
+	echo "libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\\"
+	echo "	@lt_enable_auto_import@			\\"
+	echo "	-no-undefined				\\"
+	echo "	-version-info ${lcr}:${lrv}:${lag}			\\"
+	echo "	\$(PLOT_LIBS)"
+	echo "gtkplotincludedir=\$(includedir)/gtkplot-2.${gar}"
+	echo "gtkplotinclude_HEADERS=				\\"
+	echo "	gtkplot.h				\\"
+	echo "	gtkplotlinear.h				\\"
+	echo "	gtkplotpolar.h				\\"
+	echo "	a11y/gtkplotaccessible.h		\\"
+	echo "	a11y/gtkplotlinearaccessible.h		\\"
+	echo "	a11y/gtkplotpolaraccessible.h"
+	echo ""
+	echo "bin_PROGRAMS=TestPlotLinear TestPlotPolar"
+	echo "TestPlotLinear_SOURCES=testplotlinear.c"
+	echo "TestPlotLinear_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
+	echo "TestPlotPolar_SOURCES=testplotpolar.c"
+	echo "TestPlotPolar_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
+	} >gtk2plot/Makefile.am
 fi
-gar=$2
-lcr=$3
-lag=$4
-lrv=$5
 {
 echo "AC_PREREQ([2.65])"
 echo "AC_INIT([Gtk${gmx}Plot],[${gmx}.${lcr}.${lrv}],[pchilds@physics.org],[gtk${gmx}plot],[https://github.com/pchilds/GtkPlot])"
@@ -58,35 +122,6 @@ echo ""
 echo "pkgconfigdir=\$(libdir)/pkgconfig"
 echo "pkgconfig_DATA=gtkplot-${gmx}.${gar}.pc"
 } >Makefile.am
-{
-echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g"
-echo "MAINTAINERCLEANFILES=Makefile.in"
-echo ""
-echo "gtkplot_libincludedir=\$(libdir)/gtkplot-${gmx}.${gar}/include"
-echo "nodist_gtkplot_libinclude_HEADERS=../gtkplotconfig.h"
-echo ""
-echo "lib_LTLIBRARIES=libgtkplot-@PLOT_API_VERSION@.la"
-echo "libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\\"
-echo "	gtkplot.c				\\"
-echo "	gtkplotlinear.c				\\"
-echo "	gtkplotpolar.c"
-echo "libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\\"
-echo "	@lt_enable_auto_import@			\\"
-echo "	-no-undefined				\\"
-echo "	-version-info ${lcr}:${lrv}:${lag}	\\"
-echo "	\$(PLOT_LIBS)"
-echo "gtkplotincludedir=\$(includedir)/gtkplot-${gmx}.${gar}"
-echo "gtkplotinclude_HEADERS=				\\"
-echo "	gtkplot.h				\\"
-echo "	gtkplotlinear.h				\\"
-echo "	gtkplotpolar.h"
-echo ""
-echo "bin_PROGRAMS=TestPlotLinear TestPlotPolar"
-echo "TestPlotLinear_SOURCES=testplotlinear.c"
-echo "TestPlotLinear_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
-echo "TestPlotPolar_SOURCES=testplotpolar.c"
-echo "TestPlotPolar_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
-} >gtk${gmx}plot/Makefile.am
 {
 echo "Source: libgtkplot"
 echo "Priority: optional"
