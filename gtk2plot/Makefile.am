@@ -12,7 +12,7 @@ libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\
 libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\
 	@lt_enable_auto_import@			\
 	-no-undefined				\
-	-version-info 0:0:0			\
+	-version-info 0:0:0	\
 	$(PLOT_LIBS)
 gtkplotincludedir=$(includedir)/gtkplot-2.0
 gtkplotinclude_HEADERS=				\

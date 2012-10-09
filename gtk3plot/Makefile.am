@@ -8,17 +8,23 @@ lib_LTLIBRARIES=libgtkplot-@PLOT_API_VERSION@.la
 libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\
 	gtkplot.c				\
 	gtkplotlinear.c				\
-	gtkplotpolar.c
+	gtkplotpolar.c				\
+	a11y/gtkplotaccessible.c		\
+	a11y/gtkplotlinearaccessible.c		\
+	a11y/gtkplotpolaraccessible.c
 libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\
 	@lt_enable_auto_import@			\
 	-no-undefined				\
-	-version-info 0:0:0	\
+	-version-info 0:0:0			\
 	$(PLOT_LIBS)
 gtkplotincludedir=$(includedir)/gtkplot-3.0
 gtkplotinclude_HEADERS=				\
 	gtkplot.h				\
 	gtkplotlinear.h				\
-	gtkplotpolar.h
+	gtkplotpolar.h				\
+	a11y/gtkplotaccessible.h		\
+	a11y/gtkplotlinearaccessible.h		\
+	a11y/gtkplotpolaraccessible.h
 
 bin_PROGRAMS=TestPlotLinear TestPlotPolar
 TestPlotLinear_SOURCES=testplotlinear.c

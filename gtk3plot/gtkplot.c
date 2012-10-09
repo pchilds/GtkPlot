@@ -8,26 +8,24 @@
  *  <pchilds@physics.org>
  ****************************************************************************/
 
-/*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Library General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor Boston, MA 02110-1301,  USA
+/*  GtkPlot3 is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <gtk/gtk.h>
 #include "gtkplot.h"
-
-G_DEFINE_TYPE (GtkPlot, gtk_plot, GTK_TYPE_DRAWING_AREA);
+#include "a11y/gtkplotaccessible.h"
+G_DEFINE_TYPE(GtkPlot, gtk_plot, GTK_TYPE_DRAWING_AREA);
 
 void gtk_plot_set_font(GtkPlot *plot, PangoFontDescription *lf, PangoFontDescription *af)
 {
@@ -69,10 +67,10 @@ static void gtk_plot_finalise(GtkPlot *plot)
 static void gtk_plot_class_init(GtkPlotClass *klass)
 {
 	GObjectClass *obj_klass;
-	GtkWidgetClass *widget_klass;
 
 	obj_klass=G_OBJECT_CLASS(klass);
 	(obj_klass->finalize)=(GObjectFinalizeFunc) gtk_plot_finalise;
+	gtk_widget_class_set_accessible(GTK_WIDGET_CLASS(klass), GTK_TYPE_PLOT_ACCESSIBLE);
 }
 
 static void gtk_plot_init(GtkPlot *plot)

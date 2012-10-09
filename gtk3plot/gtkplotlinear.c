@@ -15,20 +15,18 @@
  *  <pchilds@physics.org>
  ****************************************************************************/
 
-/*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor Boston, MA 02110-1301,  USA
+/*  GtkPlot3 is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <gtk/gtk.h>
@@ -36,7 +34,7 @@
 #include <cairo-ps.h>
 #include <cairo-svg.h>
 #include "gtkplotlinear.h"
-
+#include "a11y/gtkplotlinearaccessible.h"
 #define GTK_PLOT_LINEAR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), GTK_PLOT_TYPE_LINEAR, GtkPlotLinearPrivate))
 #define ARP 0.05 /* Proportion of the graph occupied by arrows */
 #define IRTR 0.577350269 /* 1/square root 3 */
@@ -4322,6 +4320,7 @@ static void gtk_plot_linear_class_init(GtkPlotLinearClass *klass)
 	(widget_klass->motion_notify_event)=gtk_plot_linear_motion_notify;
 	(widget_klass->button_release_event)=gtk_plot_linear_button_release;
 	(widget_klass->draw)=gtk_plot_linear_draw;
+	gtk_widget_class_set_accessible(widget_klass, GTK_TYPE_PLOT_LINEAR_ACCESSIBLE);
 	gtk_plot_linear_signals[MOVED]=g_signal_new("moved", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET (GtkPlotLinearClass, moved), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
