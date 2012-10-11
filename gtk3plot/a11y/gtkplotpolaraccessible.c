@@ -40,7 +40,7 @@ static gboolean gtk_plot_polar_accessible_do_action(AtkAction* action, gint i)
 	plt=GTK_PLOT_POLAR(plot);
 	if (plot==NULL||!gtk_widget_get_sensitive(plot)) return FALSE;
 	g_object_get(G_OBJECT(plot), "thmin", &yi, "thmax", &yf, "rmin", &xi, "rmax", &xf, NULL);
-	switch i
+	switch (i)
 	{
 		case 3:
 		tp=-UZC*(plt->thps);
@@ -81,12 +81,12 @@ static gint gtk_plot_polar_accessible_get_n_actions(AtkAction* action)
 static const gchar* gtk_plot_polar_accessible_action_get_name(AtkAction* action, gint i)
 {
 	if (gtk_plot_polar_accessible_get_n_actions(action)==0) return NULL;
-	switch i
+	switch (i)
 	{
-		case 5: return "out";
-		case 4: return "in";
 		case 3: return "open";
 		case 2: return "close";
+		case 1: return "out";
+		case 0: return "in";
 		default: return NULL;
 	}
 }
@@ -94,17 +94,15 @@ static const gchar* gtk_plot_polar_accessible_action_get_name(AtkAction* action,
 static const gchar* gtk_plot_polar_accessible_action_get_description(AtkAction* action, gint i)
 {
 	if (gtk_plot_polar_accessible_get_n_actions(action)==0) return NULL;
-	switch i
+	switch (i)
 	{
-		case 5: return "zoom out radially";
-		case 4: return "zoom in radially";
 		case 3: return "zoom out azimuthally";
 		case 2: return "zoom in azimuthally";
+		case 1: return "zoom out radially";
+		case 0: return "zoom in radially";
 		default: return NULL;
 	}
 }
-
-static const gchar* gtk_plot_polar_accessible_get_keybinding(AtkAction* action, gint i) {}
 
 static void atk_action_interface_init(AtkActionIface* iface)
 {
@@ -112,12 +110,11 @@ static void atk_action_interface_init(AtkActionIface* iface)
 	iface->get_n_actions=gtk_plot_polar_accessible_get_n_actions;
 	iface->get_name=gtk_plot_polar_accessible_action_get_name;
 	iface->get_name=gtk_plot_polar_accessible_action_get_description;
-	iface->get_keybinding=gtk_plot_polar_accessible_get_keybinding;
 }
 
 static void gtk_plot_polar_accessible_get_image_position(AtkImage* img, gint* x, gint* y, AtkCoordType coord_type) {atk_component_get_position(ATK_COMPONENT(img), x, y, coord_type);}
 
-static const gchar* gtk_plot_polar_accessible_get_image_description(AtkImage* img) {return (GTK_IMAGE_ACCESSIBLE(img))->image_description;}
+static const gchar* gtk_plot_polar_accessible_get_image_description(AtkImage* img) {return (GTK_PLOT_POLAR_ACCESSIBLE(img))->image_description;}
 
 static gboolean gtk_plot_polar_accessible_set_image_description(AtkImage* img, const gchar* desc)
 {
@@ -145,7 +142,7 @@ static void atk_image_interface_init(AtkImageIface* iface)
 	iface->get_image_size=gtk_plot_polar_accessible_get_image_size;
 }
 
-G_DEFINE_TYPE_WITH_CODE(GtkPlotPolarAccessible, _gtk_plot_polar_accessible, GTK_TYPE_WIDGET_ACCESSIBLE,
+G_DEFINE_TYPE_WITH_CODE(GtkPlotPolarAccessible, _gtk_plot_polar_accessible, GTK_TYPE_PLOT_ACCESSIBLE,
 	G_IMPLEMENT_INTERFACE(ATK_TYPE_ACTION, atk_action_interface_init);
 	G_IMPLEMENT_INTERFACE(ATK_TYPE_IMAGE, atk_image_interface_init))
 

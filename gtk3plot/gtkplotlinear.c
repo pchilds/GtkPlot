@@ -4320,7 +4320,7 @@ static void gtk_plot_linear_class_init(GtkPlotLinearClass *klass)
 	(widget_klass->motion_notify_event)=gtk_plot_linear_motion_notify;
 	(widget_klass->button_release_event)=gtk_plot_linear_button_release;
 	(widget_klass->draw)=gtk_plot_linear_draw;
-	gtk_widget_class_set_accessible(widget_klass, GTK_TYPE_PLOT_LINEAR_ACCESSIBLE);
+	gtk_widget_class_set_accessible_type(widget_klass, GTK_TYPE_PLOT_LINEAR_ACCESSIBLE);
 	gtk_plot_linear_signals[MOVED]=g_signal_new("moved", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET (GtkPlotLinearClass, moved), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 

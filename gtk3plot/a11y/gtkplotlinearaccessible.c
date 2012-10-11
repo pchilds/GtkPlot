@@ -39,8 +39,8 @@ static gboolean gtk_plot_linear_accessible_do_action(AtkAction* action, gint i)
 	plot=gtk_accessible_get_widget(GTK_ACCESSIBLE(action));
 	plt=GTK_PLOT_LINEAR(plot);
 	if (plot==NULL||!gtk_widget_get_sensitive(plot)) return FALSE;
-	g_object_get(G_OBJECT(plot), "xmin", &xi, "xmax", &xf, "ymin", &mny, "ymax", &mxy, NULL);
-	switch i
+	g_object_get(G_OBJECT(plot), "xmin", &xi, "xmax", &xf, "ymin", &yi, "ymax", &yf, NULL);
+	switch (i)
 	{
 		case 5:
 		tp=-UZC*(plt->yps);
@@ -97,7 +97,7 @@ static gint gtk_plot_linear_accessible_get_n_actions(AtkAction* action)
 static const gchar* gtk_plot_linear_accessible_action_get_name(AtkAction* action, gint i)
 {
 	if (gtk_plot_linear_accessible_get_n_actions(action)==0) return NULL;
-	switch i
+	switch (i)
 	{
 		case 5: return "grow";
 		case 4: return "shrink";
@@ -112,7 +112,7 @@ static const gchar* gtk_plot_linear_accessible_action_get_name(AtkAction* action
 static const gchar* gtk_plot_linear_accessible_action_get_description(AtkAction* action, gint i)
 {
 	if (gtk_plot_linear_accessible_get_n_actions(action)==0) return NULL;
-	switch i
+	switch (i)
 	{
 		case 5: return "zoom out vertically";
 		case 4: return "zoom in vertically";
@@ -124,20 +124,17 @@ static const gchar* gtk_plot_linear_accessible_action_get_description(AtkAction*
 	}
 }
 
-static const gchar* gtk_plot_linear_accessible_get_keybinding(AtkAction* action, gint i) {}
-
 static void atk_action_interface_init(AtkActionIface* iface)
 {
 	iface->do_action=gtk_plot_linear_accessible_do_action;
 	iface->get_n_actions=gtk_plot_linear_accessible_get_n_actions;
 	iface->get_name=gtk_plot_linear_accessible_action_get_name;
 	iface->get_name=gtk_plot_linear_accessible_action_get_description;
-	iface->get_keybinding=gtk_plot_linear_accessible_get_keybinding;
 }
 
 static void gtk_plot_linear_accessible_get_image_position(AtkImage* img, gint* x, gint* y, AtkCoordType coord_type) {atk_component_get_position(ATK_COMPONENT(img), x, y, coord_type);}
 
-static const gchar* gtk_plot_linear_accessible_get_image_description(AtkImage* img) {return (GTK_IMAGE_ACCESSIBLE(img))->image_description;}
+static const gchar* gtk_plot_linear_accessible_get_image_description(AtkImage* img) {return (GTK_PLOT_LINEAR_ACCESSIBLE(img))->image_description;}
 
 static gboolean gtk_plot_linear_accessible_set_image_description(AtkImage* img, const gchar* desc)
 {
@@ -165,7 +162,7 @@ static void atk_image_interface_init(AtkImageIface* iface)
 	iface->get_image_size=gtk_plot_linear_accessible_get_image_size;
 }
 
-G_DEFINE_TYPE_WITH_CODE(GtkPlotLinearAccessible, _gtk_plot_linear_accessible, GTK_TYPE_WIDGET_ACCESSIBLE,
+G_DEFINE_TYPE_WITH_CODE(GtkPlotLinearAccessible, _gtk_plot_linear_accessible, GTK_TYPE_PLOT_ACCESSIBLE,
 	G_IMPLEMENT_INTERFACE(ATK_TYPE_ACTION, atk_action_interface_init);
 	G_IMPLEMENT_INTERFACE(ATK_TYPE_IMAGE, atk_image_interface_init))
 
