@@ -36,11 +36,13 @@
 	typedef struct _GtkPlotAccessibleClass GtkPlotAccessibleClass;
 	struct _GtkPlotAccessible
 	{
-		GtkWidgetAccessible parent;
+		GtkAccessible parent;
+		AtkLayer layer;
 	};
 	struct _GtkPlotAccessibleClass
 	{
-		GtkWidgetAccessibleClass parent_class;
+		GtkAccessibleClass parent_class;
+		void (*notify_gtk) (GObject *object, GParamSpec *pspec);
 	};
 	GType _gtk_plot_accessible_get_type(void);
 	G_END_DECLS

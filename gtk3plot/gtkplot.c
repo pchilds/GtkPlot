@@ -70,7 +70,7 @@ static void gtk_plot_class_init(GtkPlotClass *klass)
 
 	obj_klass=G_OBJECT_CLASS(klass);
 	(obj_klass->finalize)=(GObjectFinalizeFunc) gtk_plot_finalise;
-	gtk_widget_class_set_accessible(GTK_WIDGET_CLASS(klass), GTK_TYPE_PLOT_ACCESSIBLE);
+	gtk_widget_class_set_accessible_type(GTK_WIDGET_CLASS(klass), GTK_TYPE_PLOT_ACCESSIBLE);
 }
 
 static void gtk_plot_init(GtkPlot *plot)

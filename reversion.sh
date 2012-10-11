@@ -13,7 +13,7 @@ lrv=$5
 if [ $1 -eq 3 ]
 then
 	gmx=3
-	gmn=0
+	gmn=2
 	gdp="-3"
 	{
 	echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g"
@@ -26,7 +26,10 @@ then
 	echo "libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\\"
 	echo "	gtkplot.c				\\"
 	echo "	gtkplotlinear.c				\\"
-	echo "	gtkplotpolar.c"
+	echo "	gtkplotpolar.c				\\"
+	echo "	a11y/gtkplotaccessible.c		\\"
+	echo "	a11y/gtkplotlinearaccessible.c		\\"
+	echo "	a11y/gtkplotpolaraccessible.c"
 	echo "libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\\"
 	echo "	@lt_enable_auto_import@			\\"
 	echo "	-no-undefined				\\"
@@ -36,7 +39,10 @@ then
 	echo "gtkplotinclude_HEADERS=				\\"
 	echo "	gtkplot.h				\\"
 	echo "	gtkplotlinear.h				\\"
-	echo "	gtkplotpolar.h"
+	echo "	gtkplotpolar.h				\\"
+	echo "	a11y/gtkplotaccessible.h		\\"
+	echo "	a11y/gtkplotlinearaccessible.h		\\"
+	echo "	a11y/gtkplotpolaraccessible.h"
 	echo ""
 	echo "bin_PROGRAMS=TestPlotLinear TestPlotPolar"
 	echo "TestPlotLinear_SOURCES=testplotlinear.c"
@@ -59,10 +65,7 @@ else
 	echo "libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\\"
 	echo "	gtkplot.c				\\"
 	echo "	gtkplotlinear.c				\\"
-	echo "	gtkplotpolar.c				\\"
-	echo "	a11y/gtkplotaccessible.c		\\"
-	echo "	a11y/gtkplotlinearaccessible.c		\\"
-	echo "	a11y/gtkplotpolaraccessible.c"
+	echo "	gtkplotpolar.c"
 	echo "libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\\"
 	echo "	@lt_enable_auto_import@			\\"
 	echo "	-no-undefined				\\"
@@ -72,10 +75,7 @@ else
 	echo "gtkplotinclude_HEADERS=				\\"
 	echo "	gtkplot.h				\\"
 	echo "	gtkplotlinear.h				\\"
-	echo "	gtkplotpolar.h				\\"
-	echo "	a11y/gtkplotaccessible.h		\\"
-	echo "	a11y/gtkplotlinearaccessible.h		\\"
-	echo "	a11y/gtkplotpolaraccessible.h"
+	echo "	gtkplotpolar.h"
 	echo ""
 	echo "bin_PROGRAMS=TestPlotLinear TestPlotPolar"
 	echo "TestPlotLinear_SOURCES=testplotlinear.c"
