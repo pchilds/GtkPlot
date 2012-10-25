@@ -1,53 +1,53 @@
 Source: libgtkplot
 Priority: optional
 Maintainer: Paul Childs <pchilds@physics.org>
-Build-Depends: debhelper (>= 7.0.50), autotools-dev, dh-autoreconf, pkg-config, libgtk-3-dev
+Build-Depends: debhelper (>= 7.0.50), autotools-dev, dh-autoreconf, pkg-config, libgtk2.0-dev
 Standards-Version: 3.8.3
 Section: libs
 Homepage: <https://github.com/pchilds/GtkPlot>
 
-Package: libgtkplot-3-dev
+Package: libgtkplot-2-dev
 Section: libdevel
 Architecture: any
-Depends: libgtkplot-3 (= ${binary:Version})
-Description: Provides headers for the libgtkplot-3 package
- libgtkplot-3 makes available to gtk+3 programs, a linear and polar
+Depends: libgtkplot-2 (= ${binary:Version})
+Description: Provides headers for the libgtkplot-2 package
+ libgtkplot-2 makes available to gtk+2 programs, a linear and polar
  plotting widget. The widget features multiplot capability, zoom
  control, smart range setting and mouse location tracking.
  Processing is optimised towards speed for large data sets as
  commonly occurs in scientific applications and outputs to a neat
  publication ready format.
 
-Package: libgtkplot-3-doc
+Package: libgtkplot-2-doc
 Section: doc
 Architecture: any
-Depends: libgtkplot-3 (= ${binary:Version})
-Description: Provides examples for the libgtkplot-3 package
- libgtkplot-3 makes available to gtk+3 programs, a linear and polar
+Depends: libgtkplot-2 (= ${binary:Version})
+Description: Provides examples for the libgtkplot-2 package
+ libgtkplot-2 makes available to gtk+2 programs, a linear and polar
  plotting widget. The widget features multiplot capability, zoom
  control, smart range setting and mouse location tracking.
  Processing is optimised towards speed for large data sets as
  commonly occurs in scientific applications and outputs to a neat
  publication ready format.
 
-Package: libgtkplot-3-dbg
+Package: libgtkplot-2-dbg
 Section: debug
 Architecture: any
-Depends: libgtkplot-3 (= ${binary:Version})
-Description: Provides debug symbols for the libgtkplot-3 package
- libgtkplot-3 makes available to gtk+3 programs, a linear and polar
+Depends: libgtkplot-2 (= ${binary:Version})
+Description: Provides debug symbols for the libgtkplot-2 package
+ libgtkplot-2 makes available to gtk+2 programs, a linear and polar
  plotting widget. The widget features multiplot capability, zoom
  control, smart range setting and mouse location tracking.
  Processing is optimised towards speed for large data sets as
  commonly occurs in scientific applications and outputs to a neat
  publication ready format.
 
-Package: libgtkplot-3
+Package: libgtkplot-2
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Provides shared libraries for plotting with gtk+3
- libgtkplot-3 makes available to gtk+3 programs, a linear and polar
+Description: Provides shared libraries for plotting with gtk+2
+ libgtkplot-2 makes available to gtk+2 programs, a linear and polar
  plotting widget. The widget features multiplot capability, zoom
  control, smart range setting and mouse location tracking.
  Processing is optimised towards speed for large data sets as
