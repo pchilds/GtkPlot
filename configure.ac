@@ -22,5 +22,4 @@ PKG_CHECK_MODULES([PLOT], [gtk+-2.0 >= 2.18])
 AC_CONFIG_FILES([Makefile gtk2plot/Makefile	\
 	gtkplot-2.0.pc:gtkplot.pc.in		\
 	COPYING:COPYING-2.0.in])
-AC_CONFIG_FILES([debian/Makefile])
 AC_OUTPUT()
