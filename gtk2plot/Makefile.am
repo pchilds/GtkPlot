@@ -12,8 +12,8 @@ libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\
 libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\
 	@lt_enable_auto_import@			\
 	-no-undefined				\
-	-version-info 0:0:0	\
-	$(PLOT_LIBS)
+	-version-info 0:0:0			\
+	$(PLOT_LIBS) -lm
 gtkplotincludedir=$(includedir)/gtkplot-2.0
 gtkplotinclude_HEADERS=				\
 	gtkplot.h				\
@@ -22,6 +22,6 @@ gtkplotinclude_HEADERS=				\
 
 bin_PROGRAMS=TestPlotLinear TestPlotPolar
 TestPlotLinear_SOURCES=testplotlinear.c
-TestPlotLinear_LDADD=$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la
+TestPlotLinear_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
 TestPlotPolar_SOURCES=testplotpolar.c
-TestPlotPolar_LDADD=$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la
+TestPlotPolar_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la

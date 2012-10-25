@@ -34,7 +34,7 @@ then
 	echo "	@lt_enable_auto_import@			\\"
 	echo "	-no-undefined				\\"
 	echo "	-version-info ${lcr}:${lrv}:${lag}			\\"
-	echo "	\$(PLOT_LIBS)"
+	echo "	\$(PLOT_LIBS) -lm"
 	echo "gtkplotincludedir=\$(includedir)/gtkplot-3.${gar}"
 	echo "gtkplotinclude_HEADERS=				\\"
 	echo "	gtkplot.h				\\"
@@ -46,9 +46,9 @@ then
 	echo ""
 	echo "bin_PROGRAMS=TestPlotLinear TestPlotPolar"
 	echo "TestPlotLinear_SOURCES=testplotlinear.c"
-	echo "TestPlotLinear_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
+	echo "TestPlotLinear_LDADD=\$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la"
 	echo "TestPlotPolar_SOURCES=testplotpolar.c"
-	echo "TestPlotPolar_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
+	echo "TestPlotPolar_LDADD=\$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la"
 	} >gtk3plot/Makefile.am
 else
 	gmx=2
@@ -70,7 +70,7 @@ else
 	echo "	@lt_enable_auto_import@			\\"
 	echo "	-no-undefined				\\"
 	echo "	-version-info ${lcr}:${lrv}:${lag}			\\"
-	echo "	\$(PLOT_LIBS)"
+	echo "	\$(PLOT_LIBS) -lm"
 	echo "gtkplotincludedir=\$(includedir)/gtkplot-2.${gar}"
 	echo "gtkplotinclude_HEADERS=				\\"
 	echo "	gtkplot.h				\\"
@@ -79,9 +79,9 @@ else
 	echo ""
 	echo "bin_PROGRAMS=TestPlotLinear TestPlotPolar"
 	echo "TestPlotLinear_SOURCES=testplotlinear.c"
-	echo "TestPlotLinear_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
+	echo "TestPlotLinear_LDADD=\$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la"
 	echo "TestPlotPolar_SOURCES=testplotpolar.c"
-	echo "TestPlotPolar_LDADD=\$(PLOT_LIBS) libgtkplot-@PLOT_API_VERSION@.la"
+	echo "TestPlotPolar_LDADD=\$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la"
 	} >gtk2plot/Makefile.am
 fi
 {
