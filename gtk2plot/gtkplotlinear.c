@@ -4187,7 +4187,6 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 					else (plot->zmode)|=GTK_PLOT_LINEAR_ZOOM_SGL;
 				}
 			}
-			//gtk_plot_linear_redraw(widget);
 			gtk_widget_queue_draw_area(widget, xw-22, 0, 22, 11);
 		}
 	}
