@@ -96,40 +96,41 @@ static void drawz(GtkWidget *widget, cairo_t *cr)
 	cairo_rectangle(cr, xw-10.5, 0.5, 10, 10);
 	cairo_move_to(cr, xw-9, 5.5);
 	cairo_line_to(cr, xw-2, 5.5);
-	cairo_move_to(cr, xw-5.5, 2);
-	cairo_line_to(cr, xw-5.5, 9);
-	if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_OUT)==0)
+	if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_DRG)!=0)
 	{
-		cairo_move_to(cr, xw-6.5, 2.5);
-		cairo_line_to(cr, xw-5.5, 2);
-		cairo_line_to(cr, xw-4.5, 2.5);
 		cairo_move_to(cr, xw-2.5, 4.5);
 		cairo_line_to(cr, xw-2, 5.5);
 		cairo_line_to(cr, xw-2.5, 6.5);
-		cairo_move_to(cr, xw-6.5, 8.5);
-		cairo_line_to(cr, xw-5.5, 9);
-		cairo_line_to(cr, xw-4.5, 8.5);
-		cairo_move_to(cr, xw-8.5, 4.5);
-		cairo_line_to(cr, xw-9, 5.5);
-		cairo_line_to(cr, xw-8.5, 6.5);
 	}
 	else
 	{
-		cairo_move_to(cr, xw-7.5, 3.5);
-		cairo_line_to(cr, xw-3.5, 7.5);
-		cairo_move_to(cr, xw-7.5, 7.5);
-		cairo_line_to(cr, xw-3.5, 3.5);
+		cairo_move_to(cr, xw-5.5, 2);
+		cairo_line_to(cr, xw-5.5, 9);
+		if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_OUT)==0)
+		{
+			cairo_move_to(cr, xw-6.5, 2.5);
+			cairo_line_to(cr, xw-5.5, 2);
+			cairo_line_to(cr, xw-4.5, 2.5);
+			cairo_move_to(cr, xw-2.5, 4.5);
+			cairo_line_to(cr, xw-2, 5.5);
+			cairo_line_to(cr, xw-2.5, 6.5);
+			cairo_move_to(cr, xw-6.5, 8.5);
+			cairo_line_to(cr, xw-5.5, 9);
+			cairo_line_to(cr, xw-4.5, 8.5);
+			cairo_move_to(cr, xw-8.5, 4.5);
+			cairo_line_to(cr, xw-9, 5.5);
+			cairo_line_to(cr, xw-8.5, 6.5);
+		}
+		else
+		{
+			cairo_move_to(cr, xw-7.5, 3.5);
+			cairo_line_to(cr, xw-3.5, 7.5);
+			cairo_move_to(cr, xw-7.5, 7.5);
+			cairo_line_to(cr, xw-3.5, 3.5);
+		}
 	}
 	cairo_stroke(cr);
-	if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_SGL)!=0)
-	{
-		cairo_move_to(cr, xw-20, 2);
-		cairo_line_to(cr, xw-13, 9);
-		cairo_move_to(cr, xw-20, 9);
-		cairo_line_to(cr, xw-13, 2);
-		cairo_stroke(cr);
-	}
-	else
+	if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_SGL)==0)
 	{
 		cairo_save(cr);
 		dt=1;
@@ -4046,7 +4047,8 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 			yn=(priv->rescale.ymax)-(priv->rescale.ymin);
 			if (((xn>DZE)||(xn<NZE))&&((yn>DZE)||(yn<NZE)))
 			{
-				if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_OUT)==0) gtk_plot_linear_update_scale_pretty(widget, (priv->rescale.xmin), (priv->rescale.xmax), (priv->rescale.ymin), (priv->rescale.ymax));
+				if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_DRG)!=0) gtk_plot_linear_update_scale_pretty(widget, xn+(priv->bounds.xmin), xn+(priv->bounds.xmax), yn+(priv->bounds.ymin), yn+(priv->bounds.ymax));
+				else if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_OUT)==0) gtk_plot_linear_update_scale_pretty(widget, (priv->rescale.xmin), (priv->rescale.xmax), (priv->rescale.ymin), (priv->rescale.ymax));
 				else
 				{
 					s=((priv->bounds.xmax)-(priv->bounds.xmin))/xn;
@@ -4134,19 +4136,19 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 		{
 			if ((event->x)>=xw-11)
 			{
-				(plot->zmode)^=GTK_PLOT_LINEAR_ZOOM_OUT;
-				gtk_plot_linear_redraw(widget);
-			}
-			else if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_SGL)!=0)
-			{
-				(plot->zmode)&=GTK_PLOT_LINEAR_ZOOM_OUT;
-				gtk_plot_linear_redraw(widget);
+				if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_DRG|GTK_PLOT_LINEAR_ZOOM_OUT))==0) {(plot->zmode)&=!GTK_PLOT_LINEAR_ZOOM_SGL; (plot->zmode)|=GTK_PLOT_LINEAR_ZOOM_DRG;}
+				else (plot->zmode)--;
 			}
 			else
 			{
-				{(plot->zmode)++; (plot->zmode)++;}
-				gtk_plot_linear_redraw(widget);
+				(plot->zmode)-=GTK_PLOT_LINEAR_ZOOM_HZT;
+				if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL|GTK_PLOT_LINEAR_ZOOM_HZT|GTK_PLOT_LINEAR_ZOOM_VRT))==0)
+				{
+					if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_DRG)!=0) (plot->zmode)|=(GTK_PLOT_LINEAR_ZOOM_VRT|GTK_PLOT_LINEAR_ZOOM_HZT);
+					else (plot->zmode)|=GTK_PLOT_LINEAR_ZOOM_SGL;
+				}
 			}
+			gtk_plot_linear_redraw(widget);
 		}
 	}
 	return FALSE;
