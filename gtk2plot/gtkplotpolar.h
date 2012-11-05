@@ -70,6 +70,7 @@
 	};
 	gboolean gtk_plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, gdouble thn, gdouble thx, gdouble tcn, gdouble thc);
 	gboolean gtk_plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
+	gboolean gtk_plot_polar_print(GtkPrintOperation *operation, GtkPrintContext *context, gint page_nr, gpointer data);
 	gboolean gtk_plot_polar_print_eps(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_polar_print_png(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_polar_print_svg(GtkWidget *widget, gchar *fout);

@@ -5301,6 +5301,13 @@ gboolean gtk_plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdoub
 	return FALSE;
 }
 
+gboolean gtk_plot_polar_print(GtkPrintOperation *operation, GtkPrintContext *context, gint page_nr, gpointer data)
+{
+	cairo_t* cr=gtk_print_context_get_cairo_context(context);
+	draw(GTK_WIDGET(data), cr);
+	return FALSE;
+}
+
 gboolean gtk_plot_polar_print_eps(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;

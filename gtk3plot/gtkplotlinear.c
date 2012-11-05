@@ -3913,6 +3913,13 @@ gboolean gtk_plot_linear_update_scale_pretty(GtkWidget *widget, gdouble xl, gdou
 	return FALSE;
 }
 
+gboolean gtk_plot_linear_print(GtkPrintOperation *operation, GtkPrintContext *context, gint page_nr, gpointer data)
+{
+	cairo_t* cr=gtk_print_context_get_cairo_context(context);
+	draw(GTK_WIDGET(data), cr);
+	return FALSE;
+}
+
 gboolean gtk_plot_linear_print_eps(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
@@ -4047,7 +4054,7 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 			yn=(priv->rescale.ymax)-(priv->rescale.ymin);
 			if (((xn>DZE)||(xn<NZE))&&((yn>DZE)||(yn<NZE)))
 			{
-				if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_DRG)!=0) gtk_plot_linear_update_scale_pretty(widget, xn+(priv->bounds.xmin), xn+(priv->bounds.xmax), yn+(priv->bounds.ymin), yn+(priv->bounds.ymax));
+				if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_DRG)!=0) gtk_plot_linear_update_scale_pretty(widget, (priv->bounds.xmin)-xn, (priv->bounds.xmax)-xn, (priv->bounds.ymin)-yn, (priv->bounds.ymax)-yn);
 				else if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_OUT)==0) gtk_plot_linear_update_scale_pretty(widget, (priv->rescale.xmin), (priv->rescale.xmax), (priv->rescale.ymin), (priv->rescale.ymax));
 				else
 				{
@@ -4152,7 +4159,8 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 					else (plot->zmode)|=GTK_PLOT_LINEAR_ZOOM_SGL;
 				}
 			}
-			gtk_plot_linear_redraw(widget);
+			//gtk_plot_linear_redraw(widget);
+			gtk_widget_queue_draw_area(widget, xw-22, 0, 22, 11);
 		}
 	}
 	return FALSE;
