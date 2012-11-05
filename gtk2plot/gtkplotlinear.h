@@ -40,9 +40,10 @@
 	typedef enum
 	{
 		GTK_PLOT_LINEAR_ZOOM_OUT = 1 << 0,
-		GTK_PLOT_LINEAR_ZOOM_HZT = 1 << 1,
-		GTK_PLOT_LINEAR_ZOOM_VRT = 1 << 2,
-		GTK_PLOT_LINEAR_ZOOM_SGL = 1 << 3
+		GTK_PLOT_LINEAR_ZOOM_DRG = 1 << 1,
+		GTK_PLOT_LINEAR_ZOOM_HZT = 1 << 2,
+		GTK_PLOT_LINEAR_ZOOM_VRT = 1 << 3,
+		GTK_PLOT_LINEAR_ZOOM_SGL = 1 << 4
 	} GtkPlotLinearZoom;
 	typedef enum
 	{
