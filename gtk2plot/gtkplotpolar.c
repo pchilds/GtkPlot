@@ -5534,7 +5534,7 @@ static gboolean gtk_plot_polar_button_release(GtkWidget *widget, GdkEventButton 
 			else
 			{
 				(plot->zmode)-=GTK_PLOT_POLAR_ZOOM_RDL;
-				if (((plot->zmode)&(GTK_PLOT_POLAR_ZOOM_SGL|GTK_PLOT_POLAR_ZOOM_AZT|GTK_PLOT_POLAR_ZOOM_RDL))==0) (plot->zmode)|=GTK_PLOT_POLAR_ZOOM_SGL;
+				if (((plot->zmode)&(GTK_PLOT_POLAR_ZOOM_SGL|GTK_PLOT_POLAR_ZOOM_AZM|GTK_PLOT_POLAR_ZOOM_RDL))==0) (plot->zmode)|=GTK_PLOT_POLAR_ZOOM_SGL;
 			}
 			gtk_plot_polar_redraw(widget);
 		}
