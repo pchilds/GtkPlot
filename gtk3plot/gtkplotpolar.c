@@ -5520,7 +5520,7 @@ static gboolean gtk_plot_polar_button_release(GtkWidget *widget, GdkEventButton 
 				(plot->zmode)-=GTK_PLOT_POLAR_ZOOM_RDL;
 				if (((plot->zmode)&(GTK_PLOT_POLAR_ZOOM_SGL|GTK_PLOT_POLAR_ZOOM_AZM|GTK_PLOT_POLAR_ZOOM_RDL))==0) (plot->zmode)|=GTK_PLOT_POLAR_ZOOM_SGL;
 			}
-			gtk_plot_polar_redraw(widget);
+			gtk_widget_queue_draw_area(widget, xw-22, 0, 22, 11);
 		}
 	}
 	return FALSE;
@@ -5533,7 +5533,7 @@ void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl)
 	{(plot->rlab)=g_strdup(rl); (plot->thlab)=g_strdup(tl);}
 }
 
-void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, GArray *st)
+void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, Garray *st)
 {
 	if (plot->rdata) g_array_free((plot->rdata), FALSE);
 	if (plot->thdata) g_array_free((plot->thdata), FALSE);
