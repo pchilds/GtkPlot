@@ -68,6 +68,7 @@
 	};
 	gboolean gtk_plot_linear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 	gboolean gtk_plot_linear_update_scale_pretty(GtkWidget *widget, gdouble xl, gdouble xu, gdouble yl, gdouble yu);
+	gboolean gtk_plot_linear_print(GtkPrintOperation *operation, GtkPrintContext *context, gint page_nr, gpointer data);
 	gboolean gtk_plot_linear_print_eps(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_linear_print_png(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_linear_print_svg(GtkWidget *widget, gchar *fout);
