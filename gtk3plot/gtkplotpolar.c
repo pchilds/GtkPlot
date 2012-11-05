@@ -143,15 +143,7 @@ static void drawz(GtkWidget *widget, cairo_t *cr)
 		cairo_line_to(cr, xw-3.5, 3.5);
 	}
 	cairo_stroke(cr);
-	if (((plot->zmode)&GTK_PLOT_POLAR_ZOOM_SGL)!=0)
-	{
-		cairo_move_to(cr, xw-20, 2);
-		cairo_line_to(cr, xw-13, 9);
-		cairo_move_to(cr, xw-20, 9);
-		cairo_line_to(cr, xw-13, 2);
-		cairo_stroke(cr);
-	}
-	else
+	if (((plot->zmode)&GTK_PLOT_POLAR_ZOOM_SGL)==0)
 	{
 		cairo_save(cr);
 		dt=1;

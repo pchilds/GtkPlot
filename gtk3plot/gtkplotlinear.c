@@ -4136,7 +4136,11 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 		{
 			if ((event->x)>=xw-11)
 			{
-				if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_DRG|GTK_PLOT_LINEAR_ZOOM_OUT))==0) {(plot->zmode)&=(~GTK_PLOT_LINEAR_ZOOM_SGL); (plot->zmode)|=GTK_PLOT_LINEAR_ZOOM_DRG;}
+				if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_DRG|GTK_PLOT_LINEAR_ZOOM_OUT))==0)
+				{
+					if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL))!=0) (plot->zmode)>>=1;
+					(plot->zmode)|=GTK_PLOT_LINEAR_ZOOM_DRG;
+				}
 				else (plot->zmode)--;
 			}
 			else
