@@ -213,7 +213,7 @@ void prt(GtkWidget *widget, gpointer data)
 	res=gtk_print_operation_run(prto, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(data), &Err);
 	if (res==GTK_PRINT_OPERATION_RESULT_ERROR)
 	{
-		str=g_strdup_printf(_("An error occured while printing: %s."), (Err->message));
+		str=g_strdup_printf("An error occured while printing: %s.", (Err->message));
 		gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
 		g_free(str);
 		g_error_free(Err);
