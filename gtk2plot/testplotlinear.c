@@ -34,9 +34,10 @@
 #define CMI 0.000015259021897
 #define HM 32767
 
-GdkColormap *cmp;
-GtkWidget *helpwin, *window, *plot, *statusbar, *colour, *jind, *entry1, *entry2, *butt1, *butt2, *jix;
 gchar* fol=NULL;
+GdkColormap *cmp;
+GtkPrintSettings *prst=NULL;
+GtkWidget *helpwin, *window, *plot, *statusbar, *colour, *jind, *entry1, *entry2, *butt1, *butt2, *jix;
 
 void dpa(GtkWidget *widget, gpointer data)
 {
@@ -245,7 +246,40 @@ void dpr(GtkWidget *widget, gpointer data)
 	gtk_widget_show(helpwin);
 }
 
+void prb(GtkPrintOperation *prto, GtkPrintContext *ctex, int page_nr) {gtk_print_operation_set_current_page(prto, 0); gtk_print_operation_set_has_selection(prto, FALSE);}
+
 void prt(GtkWidget *widget, gpointer data)
+{
+	gchar *str;
+	GError *Err=NULL;
+	GtkPageSetup *prps=NULL;
+	GtkPrintOperation *prto;
+	GtkPrintOperationResult res;
+
+	prto=gtk_print_operation_new();
+	if (prst!=NULL) gtk_print_operation_set_print_settings(prto, prst);
+	prps=gtk_print_operation_get_default_page_setup(prto);
+	gtk_page_setup_set_orientation(prps, GTK_PAGE_ORIENTATION_LANDSCAPE);
+	gtk_print_operation_set_default_page_setup(prto, prps);
+	g_signal_connect(prto, "begin_print", G_CALLBACK(prb), NULL);
+	g_signal_connect(prto, "draw_page", G_CALLBACK(gtk_plot_linear_print), (gpointer) plot);
+	res=gtk_print_operation_run(prto, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(data), &Err);
+	if (res==GTK_PRINT_OPERATION_RESULT_ERROR)
+	{
+		str=g_strdup_printf(_("An error occured while printing: %s."), (Err->message));
+		gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+		g_free(str);
+		g_error_free(Err);
+	}
+	else if (res==GTK_PRINT_OPERATION_RESULT_APPLY)
+	{
+		if (prst!=NULL) g_object_unref(prst);
+		prst=g_object_ref(gtk_print_operation_get_print_settings(prto));
+	}
+	g_object_unref(prto);
+}
+
+void prg(GtkWidget *widget, gpointer data)
 {
 	GtkWidget *wfile;
 	GtkFileFilter *epsfilt, *pngfilt, *svgfilt, *filt;
@@ -314,14 +348,14 @@ void prt(GtkWidget *widget, gpointer data)
 void opd(GtkWidget *widget, gpointer data)
 {
 	GArray *nx, *st, *sz, *x, *y;
+	gchar *contents, *fin=NULL, *str;
+	gchar **strary, **strat;
+	gdouble lcl, mny, mxy, xi, xf;
+	GError *Err;
+	gint lc;
 	GtkPlotLinear *plt;
 	GtkWidget *wfile;
-	gdouble xi, xf, lcl, mny, mxy;
 	guint k, sal;
-	gint lc;
-	gchar *contents, *str, *fin=NULL;
-	gchar **strary, **strat;
-	GError *Err;
 
 	wfile=gtk_file_chooser_dialog_new("Select Data File", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	g_signal_connect(G_OBJECT(wfile), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(wfile));
@@ -337,11 +371,7 @@ void opd(GtkWidget *widget, gpointer data)
 		{
 			strary=g_strsplit_set(contents, "\r\n", 0);
 			sal=g_strv_length(strary);
-			x=g_array_new(FALSE, FALSE, sizeof(gdouble));
-			y=g_array_new(FALSE, FALSE, sizeof(gdouble));
-			st=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
-			sz=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
-			nx=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
+			{x=g_array_new(FALSE, FALSE, sizeof(gdouble)); y=g_array_new(FALSE, FALSE, sizeof(gdouble)); st=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1); sz=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1); nx=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);}
 			lc=0;
 			for (k=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jind)); k<sal; k++)
 			{
@@ -543,6 +573,11 @@ int main(int argc, char *argv[])
 	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
 	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_a, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(ad), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
+	gtk_widget_show(mni);
+	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE, NULL);
+	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(prg), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
 	gtk_widget_show(mni);
 	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_PRINT, NULL);

@@ -29,8 +29,9 @@
 #include "gtkplotpolar.h"
 #define NMY_PI -3.1415926535897932384626433832795028841971693993751
 
-GtkWidget *helpwin, *window, *plot, *statusbar, *colour, *jind, *entry1, *entry2, *butt1, *butt2, *jix;
 gchar* fol=NULL;
+GtkPrintSettings *prst=NULL;
+GtkWidget *butt1, *butt2, *colour, *entry1, *entry2, *helpwin, *jind, *jix, *plot, *statusbar, *window;
 
 void dph(GtkDialog *dlg, gint response, gpointer data)
 {
@@ -192,7 +193,40 @@ void dpr(GtkWidget *widget, gpointer data)
 	gtk_widget_show(helpwin);
 }
 
+void prb(GtkPrintOperation *prto, GtkPrintContext *ctex, int page_nr) {gtk_print_operation_set_current_page(prto, 0); gtk_print_operation_set_has_selection(prto, FALSE);}
+
 void prt(GtkWidget *widget, gpointer data)
+{
+	gchar *str;
+	GError *Err=NULL;
+	GtkPageSetup *prps=NULL;
+	GtkPrintOperation *prto;
+	GtkPrintOperationResult res;
+
+	prto=gtk_print_operation_new();
+	if (prst!=NULL) gtk_print_operation_set_print_settings(prto, prst);
+	prps=gtk_print_operation_get_default_page_setup(prto);
+	gtk_page_setup_set_orientation(prps, GTK_PAGE_ORIENTATION_LANDSCAPE);
+	gtk_print_operation_set_default_page_setup(prto, prps);
+	g_signal_connect(prto, "begin_print", G_CALLBACK(prb), NULL);
+	g_signal_connect(prto, "draw_page", G_CALLBACK(gtk_plot_polar_print), (gpointer) plot);
+	res=gtk_print_operation_run(prto, GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, GTK_WINDOW(data), &Err);
+	if (res==GTK_PRINT_OPERATION_RESULT_ERROR)
+	{
+		str=g_strdup_printf(_("An error occured while printing: %s."), (Err->message));
+		gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+		g_free(str);
+		g_error_free(Err);
+	}
+	else if (res==GTK_PRINT_OPERATION_RESULT_APPLY)
+	{
+		if (prst!=NULL) g_object_unref(prst);
+		prst=g_object_ref(gtk_print_operation_get_print_settings(prto));
+	}
+	g_object_unref(prto);
+}
+
+void prg(GtkWidget *widget, gpointer data)
 {
 	GtkWidget *wfile;
 	GtkFileFilter *epsfilt, *pngfilt, *svgfilt, *filt;
@@ -493,8 +527,13 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(ad), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
 	gtk_widget_show(mni);
+	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE, NULL);
+	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(prg), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
+	gtk_widget_show(mni);
 	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_PRINT, NULL);
-	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_KEY_p, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_p, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(prt), NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
 	gtk_widget_show(mni);
