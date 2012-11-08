@@ -206,6 +206,7 @@ void prt(GtkWidget *widget, gpointer data)
 	prto=gtk_print_operation_new();
 	if (prst!=NULL) gtk_print_operation_set_print_settings(prto, prst);
 	prps=gtk_print_operation_get_default_page_setup(prto);
+	if (prps==NULL) prps=gtk_page_setup_new();
 	gtk_page_setup_set_orientation(prps, GTK_PAGE_ORIENTATION_LANDSCAPE);
 	gtk_print_operation_set_default_page_setup(prto, prps);
 	g_signal_connect(prto, "begin_print", G_CALLBACK(prb), NULL);
