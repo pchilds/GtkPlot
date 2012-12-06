@@ -5533,7 +5533,7 @@ void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl)
 	{(plot->rlab)=g_strdup(rl); (plot->thlab)=g_strdup(tl);}
 }
 
-void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, Garray *st)
+void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, GArray *st)
 {
 	if (plot->rdata) g_array_free((plot->rdata), FALSE);
 	if (plot->thdata) g_array_free((plot->thdata), FALSE);
