@@ -123,6 +123,13 @@ echo "pkgconfigdir=\$(libdir)/pkgconfig"
 echo "pkgconfig_DATA=gtkplot-${gmx}.${gar}.pc"
 } >Makefile.am
 {
+echo "libgtkplot ($gmx.$gar) unstable; urgency=low"
+echo ""
+echo "  * Initial Release."
+echo ""
+echo " -- Paul Childs <pchilds@physics.org>  Sat, 21 Jul 2012 13:34:41 +1000"
+} >debian/changelog
+{
 echo "Source: libgtkplot"
 echo "Priority: optional"
 echo "Maintainer: Paul Childs <pchilds@physics.org>"
