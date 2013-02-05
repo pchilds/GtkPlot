@@ -25,6 +25,7 @@
 #ifndef __GTK_PLOT_ACCESSIBLE_H__
 #	define __GTK_PLOT_ACCESSIBLE_H__
 #	include <gtk/gtk.h>
+#	include <gtk/gtk-a11y.h>
 	G_BEGIN_DECLS
 #	define GTK_TYPE_PLOT_ACCESSIBLE (_gtk_plot_accessible_get_type())
 #	define GTK_PLOT_ACCESSIBLE(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_TYPE_PLOT_ACCESSIBLE, GtkPlotAccessible))
@@ -36,14 +37,12 @@
 	typedef struct _GtkPlotAccessibleClass GtkPlotAccessibleClass;
 	struct _GtkPlotAccessible
 	{
-		GtkAccessible parent;
-		AtkLayer layer;
+		GtkWidgetAccessible parent;
 	};
 	struct _GtkPlotAccessibleClass
 	{
-		GtkAccessibleClass parent_class;
-		void (*notify_gtk) (GObject *object, GParamSpec *pspec);
+		GtkWidgetAccessibleClass parent_class;
 	};
-	GType _gtk_plot_accessible_get_type(void);
+	GType gtk_plot_accessible_get_type(void);
 	G_END_DECLS
 #endif
