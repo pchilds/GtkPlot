@@ -13,7 +13,7 @@ lrv=$5
 if [ $1 -eq 3 ]
 then
 	gmx=3
-	gmn=2
+	gmn=8
 	gdp="-3"
 	{
 	echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g"
