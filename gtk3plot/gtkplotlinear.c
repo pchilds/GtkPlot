@@ -4192,56 +4192,26 @@ static void gtk_plot_linear_set_property(GObject *object, guint prop_id, const G
 {;
 	switch (prop_id)
 	{
-		case PROP_BXN:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin=g_value_get_double(value);
-			break;
-		}
-		case PROP_BXX:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax=g_value_get_double(value);
-			break;
-		}
-		case PROP_BYN:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin=g_value_get_double(value);
-			break;
-		}
-		case PROP_BYX:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax=g_value_get_double(value);
-			break;
-		}
-		case PROP_XTJ:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj=g_value_get_uint(value);
-			break;
-		}
-		case PROP_YTJ:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj=g_value_get_uint(value);
-			break;
-		}
-		case PROP_XTN:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn=g_value_get_uint(value);
-			break;
-		}
-		case PROP_YTN:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn=g_value_get_uint(value);
-			break;
-		}
-		case PROP_FA:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga=g_value_get_uint(value);
-			break;
-		}
-		default:
-		{
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-		}
+		case PROP_BXN: GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin=g_value_get_double(value);
+		break;
+		case PROP_BXX: GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax=g_value_get_double(value);
+		break;
+		case PROP_BYN: GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin=g_value_get_double(value);
+		break;
+		case PROP_BYX: GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax=g_value_get_double(value);
+		break;
+		case PROP_XTJ: GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj=g_value_get_uint(value);
+		break;
+		case PROP_YTJ: GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj=g_value_get_uint(value);
+		break;
+		case PROP_XTN: GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn=g_value_get_uint(value);
+		break;
+		case PROP_YTN: GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn=g_value_get_uint(value);
+		break;
+		case PROP_FA: GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga=g_value_get_uint(value);
+		break;
+		default: G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+		break;
 	}
 }
 
@@ -4249,56 +4219,26 @@ static void gtk_plot_linear_get_property(GObject *object, guint prop_id, GValue 
 {
 	switch (prop_id)
 	{
-		case PROP_BXN:
-		{
-			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin);
-			break;
-		}
-		case PROP_BXX:
-		{
-			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax);
-			break;
-		}
-		case PROP_BYN:
-		{
-			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin);
-			break;
-		}
-		case PROP_BYX:
-		{
-			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax);
-			break;
-		}
-		case PROP_XTJ:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj);
-			break;
-		}
-		case PROP_YTJ:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj);
-			break;
-		}
-		case PROP_XTN:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn);
-			break;
-		}
-		case PROP_YTN:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn);
-			break;
-		}
-		case PROP_FA:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga);
-			break;
-		}
-		default:
-		{
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-		}
+		case PROP_BXN: g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin);
+		break;
+		case PROP_BXX: g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax);
+		break;
+		case PROP_BYN: g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin);
+		break;
+		case PROP_BYX: g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax);
+		break;
+		case PROP_XTJ: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj);
+		break;
+		case PROP_YTJ: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj);
+		break;
+		case PROP_XTN: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn);
+		break;
+		case PROP_YTN: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn);
+		break;
+		case PROP_FA: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga);
+		break;
+		default: G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+		break;
 	}
 }
 

@@ -88,11 +88,12 @@ static void drawz(GtkWidget *widget, cairo_t *cr)
 {
 	gint xw;
 	gdouble dt;
-	GtkAllocation alloc;
+//	GtkAllocation alloc;
 	GtkPlotLinear *plot;
 
-	gtk_widget_get_allocation(widget, &alloc);
-	xw=alloc.width;
+//	gtk_widget_get_allocation(widget, &alloc);
+//	xw=alloc.width;
+	xw=widget->allocation.width;
 	plot=GTK_PLOT_LINEAR(widget);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_set_line_width(cr, 1);
@@ -164,7 +165,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	GtkPlotLinearPrivate *priv;
 	GtkPlotLinear *plot;
 	GtkPlot *plt;
-	GtkAllocation alloc;
+//	GtkAllocation alloc;
 	gint dtt, ft, hg, j, k, lt, st, tf, to, tn, tnn, tx, tz, wd, xa, xl, xr, xr2, xt, xu, xv, xvn, xw, ya, yl, yr, yr2, yu, yv, yvn, yw;
 	gdouble av, delx, dely, dt, lr1, lr2, vv, wv, zv;
 	guint lr3;
@@ -177,9 +178,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	{mtr3.xx=0; mtr3.xy=-1; mtr3.yx=1; mtr3.yy=0; mtr3.x0=0; mtr3.y0=0;}
 	plot=GTK_PLOT_LINEAR(widget);
 	plt=GTK_PLOT(widget);
-	gtk_widget_get_allocation(widget, &alloc);
-	xw=alloc.width;
-	yw=(alloc.height);
+//	gtk_widget_get_allocation(widget, &alloc);
+//	xw=alloc.width;
+//	yw=(alloc.height);
+	xw=widget->allocation.width;
+	yw=widget->allocation.height;
 	priv=GTK_PLOT_LINEAR_GET_PRIVATE(plot);
 	(priv->flaga)&=(GTK_PLOT_LINEAR_AXES_LT|GTK_PLOT_LINEAR_AXES_LR);
 	delx=((priv->bounds.xmax)-(priv->bounds.xmin))/(priv->ticks.xj);
@@ -3944,10 +3947,11 @@ gboolean gtk_plot_linear_print_eps(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	GtkAllocation alloc;
+//	GtkAllocation alloc;
 
-	gtk_widget_get_allocation(plot, &alloc);
-	surface=cairo_ps_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
+//	gtk_widget_get_allocation(plot, &alloc);
+//	surface=cairo_ps_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
+	surface=cairo_ps_surface_create(fout, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
 	cairo_ps_surface_set_eps(surface, TRUE);
 	cairo_ps_surface_restrict_to_level(surface, CAIRO_PS_LEVEL_2);
 	cr=cairo_create(surface);
@@ -3963,10 +3967,11 @@ gboolean gtk_plot_linear_print_png(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	GtkAllocation alloc;
+//	GtkAllocation alloc;
 
-	gtk_widget_get_allocation(plot, &alloc);
-	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) (alloc.width), (gdouble) (alloc.height));
+//	gtk_widget_get_allocation(plot, &alloc);
+//	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) (alloc.width), (gdouble) (alloc.height));
+	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
 	cr=cairo_create(surface);
 	draw(plot, cr);
 	cairo_surface_write_to_png(surface, fout);
@@ -3979,10 +3984,11 @@ gboolean gtk_plot_linear_print_svg(GtkWidget *plot, gchar* fout)
 {
 	cairo_t *cr;
 	cairo_surface_t *surface;
-	GtkAllocation alloc;
+//	GtkAllocation alloc;
 
-	gtk_widget_get_allocation(plot, &alloc);
-	surface=cairo_svg_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
+//	gtk_widget_get_allocation(plot, &alloc);
+//	surface=cairo_svg_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
+	surface=cairo_svg_surface_create(fout, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
 	cr=cairo_create(surface);
 	draw(plot, cr);
 	cairo_destroy(cr);
@@ -4047,7 +4053,7 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 {
 	GtkPlotLinearPrivate *priv;
 	GtkPlotLinear *plot;
-	GtkAllocation alloc;
+//	GtkAllocation alloc;
 	gint d, xw;
 	gdouble xn, xx, yn, yx, s;
 
@@ -4165,8 +4171,9 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 	}
 	else if ((event->y)<=11)
 	{
-		gtk_widget_get_allocation(widget, &alloc);
-		xw=(alloc.width);
+//		gtk_widget_get_allocation(widget, &alloc);
+//		xw=(alloc.width);
+		xw=(plot->alloc.width);
 		if ((event->x)>=xw-22)
 		{
 			if ((event->x)>=xw-11)
@@ -4220,56 +4227,26 @@ static void gtk_plot_linear_set_property(GObject *object, guint prop_id, const G
 {
 	switch (prop_id)
 	{
-		case PROP_BXN:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin=g_value_get_double(value);
-			break;
-		}
-		case PROP_BXX:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax=g_value_get_double(value);
-			break;
-		}
-		case PROP_BYN:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin=g_value_get_double(value);
-			break;
-		}
-		case PROP_BYX:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax=g_value_get_double(value);
-			break;
-		}
-		case PROP_XTJ:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj=g_value_get_uint(value);
-			break;
-		}
-		case PROP_YTJ:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj=g_value_get_uint(value);
-			break;
-		}
-		case PROP_XTN:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn=g_value_get_uint(value);
-			break;
-		}
-		case PROP_YTN:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn=g_value_get_uint(value);
-			break;
-		}
-		case PROP_FA:
-		{
-			GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga=g_value_get_uint(value);
-			break;
-		}
-		default:
-		{
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-		}
+		case PROP_BXN: GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin=g_value_get_double(value);
+		break;
+		case PROP_BXX: GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax=g_value_get_double(value);
+		break;
+		case PROP_BYN: GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin=g_value_get_double(value);
+		break;
+		case PROP_BYX: GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax=g_value_get_double(value);
+		break;
+		case PROP_XTJ: GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj=g_value_get_uint(value);
+		break;
+		case PROP_YTJ: GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj=g_value_get_uint(value);
+		break;
+		case PROP_XTN: GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn=g_value_get_uint(value);
+		break;
+		case PROP_YTN: GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn=g_value_get_uint(value);
+		break;
+		case PROP_FA: GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga=g_value_get_uint(value);
+		break;
+		default: G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+		break;
 	}
 }
 
@@ -4277,56 +4254,26 @@ static void gtk_plot_linear_get_property(GObject *object, guint prop_id, GValue 
 {
 	switch (prop_id)
 	{
-		case PROP_BXN:
-		{
-			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin);
-			break;
-		}
-		case PROP_BXX:
-		{
-			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax);
-			break;
-		}
-		case PROP_BYN:
-		{
-			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin);
-			break;
-		}
-		case PROP_BYX:
-		{
-			g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax);
-			break;
-		}
-		case PROP_XTJ:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj);
-			break;
-		}
-		case PROP_YTJ:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj);
-			break;
-		}
-		case PROP_XTN:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn);
-			break;
-		}
-		case PROP_YTN:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn);
-			break;
-		}
-		case PROP_FA:
-		{
-			g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga);
-			break;
-		}
-		default:
-		{
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-		}
+		case PROP_BXN: g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmin);
+		break;
+		case PROP_BXX: g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.xmax);
+		break;
+		case PROP_BYN: g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymin);
+		break;
+		case PROP_BYX: g_value_set_double(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->bounds.ymax);
+		break;
+		case PROP_XTJ: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xj);
+		break;
+		case PROP_YTJ: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yj);
+		break;
+		case PROP_XTN: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.xn);
+		break;
+		case PROP_YTN: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->ticks.yn);
+		break;
+		case PROP_FA: g_value_set_uint(value, GTK_PLOT_LINEAR_GET_PRIVATE(object)->flaga);
+		break;
+		default: G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+		break;
 	}
 }
 

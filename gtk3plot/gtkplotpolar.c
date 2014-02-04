@@ -5553,69 +5553,32 @@ static void gtk_plot_polar_set_property(GObject *object, guint prop_id, const GV
 {
 	switch (prop_id)
 	{
-		case PROP_BRN:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin)=g_value_get_double(value);
-			break;
-		}
-		case PROP_BRX:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax)=g_value_get_double(value);
-			break;
-		}
-		case PROP_BTN:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin)=g_value_get_double(value);
-			break;
-		}
-		case PROP_BTX:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax)=g_value_get_double(value);
-			break;
-		}
-		case PROP_CR:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r)=g_value_get_double(value);
-			break;
-		}
-		case PROP_CT:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th)=g_value_get_double(value);
-			break;
-		}
-		case PROP_RT:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r)=g_value_get_uint(value);
-			break;
-		}
-		case PROP_ZIT:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin)=g_value_get_uint(value);
-			break;
-		}
-		case PROP_ZTM:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m)=g_value_get_uint(value);
-			break;
-		}
-		case PROP_ZC:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc)=g_value_get_uint(value);
-			break;
-		}
-		case PROP_RC:
-		{
-			(GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs)=g_value_get_uint(value);
-			break;
-		}
+		case PROP_BRN: (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin)=g_value_get_double(value);
+		break;
+		case PROP_BRX: (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax)=g_value_get_double(value);
+		break;
+		case PROP_BTN: (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin)=g_value_get_double(value);
+		break;
+		case PROP_BTX: (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax)=g_value_get_double(value);
+		break;
+		case PROP_CR: (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r)=g_value_get_double(value);
+		break;
+		case PROP_CT: (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th)=g_value_get_double(value);
+		break;
+		case PROP_RT: (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r)=g_value_get_uint(value);
+		break;
+		case PROP_ZIT: (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin)=g_value_get_uint(value);
+		break;
+		case PROP_ZTM: (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m)=g_value_get_uint(value);
+		break;
+		case PROP_ZC: (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc)=g_value_get_uint(value);
+		break;
+		case PROP_RC: (GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs)=g_value_get_uint(value);
+		break;
 		case PROP_TC: {(GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs)=g_value_get_uint(value);
-			break;
-		}
-		default:
-		{
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-		}
+		break;
+		default: G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+		break;
 	}
 }
 
@@ -5623,71 +5586,32 @@ static void gtk_plot_polar_get_property(GObject *object, guint prop_id, GValue *
 {
 	switch (prop_id)
 	{
-		case PROP_BRN:
-		{
-			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin));
-			break;
-		}
-		case PROP_BRX:
-		{
-			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax));
-			break;
-		}
-		case PROP_BTN:
-		{
-			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin));
-			break;
-		}
-		case PROP_BTX:
-		{
-			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax));
-			break;
-		}
-		case PROP_CR:
-		{
-			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r));
-			break;
-		}
-		case PROP_CT:
-		{
-			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th));
-			break;
-		}
-		case PROP_RT:
-		{
-			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r));
-			break;
-		}
-		case PROP_ZIT:
-		{
-			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin));
-			break;
-		}
-		case PROP_ZTM:
-		{
-			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m));
-			break;
-		}
-		case PROP_ZC:
-		{
-			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc));
-			break;
-		}
-		case PROP_RC:
-		{
-			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs));
-			break;
-		}
-		case PROP_TC:
-		{
-			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs));
-			break;
-		}
-		default:
-		{
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-		}
+		case PROP_BRN: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin));
+		break;
+		case PROP_BRX: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax));
+		break;
+		case PROP_BTN: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin));
+		break;
+		case PROP_BTX: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax));
+		break;
+		case PROP_CR: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r));
+		break;
+		case PROP_CT: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th));
+		break;
+		case PROP_RT: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r));
+		break;
+		case PROP_ZIT: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin));
+		break;
+		case PROP_ZTM: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m));
+		break;
+		case PROP_ZC: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc));
+		break;
+		case PROP_RC: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs));
+		break;
+		case PROP_TC: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs));
+		break;
+		default: G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+		break;
 	}
 }
 
