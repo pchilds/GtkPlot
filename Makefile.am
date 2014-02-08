@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-SUBDIRS=gtk2plot
+SUBDIRS=gtk2plot debian
 ACLOCAL_AMFLAGS=-I m4 ${ACLOCAL_FLAGS}
 MAINTAINERCLEANFILES=Makefile.in configure
 DISTCLEANFILES= =

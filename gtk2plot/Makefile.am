@@ -7,6 +7,7 @@ nodist_gtkplot_libinclude_HEADERS=../gtkplotconfig.h
 lib_LTLIBRARIES=libgtkplot-@PLOT_API_VERSION@.la
 libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\
 	gtkplot.c				\
+	gtkplotdonut.c				\
 	gtkplotlinear.c				\
 	gtkplotpolar.c
 libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\
@@ -17,11 +18,14 @@ libgtkplot_@PLOT_API_VERSION@_la_LDFLAGS=	\
 gtkplotincludedir=$(includedir)/gtkplot-2.0
 gtkplotinclude_HEADERS=				\
 	gtkplot.h				\
+	gtkplotdonut.h				\
 	gtkplotlinear.h				\
 	gtkplotpolar.h
 
-bin_PROGRAMS=TestPlotLinear TestPlotPolar
-TestPlotLinear_SOURCES=testplotlinear.c
-TestPlotLinear_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
-TestPlotPolar_SOURCES=testplotpolar.c
-TestPlotPolar_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
+bin_PROGRAMS=testPlotDonut testPlotLinear testPlotPolar
+testPlotDonut_SOURCES=testplotdonut.c
+testPlotDonut_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
+testPlotLinear_SOURCES=testplotlinear.c
+testPlotLinear_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
+testPlotPolar_SOURCES=testplotpolar.c
+testPlotPolar_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la

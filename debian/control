@@ -11,10 +11,10 @@ Section: libdevel
 Architecture: any
 Depends: libgtkplot-2 (= ${binary:Version})
 Description: Provides headers for the libgtkplot-2 package
- libgtkplot-2 makes available to gtk+2 programs, a linear and polar
- plotting widget. The widget features multiplot capability, zoom
- control, smart range setting and mouse location tracking.
- Processing is optimised towards speed for large data sets as
+ libgtkplot-2 makes available to gtk+2 programs, a pi/donut,
+ linear and polar plotting widgets. Features include: multiplot
+ capability, zoom control, smart range setting and mouse location
+ tracking. Processing is optimised towards speed for large data sets as
  commonly occurs in scientific applications and outputs to a neat
  publication ready format.
 
@@ -23,10 +23,10 @@ Section: doc
 Architecture: any
 Depends: libgtkplot-2 (= ${binary:Version})
 Description: Provides examples for the libgtkplot-2 package
- libgtkplot-2 makes available to gtk+2 programs, a linear and polar
- plotting widget. The widget features multiplot capability, zoom
- control, smart range setting and mouse location tracking.
- Processing is optimised towards speed for large data sets as
+ libgtkplot-2 makes available to gtk+2 programs, a pi/donut,
+ linear and polar plotting widgets. Features include: multiplot
+ capability, zoom control, smart range setting and mouse location
+ tracking. Processing is optimised towards speed for large data sets as
  commonly occurs in scientific applications and outputs to a neat
  publication ready format.
 
@@ -35,10 +35,10 @@ Section: debug
 Architecture: any
 Depends: libgtkplot-2 (= ${binary:Version})
 Description: Provides debug symbols for the libgtkplot-2 package
- libgtkplot-2 makes available to gtk+2 programs, a linear and polar
- plotting widget. The widget features multiplot capability, zoom
- control, smart range setting and mouse location tracking.
- Processing is optimised towards speed for large data sets as
+ libgtkplot-2 makes available to gtk+2 programs, a pi/donut,
+ linear and polar plotting widgets. Features include: multiplot
+ capability, zoom control, smart range setting and mouse location
+ tracking. Processing is optimised towards speed for large data sets as
  commonly occurs in scientific applications and outputs to a neat
  publication ready format.
 
@@ -47,9 +47,9 @@ Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Provides shared libraries for plotting with gtk+2
- libgtkplot-2 makes available to gtk+2 programs, a linear and polar
- plotting widget. The widget features multiplot capability, zoom
- control, smart range setting and mouse location tracking.
- Processing is optimised towards speed for large data sets as
+ libgtkplot-2 makes available to gtk+2 programs, a pi/donut,
+ linear and polar plotting widgets. Features include: multiplot
+ capability, zoom control, smart range setting and mouse location
+ tracking. Processing is optimised towards speed for large data sets as
  commonly occurs in scientific applications and outputs to a neat
  publication ready format.

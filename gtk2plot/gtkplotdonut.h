@@ -53,7 +53,7 @@
 	{
 		GtkPlotClass parent_class;
 	};
-	gboolean gtk_plot_donut_refresh(GtkWidget *widget, gdouble theta);
+	gboolean gtk_plot_donut_refresh(GtkWidget *widget);
 	gboolean gtk_plot_donut_print(GtkPrintOperation *operation, GtkPrintContext *context, gint page_nr, gpointer data);
 	gboolean gtk_plot_donut_print_eps(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_donut_print_png(GtkWidget *widget, gchar *fout);

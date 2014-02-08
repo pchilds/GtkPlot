@@ -4173,7 +4173,7 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 	{
 //		gtk_widget_get_allocation(widget, &alloc);
 //		xw=(alloc.width);
-		xw=(plot->alloc.width);
+		xw=(widget->allocation.width);
 		if ((event->x)>=xw-22)
 		{
 			if ((event->x)>=xw-11)
@@ -4217,10 +4217,26 @@ void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArra
 
 static void gtk_plot_linear_finalise(GtkPlotLinear *plot)
 {
-	if (plot->xlab) g_free(plot->xlab);
-	if (plot->ylab) g_free(plot->ylab);
-	if (plot->xdata) g_array_free((plot->xdata), FALSE);
-	if (plot->ydata) g_array_free((plot->ydata), FALSE);
+	if (plot->xlab)
+	{
+		g_free(plot->xlab);
+		plot->xlab=NULL;
+	}
+	if (plot->ylab)
+	{
+		g_free(plot->ylab);
+		plot->ylab=NULL;
+	}
+	if (plot->xdata)
+	{
+		g_array_free((plot->xdata), FALSE);
+		plot->xdata=NULL;
+	}
+	if (plot->ydata)
+	{
+		g_array_free((plot->ydata), FALSE);
+		plot->ydata=NULL;
+	}
 }
 
 static void gtk_plot_linear_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -4320,7 +4336,6 @@ static void gtk_plot_linear_class_init(GtkPlotLinearClass *klass)
 static void gtk_plot_linear_init(GtkPlotLinear *plot)
 {
 	GtkPlotLinearPrivate *priv;
-	gdouble val;
 
 	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);
 	priv=GTK_PLOT_LINEAR_GET_PRIVATE(plot);
