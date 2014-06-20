@@ -43,38 +43,65 @@ void gtk_plot_set_font(GtkPlot *plot, PangoFontDescription *lf, PangoFontDescrip
 
 void gtk_plot_set_colour(GtkPlot *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al)
 {
-	if (plot->rd) g_array_free((plot->rd), FALSE);
-	if (plot->gr) g_array_free((plot->gr), FALSE);
-	if (plot->bl) g_array_free((plot->bl), FALSE);
-	if (plot->al) g_array_free((plot->al), FALSE);
+	if (plot->rd) g_array_unref(plot->rd);
+	if (plot->gr) g_array_unref(plot->gr);
+	if (plot->bl) g_array_unref(plot->bl);
+	if (plot->al) g_array_unref(plot->al);
 	{(plot->rd)=g_array_ref(rd); (plot->gr)=g_array_ref(gr); (plot->bl)=g_array_ref(bl); (plot->al)=g_array_ref(al);}
 }
 
 void gtk_plot_set_indices(GtkPlot *plot, GArray *nx, GArray *sz, GArray *st)
 {
-	if (plot->ind) g_array_free((plot->ind), FALSE);
-	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	if (plot->stride) g_array_free((plot->stride), FALSE);
+	if (plot->ind) g_array_unref(plot->ind);
+	if (plot->sizes) g_array_unref(plot->sizes);
+	if (plot->stride) g_array_unref(plot->stride);
 	{(plot->ind)=g_array_ref(nx); (plot->sizes)=g_array_ref(sz); (plot->stride)=g_array_ref(st);}
 }
 
 void gtk_plot_set_index(GtkPlot *plot, GArray *nx)
 {
-	if (plot->ind) g_array_free((plot->ind), FALSE);
+	if (plot->ind) g_array_unref(plot->ind);
 	(plot->ind)=g_array_ref(nx);
 }
 
 static void gtk_plot_finalise(GtkPlot *plot)
 {
-	if (plot->ind) g_array_free((plot->ind), FALSE);
-	if (plot->sizes) g_array_free((plot->sizes), FALSE);
-	if (plot->stride) g_array_free((plot->stride), FALSE);
-	if (plot->afont) pango_font_description_free(plot->afont);
-	if (plot->lfont) pango_font_description_free(plot->lfont);
-	if (plot->rd) g_array_free((plot->rd), FALSE);
-	if (plot->gr) g_array_free((plot->gr), FALSE);
-	if (plot->bl) g_array_free((plot->bl), FALSE);
-	if (plot->al) g_array_free((plot->al), FALSE);
+	if (plot->ind) {
+		g_array_unref(plot->ind);
+		plot->ind=NULL;
+	}
+	if (plot->sizes) {
+		g_array_unref(plot->sizes);
+		plot->sizes=NULL;
+	}
+	if (plot->stride) {
+		g_array_unref(plot->stride);
+		plot->stride=NULL;
+	}
+	if (plot->afont) {
+		pango_font_description_free(plot->afont);
+		plot->afont=NULL;
+	}
+	if (plot->lfont) {
+		pango_font_description_free(plot->lfont);
+		plot->lfont=NULL;
+	}
+	if (plot->rd) {
+		g_array_unref(plot->rd);
+		plot->rd=NULL;
+	}
+	if (plot->gr) {
+		g_array_unref(plot->gr);
+		plot->gr=NULL;
+	}
+	if (plot->bl) {
+		g_array_unref(plot->bl);
+		plot->bl=NULL;
+	}
+	if (plot->al) {
+		g_array_unref(plot->al);
+		plot->al=NULL;
+	}
 }
 
 static void gtk_plot_class_init(GtkPlotClass *klass)

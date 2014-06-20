@@ -30,7 +30,7 @@
 #	define GTK_PLOT_TYPE_LINEAR (gtk_plot_linear_get_type())
 #	define GTK_PLOT_LINEAR(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_PLOT_TYPE_LINEAR, GtkPlotLinear))
 #	define GTK_PLOT_IS_LINEAR(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_PLOT_TYPE_LINEAR))
-#	define GTK_PLOT_LINEAR_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), GTK_PLOT_LINEAR, GtkPlotLinearClass))
+#	define GTK_PLOT_LINEAR_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), GTK_PLOT_TYPE_LINEAR, GtkPlotLinearClass))
 #	define GTK_PLOT_IS_LINEAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GTK_PLOT_TYPE_LINEAR))
 #	define GTK_PLOT_LINEAR_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), GTK_PLOT_TYPE_LINEAR, GtkPlotLinearClass))
 	typedef struct _GtkPlotLinear GtkPlotLinear;
@@ -73,5 +73,6 @@
 	void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl);
 	void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st);
 	GtkWidget *gtk_plot_linear_new(void);
+	extern GType gtk_plot_linear_get_type(void);
 	G_END_DECLS
 #endif

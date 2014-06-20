@@ -40,6 +40,7 @@
 #include <math.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>
+#include "gtkplot.h"
 #include "gtkplotpolar.h"
 #include "a11y/gtkplotpolaraccessible.h"
 #define GTK_PLOT_POLAR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), GTK_PLOT_TYPE_POLAR, GtkPlotPolarPrivate))
@@ -5535,18 +5536,30 @@ void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl)
 
 void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, GArray *st)
 {
-	if (plot->rdata) g_array_free((plot->rdata), FALSE);
-	if (plot->thdata) g_array_free((plot->thdata), FALSE);
+	if (plot->rdata) g_array_unref(plot->rdata);
+	if (plot->thdata) g_array_unref(plot->thdata);
 	{(plot->rdata)=g_array_ref(rd); (plot->thdata)=g_array_ref(td);}
 	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
 }
 
 static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
 {
-	if (plot->rlab) g_free(plot->rlab);
-	if (plot->thlab) g_free(plot->thlab);
-	if (plot->rdata) g_free(plot->rdata);
-	if (plot->thdata) g_free(plot->thdata);
+	if (plot->rlab) {
+		g_free(plot->rlab);
+		plot->rlab=NULL;
+	}
+	if (plot->thlab) {
+		g_free(plot->thlab);
+		plot->thlab=NULL;
+	}
+	if (plot->rdata) {
+		g_array_unref(plot->rdata);
+		plot->rdata=NULL;
+	}
+	if (plot->thdata) {
+		g_array_unref(plot->thdata);
+		plot->thdata=NULL;
+	}
 }
 
 static void gtk_plot_polar_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -5575,7 +5588,7 @@ static void gtk_plot_polar_set_property(GObject *object, guint prop_id, const GV
 		break;
 		case PROP_RC: (GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs)=g_value_get_uint(value);
 		break;
-		case PROP_TC: {(GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs)=g_value_get_uint(value);
+		case PROP_TC: (GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs)=g_value_get_uint(value);
 		break;
 		default: G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 		break;

@@ -4209,8 +4209,8 @@ void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl)
 
 void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st)
 {
-	if (plot->xdata) g_array_free((plot->xdata), FALSE);
-	if (plot->ydata) g_array_free((plot->ydata), FALSE);
+	if (plot->xdata) g_array_unref(plot->xdata);
+	if (plot->ydata) g_array_unref(plot->ydata);
 	{(plot->xdata)=g_array_ref(xd); (plot->ydata)=g_array_ref(yd);}
 	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
 }
@@ -4229,12 +4229,12 @@ static void gtk_plot_linear_finalise(GtkPlotLinear *plot)
 	}
 	if (plot->xdata)
 	{
-		g_array_free((plot->xdata), FALSE);
+		g_array_unref(plot->xdata);
 		plot->xdata=NULL;
 	}
 	if (plot->ydata)
 	{
-		g_array_free((plot->ydata), FALSE);
+		g_array_unref(plot->ydata);
 		plot->ydata=NULL;
 	}
 }

@@ -120,7 +120,7 @@ static gboolean gtk_plot_polar_accessible_set_image_description(AtkImage* img, c
 {
 	GtkPlotPolarAccessible* access=GTK_PLOT_POLAR_ACCESSIBLE(img);
 
-	g_free(access->image_description);
+	if (access->image_description) g_free(access->image_description);
 	access->image_description=g_strdup(desc);
 	return TRUE;
 }
@@ -150,7 +150,8 @@ static void gtk_plot_polar_accessible_initialise(AtkObject *obj, gpointer data) 
 
 static void gtk_plot_polar_accessible_finalise(GObject *obj)
 {
-	g_free(GTK_PLOT_POLAR_ACCESSIBLE(obj)->image_description);
+	if (GTK_PLOT_POLAR_ACCESSIBLE(obj)->image_description) g_free(GTK_PLOT_POLAR_ACCESSIBLE(obj)->image_description);
+	GTK_PLOT_POLAR_ACCESSIBLE(obj)->image_description=NULL;
 	(G_OBJECT_CLASS(_gtk_plot_polar_accessible_parent_class))->finalize(obj);
 }
 

@@ -32,11 +32,28 @@
 #	define GTK_PLOT_TYPE_SURF3 (gtk_plot_surf3_get_type())
 #	define GTK_PLOT_SURF3(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_PLOT_TYPE_SURF3, GtkPlotSurf3))
 #	define GTK_PLOT_IS_SURF3(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_PLOT_TYPE_SURF3))
-#	define GTK_PLOT_SURF3_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), GTK_PLOT_SURF3, GtkPlotSurf3Class))
+#	define GTK_PLOT_SURF3_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), GTK_PLOT_TYPE_SURF3, GtkPlotSurf3Class))
 #	define GTK_PLOT_IS_SURF3_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GTK_PLOT_TYPE_SURF3))
 #	define GTK_PLOT_SURF3_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), GTK_PLOT_TYPE_SURF3, GtkPlotSurf3Class))
 	typedef struct _GtkPlotSurf3 GtkPlotSurf3;
 	typedef struct _GtkPlotSurf3Class GtkPlotSurf3Class;
+	typedef struct {gdouble x, y, z;} GtkPlotSurf3Tuple;
+	typedef struct {gdouble x, y, z, theta, phi, psi;} GtkPlotSurf3View;
+	typedef enum
+	{
+		GTK_PLOT_SURF3_NULL,
+		GTK_PLOT_SURF3_TRIANGLE,
+		GTK_PLOT_SURF3_RECTANGLE,
+		GTK_PLOT_SURF3_CYLINDER_SEGMENT,
+		GTK_PLOT_SURF3_CONE_SEGMENT,
+		GTK_PLOT_SURF3_SPHERE_SEGMENT
+	} GtkPlotSurf3Shape;
+	typedef enum
+	{
+		GTK_PLOT_SURF3_DISP_NULL,
+		GTK_PLOT_SURF3_DISP_MESH,
+		GTK_PLOT_SURF3_DISP_FILL
+	} GtkPlotSurf3Disp;
 	typedef enum
 	{
 		GTK_PLOT_SURF3_ZOOM_OUT = 1 << 0,
@@ -45,17 +62,13 @@
 		GTK_PLOT_SURF3_ZOOM_VRT = 1 << 3,
 		GTK_PLOT_SURF3_ZOOM_SGL = 1 << 4
 	} GtkPlotSurf3Zoom;
-	typedef enum
-	{
-		GTK_PLOT_SURF3_DISP_FIL = 1 << 0
-	} GtkPlotSurf3Disp;
 	struct _GtkPlotSurf3
 	{
 		GtkPlot parent;
 		GArray *xdata, *ydata; /* x and y data sets */
-		gchar *xlab, *ylab; /* labels for the x and y axes */
+		gchar *xlab, *ylab, *zlab; /* labels for the x, y and z axes */
 		guint ptsize, linew; /* radii of the points and line width of the plot line */
-		guint xdp, ydp; /* number of decimal points for axes */
+		guint xdp, ydp, zdp; /* number of decimal points for axes */
 		gint zmode; /* zoom mode flags */
 		gdouble xps, yps; /* x and y position of mouse */
 		guint flagd; /* data display flags */
@@ -74,5 +87,6 @@
 	void gtk_plot_surf3_set_label(GtkPlotSurf3 *plot, gchar *xl, gchar *yl);
 	void gtk_plot_surf3_set_data(GtkPlotSurf3 *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st);
 	GtkWidget *gtk_plot_surf3_new(void);
+	extern GType gtk_plot_surf3_get_type(void);
 	G_END_DECLS
 #endif

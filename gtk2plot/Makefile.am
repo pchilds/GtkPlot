@@ -22,6 +22,7 @@ gtkplotinclude_HEADERS=				\
 	gtkplotlinear.h				\
 	gtkplotpolar.h
 
+if TEST_BIN
 bin_PROGRAMS=testPlotDonut testPlotLinear testPlotPolar
 testPlotDonut_SOURCES=testplotdonut.c
 testPlotDonut_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
@@ -29,3 +30,4 @@ testPlotLinear_SOURCES=testplotlinear.c
 testPlotLinear_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
 testPlotPolar_SOURCES=testplotpolar.c
 testPlotPolar_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
+endif

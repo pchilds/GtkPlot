@@ -34,6 +34,7 @@
 #include <cairo-ps.h>
 #include <cairo-svg.h>
 #include "gtkplotdonut.h"
+#include "a11y/gtkplotdonutaccessible.h"
 
 #define GTK_PLOT_DONUT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), GTK_PLOT_TYPE_DONUT, GtkPlotDonutPrivate))
 #define DZE 0.0001 /* divide by zero threshold */
@@ -48,134 +49,132 @@ enum {PROP_0, PROP_THT};
 typedef struct _GtkPlotDonutPrivate GtkPlotDonutPrivate;
 struct _GtkPlotDonutPrivate {gdouble theta; gdouble rescale; gint flagr;};
 
-static void draw(GtkWidget *widget, cairo_t *cr)
+static gboolean gtk_plot_donut_draw(GtkWidget *widget, cairo_t *cr)
 {
 	gboolean ccw;
 	gchar lbl[MY_BFL];
-	gdouble av, cv, dv, prm, r, sv, vv, wv, xv, yv;
+	GdkRGBA vv;
+	gdouble av, cv, dv, prm, r, sv, wv, xv, yv;
 	gint ct, ft, hg1, hg2, j, k, lt, st, wd1, wd2, xw, yw;
 	GtkPlot *plt;
 	GtkPlotDonut *plot;
 	PangoLayout *lyt1, *lyt2;
 
-	xw=widget->allocation.width/2;
-	yw=widget->allocation.height/2;
+	xw=gtk_widget_get_allocated_width(widget)/2;
+	yw=gtk_widget_get_allocated_height(widget)/2;
 	plot=GTK_PLOT_DONUT(widget);
 	plt=GTK_PLOT(widget);
 	cairo_set_line_width(cr, plot->linew);
-	if (plot->kdata && plot->vdata) /* plot data */
+	if (!(plot->kdata) || !(plot->vdata)) return FALSE; /* plot data */
+	r = (fmin(xw,yw)-(plot->linew))/(plt->ind->len);
+	for (k=0; k<(plt->ind->len); k++)
 	{
-		r = (fmin(xw,yw)-(plot->linew))/(plt->ind->len);
-		for (k=0; k<(plt->ind->len); k++)
+		ft=g_array_index((plt->ind), gint, k);
+		if (ft>=(plot->vdata->len)) continue;
+		st=g_array_index((plt->stride), gint, k);
+		lt=ft+(st*g_array_index((plt->sizes), gint, k));
+		if (lt>(plot->vdata->len)) lt=(plot->vdata->len);
+		{sv=0; cv=(GTK_PLOT_DONUT_GET_PRIVATE(plot))->theta;}
+		for (j=ft; j<lt; j+=st) sv+=g_array_index((plot->vdata), gdouble, j);
+		if (sv>0) ccw=TRUE;
+		else {sv=-sv; ccw=FALSE;}
+		if (sv<DZE) continue;
+		sv=-1/sv;
+		for (j=ft; j<lt; j+=st)
 		{
-			ft=g_array_index((plt->ind), gint, k);
-			if (ft>=(plot->vdata->len)) continue;
-			st=g_array_index((plt->stride), gint, k);
-			lt=ft+(st*g_array_index((plt->sizes), gint, k));
-			if (lt>(plot->vdata->len)) lt=(plot->vdata->len);
-			{sv=0; cv=(GTK_PLOT_DONUT_GET_PRIVATE(plot))->theta;}
-			for (j=ft; j<lt; j+=st) sv+=g_array_index((plot->vdata), gdouble, j);
-			if (sv>0) ccw=TRUE;
-			else {sv=-sv; ccw=FALSE;}
-			if (sv<DZE) continue;
-			sv=-1/sv;
-			for (j=ft; j<lt; j+=st)
+			dv=g_array_index((plot->vdata), gdouble, j)*sv;
+			cairo_move_to(cr, xw+(r*cos(cv)*(gdouble)k), yw+(r*sin(cv)*(gdouble)k));
+			cairo_arc_negative(cr, xw, yw, r*(gdouble)(k+1), cv, cv+(dv*MY_2PI));
+			cairo_arc(cr, xw, yw, r*(gdouble)k, cv+(dv*MY_2PI), cv);
+			cairo_set_source_rgba(cr, 0, 0, 0, 1);
+			cairo_stroke_preserve(cr);
+			ct=fmod(j,(plt->cl->len));
+			vv=g_array_index((plt->cl), GdkRGBA, ct);
+			cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
+			cairo_fill(cr);
+			if (ccw?(dv>NDV_CRIT):(dv<DV_CRIT))
 			{
-				dv=g_array_index((plot->vdata), gdouble, j)*sv;
-				cairo_move_to(cr, xw+(r*cos(cv)*(gdouble)k), yw+(r*sin(cv)*(gdouble)k));
-				cairo_arc_negative(cr, xw, yw, r*(gdouble)(k+1), cv, cv+(dv*MY_2PI));
-				cairo_arc(cr, xw, yw, r*(gdouble)k, cv+(dv*MY_2PI), cv);
-				cairo_set_source_rgba(cr, 0, 0, 0, 1);
-				cairo_stroke_preserve(cr);
-				ct=fmod(j,(plt->rd->len));
-				{vv=g_array_index((plt->rd), gdouble, ct); wv=g_array_index((plt->gr), gdouble, ct); xv=g_array_index((plt->bl), gdouble, ct); yv=g_array_index((plt->al), gdouble, ct);}
-				cairo_set_source_rgba(cr, vv, wv, xv, yv);
-				cairo_fill(cr);
-				if (ccw?(dv>NDV_CRIT):(dv<DV_CRIT))
+				cv+=(dv*MY_2PI);
+				continue;
+			}
+			cairo_set_source_rgba(cr, 1-(vv.red), 1-(vv.green), 1-(vv.blue), (vv.alpha));
+			cv+=(dv*G_PI);
+			if (((plot->flagd)&GTK_PLOT_DONUT_DISP_KEY)!=0)
+			{
+				av=(0.35+(gdouble)k)*fabs(dv)*MY_2PI;
+				lyt1=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt1, (plt->lfont));
+				pango_layout_set_text(lyt1, g_array_index((plot->kdata), gchar*, j), -1);
+				pango_layout_get_pixel_size(lyt1, &wd1, &hg1);
+				if (((plot->flagd)&GTK_PLOT_DONUT_DISP_VAL)!=0) /* KEYs and VALUEs */
 				{
-					cv+=(dv*MY_2PI);
-					continue;
-				}
-				cairo_set_source_rgba(cr, 1-vv, 1-wv, 1-xv, 1);
-				cv+=(dv*G_PI);
-				if (((plot->flagd)&GTK_PLOT_DONUT_DISP_KEY)!=0)
-				{
-					av=(0.35+(gdouble)k)*fabs(dv)*MY_2PI;
-					lyt1=pango_cairo_create_layout(cr);
-					pango_layout_set_font_description(lyt1, (plt->lfont));
-					pango_layout_set_text(lyt1, g_array_index((plot->kdata), gchar*, j), -1);
-					pango_layout_get_pixel_size(lyt1, &wd1, &hg1);
-					if (((plot->flagd)&GTK_PLOT_DONUT_DISP_VAL)!=0) /* KEYs and VALUEs */
-					{
-						lyt2=pango_cairo_create_layout(cr);
-						pango_layout_set_font_description(lyt2, (plt->afont));
-						g_snprintf(lbl, MY_BFL, "%2d%%", (gint)round(100*fabs(dv)));
-						pango_layout_set_text(lyt2, lbl, -1);
-						pango_layout_get_pixel_size(lyt2, &wd2, &hg2);
-						if (2*(wd1+hg1+hg2+MY_SEP)<MY_FIT*r*((1+av)+((1-av)*cos(2*cv))+(sin(2*cv)*sin(2*cv))))
-						{
-							if (k==0) prm=r*(0.6+(gdouble)k);
-							else prm=r*(0.5+(gdouble)k);
-							cairo_move_to(cr, xw+(prm*cos(cv))-(wd2/2), yw+(prm*sin(cv))-((hg2+MY_SEP+hg1)/2));
-							pango_cairo_show_layout(cr, lyt2);
-							cairo_move_to(cr, xw+(prm*cos(cv))-(wd1/2), yw+(prm*sin(cv))+((hg2+MY_SEP-hg1)/2));
-							pango_cairo_show_layout(cr, lyt1);
-						}
-						g_object_unref(lyt2);
-					}
-					else /* KEYs only */
-					{
-						if (2*(wd1+hg1)<MY_FIT*r*((1+av)+((1-av)*cos(2*cv))+(sin(2*cv)*sin(2*cv))))
-						{
-							if (k==0) prm=r*(0.6+(gdouble)k);
-							else prm=r*(0.5+(gdouble)k);
-							cairo_move_to(cr, xw+(prm*cos(cv))-(wd1/2), yw+(prm*sin(cv))-(hg1/2));
-							pango_cairo_show_layout(cr, lyt1);
-						}
-					}
-					g_object_unref(lyt1);
-				}
-				else if (((plot->flagd)&GTK_PLOT_DONUT_DISP_VAL)!=0) /* VALUEs only */
-				{
-					av=(0.3+(gdouble)k)*fabs(sin(dv*MY_2PI));
 					lyt2=pango_cairo_create_layout(cr);
 					pango_layout_set_font_description(lyt2, (plt->afont));
 					g_snprintf(lbl, MY_BFL, "%2d%%", (gint)round(100*fabs(dv)));
 					pango_layout_set_text(lyt2, lbl, -1);
 					pango_layout_get_pixel_size(lyt2, &wd2, &hg2);
-					if (2*(wd2+hg2)<MY_FIT*r*((1+av)+((1-av)*cos(2*cv))+(sin(2*cv)*sin(2*cv))))
+					if (2*(wd1+hg1+hg2+MY_SEP)<MY_FIT*r*((1+av)+((1-av)*cos(2*cv))+(sin(2*cv)*sin(2*cv))))
 					{
 						if (k==0) prm=r*(0.6+(gdouble)k);
 						else prm=r*(0.5+(gdouble)k);
-						cairo_move_to(cr, xw+(prm*cos(cv))-(wd2/2), yw+(prm*sin(cv))-(hg2/2));
+						cairo_move_to(cr, xw+(prm*cos(cv))-(wd2/2), yw+(prm*sin(cv))-((hg2+MY_SEP+hg1)/2));
 						pango_cairo_show_layout(cr, lyt2);
+						cairo_move_to(cr, xw+(prm*cos(cv))-(wd1/2), yw+(prm*sin(cv))+((hg2+MY_SEP-hg1)/2));
+						pango_cairo_show_layout(cr, lyt1);
 					}
 					g_object_unref(lyt2);
-				} else  g_print("skipped - no print\n");
-				cv+=(dv*G_PI);
+				}
+				else /* KEYs only */
+				{
+					if (2*(wd1+hg1)<MY_FIT*r*((1+av)+((1-av)*cos(2*cv))+(sin(2*cv)*sin(2*cv))))
+					{
+						if (k==0) prm=r*(0.6+(gdouble)k);
+						else prm=r*(0.5+(gdouble)k);
+						cairo_move_to(cr, xw+(prm*cos(cv))-(wd1/2), yw+(prm*sin(cv))-(hg1/2));
+						pango_cairo_show_layout(cr, lyt1);
+					}
+				}
+				g_object_unref(lyt1);
 			}
+			else if (((plot->flagd)&GTK_PLOT_DONUT_DISP_VAL)!=0) /* VALUEs only */
+			{
+				av=(0.3+(gdouble)k)*fabs(sin(dv*MY_2PI));
+				lyt2=pango_cairo_create_layout(cr);
+				pango_layout_set_font_description(lyt2, (plt->afont));
+				g_snprintf(lbl, MY_BFL, "%2d%%", (gint)round(100*fabs(dv)));
+				pango_layout_set_text(lyt2, lbl, -1);
+				pango_layout_get_pixel_size(lyt2, &wd2, &hg2);
+				if (2*(wd2+hg2)<MY_FIT*r*((1+av)+((1-av)*cos(2*cv))+(sin(2*cv)*sin(2*cv))))
+				{
+					if (k==0) prm=r*(0.6+(gdouble)k);
+					else prm=r*(0.5+(gdouble)k);
+					cairo_move_to(cr, xw+(prm*cos(cv))-(wd2/2), yw+(prm*sin(cv))-(hg2/2));
+					pango_cairo_show_layout(cr, lyt2);
+				}
+				g_object_unref(lyt2);
+			} else  g_print("skipped - no print\n");
+			cv+=(dv*G_PI);
 		}
 	}
 }
 
-gboolean gtk_plot_donut_refresh(GtkWidget *widget)
+static void gtk_plot_donut_redraw(GtkWidget *widget)
 {
-	GdkRegion *region;
+	cairo_region_t *region;
 	GdkWindow *wdw;
 
 	wdw=gtk_widget_get_window(widget);
 	if (!wdw) return;
-	region=gdk_drawable_get_clip_region(wdw);
+	region=gdk_window_get_clip_region(wdw);
 	gdk_window_invalidate_region(wdw, region, TRUE);
 	gdk_window_process_updates(wdw, TRUE);
-	gdk_region_destroy(region);
-	return FALSE;
+	cairo_region_destroy(region);
 }
 
 gboolean gtk_plot_donut_print(GtkPrintOperation *operation, GtkPrintContext *context, gint page_nr, gpointer data)
 {
 	cairo_t* cr=gtk_print_context_get_cairo_context(context);
-	draw(GTK_WIDGET(data), cr);
+	gtk_plot_donut_draw(GTK_WIDGET(data), cr);
 	return FALSE;
 }
 
@@ -184,11 +183,11 @@ gboolean gtk_plot_donut_print_eps(GtkWidget *plot, gchar* fout)
 	cairo_t *cr;
 	cairo_surface_t *surface;
 
-	surface=cairo_ps_surface_create(fout, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
+	surface=cairo_ps_surface_create(fout, (gdouble) gtk_widget_get_allocated_width(plot), (gdouble) gtk_widget_get_allocated_height(plot));
 	cairo_ps_surface_set_eps(surface, TRUE);
 	cairo_ps_surface_restrict_to_level(surface, CAIRO_PS_LEVEL_2);
 	cr=cairo_create(surface);
-	draw(plot, cr);
+	gtk_plot_donut_draw(plot, cr);
 	cairo_surface_show_page(surface);
 	cairo_destroy(cr);
 	cairo_surface_finish(surface);
@@ -201,9 +200,9 @@ gboolean gtk_plot_donut_print_png(GtkWidget *plot, gchar* fout)
 	cairo_t *cr;
 	cairo_surface_t *surface;
 
-	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
+	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) gtk_widget_get_allocated_width(plot), (gdouble) gtk_widget_get_allocated_height(plot));
 	cr=cairo_create(surface);
-	draw(plot, cr);
+	gtk_plot_donut_draw(plot, cr);
 	cairo_surface_write_to_png(surface, fout);
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
@@ -215,9 +214,9 @@ gboolean gtk_plot_donut_print_svg(GtkWidget *plot, gchar* fout)
 	cairo_t *cr;
 	cairo_surface_t *surface;
 
-	surface=cairo_svg_surface_create(fout, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
+	surface=cairo_svg_surface_create(fout, (gdouble) gtk_widget_get_allocated_width(plot), (gdouble) gtk_widget_get_allocated_height(plot));
 	cr=cairo_create(surface);
-	draw(plot, cr);
+	gtk_plot_donut_draw(plot, cr);
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 	return FALSE;
@@ -226,14 +225,16 @@ gboolean gtk_plot_donut_print_svg(GtkWidget *plot, gchar* fout)
 static gboolean gtk_plot_donut_button_press(GtkWidget *widget, GdkEventButton *event)
 {
 	GtkPlotDonutPrivate *priv;
-	gdouble dy, dx;
+	gdouble ds, dt, dx, dy;
 	
 	priv=GTK_PLOT_DONUT_GET_PRIVATE(widget);
 	if ((priv->flagr)==0)
 	{
-		dy=(widget->allocation.height/2)-(event->y);
-		dx=(event->x)-(widget->allocation.width/2);
-		if (4*((dy*dy)+(dx*dx))<fmin(widget->allocation.width,widget->allocation.height)*fmin(widget->allocation.width,widget->allocation.height))
+		ds=gtk_widget_get_allocated_width(widget)/2;
+		dt=gtk_widget_get_allocated_height(widget)/2;
+		dy=dt-(event->y);
+		dx=(event->x)-ds;
+		if ((dy*dy)+(dx*dx)<fmin(ds,dt)*fmin(ds,dt))
 		{
 			(priv->rescale)=atan2(dy, dx);
 			(priv->flagr)=1;
@@ -245,15 +246,17 @@ static gboolean gtk_plot_donut_button_press(GtkWidget *widget, GdkEventButton *e
 static gboolean gtk_plot_donut_button_release(GtkWidget *widget, GdkEventButton *event)
 {
 	GtkPlotDonutPrivate *priv;
-	gdouble dy, dx;
+	gdouble ds, dt, dx, dy;
 
 	priv=GTK_PLOT_DONUT_GET_PRIVATE(widget);
 	if ((priv->flagr)==1)
 	{
-		dy=(widget->allocation.height/2)-(event->y);
-		dx=(event->x)-(widget->allocation.width/2);
-		if (4*((dy*dy)+(dx*dx))<fmin(widget->allocation.width,widget->allocation.height)*fmin(widget->allocation.width,widget->allocation.height)) (priv->theta)-=atan2(dy, dx)-(priv->rescale);
-		gtk_plot_donut_refresh(widget);
+		ds=gtk_widget_get_allocated_width(widget)/2;
+		dt=gtk_widget_get_allocated_height(widget)/2;
+		dy=dt-(event->y);
+		dx=(event->x)-ds;
+		if ((dy*dy)+(dx*dx)<fmin(ds,dt)*fmin(ds,dt)) (priv->theta)-=atan2(dy, dx)-(priv->rescale);
+		gtk_plot_donut_redraw(widget);
 		(priv->flagr)=0;
 	}
 	return FALSE;
@@ -303,18 +306,6 @@ static void gtk_plot_donut_get_property(GObject *object, guint prop_id, GValue *
 	}
 }
 
-static gboolean gtk_plot_donut_expose(GtkWidget *widget, GdkEventExpose *event)
-{
-	cairo_t *cr;
-
-	cr=gdk_cairo_create(gtk_widget_get_window(widget));
-	cairo_rectangle(cr, (event->area.x), (event->area.y), (event->area.width), (event->area.height));
-	cairo_clip(cr);
-	draw(widget, cr);
-	cairo_destroy(cr);
-	return FALSE;
-}
-
 static void gtk_plot_donut_class_init(GtkPlotDonutClass *klass)
 {
 	GObjectClass *obj_klass;
@@ -329,7 +320,8 @@ static void gtk_plot_donut_class_init(GtkPlotDonutClass *klass)
 	widget_klass=GTK_WIDGET_CLASS(klass);
 	(widget_klass->button_press_event)=gtk_plot_donut_button_press;
 	(widget_klass->button_release_event)=gtk_plot_donut_button_release;
-	(widget_klass->expose_event)=gtk_plot_donut_expose;
+	(widget_klass->draw)=gtk_plot_donut_draw;
+	gtk_widget_class_set_accessible_type(widget_klass, GTK_TYPE_PLOT_DONUT_ACCESSIBLE);
 }
 
 static void gtk_plot_donut_init(GtkPlotDonut *plot)

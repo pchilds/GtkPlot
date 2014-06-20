@@ -33,6 +33,7 @@
 #include <math.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>
+#include "gtkplot.h"
 #include "gtkplotlinear.h"
 #include "a11y/gtkplotlinearaccessible.h"
 #define GTK_PLOT_LINEAR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), GTK_PLOT_TYPE_LINEAR, GtkPlotLinearPrivate))
@@ -4174,18 +4175,30 @@ void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl)
 
 void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st)
 {
-	if (plot->xdata) g_array_free((plot->xdata), FALSE);
-	if (plot->ydata) g_array_free((plot->ydata), FALSE);
+	if (plot->xdata) g_array_unref(plot->xdata);
+	if (plot->ydata) g_array_unref(plot->ydata);
 	{(plot->xdata)=g_array_ref(xd); (plot->ydata)=g_array_ref(yd);}
 	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
 }
 
 static void gtk_plot_linear_finalise(GtkPlotLinear *plot)
 {
-	if (plot->xlab) g_free(plot->xlab);
-	if (plot->ylab) g_free(plot->ylab);
-	if (plot->xdata) g_array_free((plot->xdata), FALSE);
-	if (plot->ydata) g_array_free((plot->ydata), FALSE);
+	if (plot->xlab) {
+		g_free(plot->xlab);
+		plot->xlab=NULL;
+	}
+	if (plot->ylab) {
+		g_free(plot->ylab);
+		plot->ylab=NULL;
+	}
+	if (plot->xdata) {
+		g_array_unref(plot->xdata);
+		plot->xdata=NULL;
+	}
+	if (plot->ydata) {
+		g_array_unref(plot->ydata);
+		plot->ydata=NULL;
+	}
 }
 
 static void gtk_plot_linear_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -4279,7 +4292,6 @@ static void gtk_plot_linear_class_init(GtkPlotLinearClass *klass)
 
 static void gtk_plot_linear_init(GtkPlotLinear *plot)
 {
-	GdkRGBA cl;
 	GtkPlotLinearPrivate *priv;
 
 	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);

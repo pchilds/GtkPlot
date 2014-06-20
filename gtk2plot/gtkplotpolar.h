@@ -32,7 +32,7 @@
 #	define GTK_PLOT_TYPE_POLAR (gtk_plot_polar_get_type())
 #	define GTK_PLOT_POLAR(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_PLOT_TYPE_POLAR, GtkPlotPolar))
 #	define GTK_PLOT_IS_POLAR(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_PLOT_TYPE_POLAR))
-#	define GTK_PLOT_POLAR_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), GTK_PLOT_POLAR, GtkPlotPolarClass))
+#	define GTK_PLOT_POLAR_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), GTK_PLOT_TYPE_POLAR, GtkPlotPolarClass))
 #	define GTK_PLOT_IS_POLAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GTK_PLOT_TYPE_POLAR))
 #	define GTK_PLOT_GET_POLAR_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), GTK_PLOT_TYPE_POLAR, GtkPlotPolarClass))
 	typedef struct _GtkPlotPolar GtkPlotPolar;
@@ -68,7 +68,7 @@
 		GtkPlotClass parent_class;
 		void (*moved) (GtkPlotPolar *plot);
 	};
-	gboolean gtk_plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, gdouble thn, gdouble thx, gdouble tcn, gdouble thc);
+	gboolean gtk_plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, gdouble thn, gdouble thx, gdouble rcn, gdouble thc);
 	gboolean gtk_plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 	gboolean gtk_plot_polar_print(GtkPrintOperation *operation, GtkPrintContext *context, gint page_nr, gpointer data);
 	gboolean gtk_plot_polar_print_eps(GtkWidget *widget, gchar *fout);
@@ -77,5 +77,6 @@
 	void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl);
 	void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, GArray *st);
 	GtkWidget *gtk_plot_polar_new(void);
+	extern GType gtk_plot_polar_get_type(void);
 	G_END_DECLS
 #endif

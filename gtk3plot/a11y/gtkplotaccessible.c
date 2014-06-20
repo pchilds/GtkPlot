@@ -24,6 +24,7 @@
 
 #include <gtk/gtk.h>
 #include "gtkplotaccessible.h"
+G_DEFINE_TYPE(GtkPlotAccessible, _gtk_plot_accessible, GTK_TYPE_WIDGET_ACCESSIBLE);
 
 static void gtk_plot_accessible_initialise(AtkObject *obj, gpointer data)
 {

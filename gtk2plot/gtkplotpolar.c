@@ -204,35 +204,31 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	if ((priv->bounds.rmin)<=0) {(priv->bounds.rmin)=0; (priv->wr)=0;}
 	else (priv->wr)=WGP*sqrt(xw*yw);
 	if ((priv->centre.r)<=0) (priv->centre.r)=0;
-	else if ((priv->centre.r)<(priv->bounds.rmax)) (priv->centre.r)=(priv->bounds.rmax);
+	else if ((priv->centre.r)>(priv->bounds.rmax)) (priv->centre.r)=(priv->bounds.rmax);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_set_line_width(cr, 2);
 	lyt=pango_cairo_create_layout(cr);
 	pango_layout_set_font_description(lyt, (plt->afont));
 	str1=g_strdup("8");
 	pango_layout_set_text(lyt, str1, -1);
-	pango_layout_get_pixel_size(lyt, &wd, &hg);
-	ctx=wd;
 	g_free(str1);
+	pango_layout_get_pixel_size(lyt, &wd, &hg);
 	g_object_unref(lyt);
-	ctx*=((priv->thcs)-1);
+	ctx=wd*((priv->thcs)-1);
 	ctx*=ctx;
-	tt=hg*hg;
-	tt+=ctx;
-	tt=sqrt(tt);
+	tt=sqrt((hg*hg)+ctx);
 	lyt=pango_cairo_create_layout(cr);
 	pango_layout_set_font_description(lyt, (plt->lfont));
 	str1=g_strdup("8");
 	pango_layout_set_text(lyt, str1, -1);
-	pango_layout_get_pixel_size(lyt, &wd, &hg);
-	dtr=hg;
 	g_free(str1);
-	dtr=hg;
+	pango_layout_get_pixel_size(lyt, &wd, &hg);
 	g_object_unref(lyt);
-	dtr+=JTI;
+	dtr=hg+JTI;
 	dtt=tt+dtr;
 	dtr+=hg;
 	tt=(tt/2)+JTI;
+/* drs and drc are the vertical and horizontal distances between rn,tc and rc,tc */
 	dr1=(priv->bounds.rmax)-(priv->bounds.rmin);
 	drs=((priv->centre.r)-(priv->bounds.rmin))*sin(priv->centre.th);
 	drc=((priv->centre.r)-(priv->bounds.rmin))*cos(priv->centre.th);
@@ -5558,18 +5554,30 @@ void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl)
 
 void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, GArray *st)
 {
-	if (plot->rdata) g_array_free((plot->rdata), FALSE);
-	if (plot->thdata) g_array_free((plot->thdata), FALSE);
+	if (plot->rdata) g_array_unref(plot->rdata);
+	if (plot->thdata) g_array_unref(plot->thdata);
 	{(plot->rdata)=g_array_ref(rd); (plot->thdata)=g_array_ref(td);}
 	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
 }
 
 static void gtk_plot_polar_finalise(GtkPlotPolar *plot)
 {
-	if (plot->rlab) g_free(plot->rlab);
-	if (plot->thlab) g_free(plot->thlab);
-	if (plot->rdata) g_free(plot->rdata);
-	if (plot->thdata) g_free(plot->thdata);
+	if (plot->rlab) {
+		g_free(plot->rlab);
+		plot->rlab=NULL;
+	}
+	if (plot->thlab) {
+		g_free(plot->thlab);
+		plot->thlab=NULL;
+	}
+	if (plot->rdata) {
+		g_array_unref(plot->rdata);
+		plot->rdata=NULL;
+	}
+	if (plot->thdata) {
+		g_array_unref(plot->thdata);
+		plot->thdata=NULL;
+	}
 }
 
 static void gtk_plot_polar_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -5688,8 +5696,8 @@ static void gtk_plot_polar_init(GtkPlotPolar *plot)
 
 	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);
 	priv=GTK_PLOT_POLAR_GET_PRIVATE(plot);
-	{(priv->bounds.rmin)=0; (priv->bounds.rmax)=1; (priv->bounds.thmin)=NMY_PI; (priv->bounds.thmax)=G_PI;}
-	{(priv->centre.r)=0.5; (priv->centre.th)=0;}
+	{(priv->bounds.rmin)=0.0; (priv->bounds.rmax)=1.0; (priv->bounds.thmin)=NMY_PI; (priv->bounds.thmax)=G_PI;}
+	{(priv->centre.r)=0.0; (priv->centre.th)=0;}
 	{(priv->ticks.r)=4; (priv->ticks.zin)=12; (priv->ticks.z2m)=2; (priv->ticks.zc)=40.0;}
 	{(priv->rcs)=5; (priv->thcs)=6; (plot->rdp)=2; (plot->thdp)=2;}
 	{(priv->flagr)=0; (priv->flaga)=0;}
