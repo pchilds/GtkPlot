@@ -372,7 +372,11 @@ void opd(GtkWidget *widget, gpointer data)
 		{
 			strary=g_strsplit_set(contents, "\r\n", 0);
 			sal=g_strv_length(strary);
-			{x=g_array_new(FALSE, FALSE, sizeof(gdouble)); y=g_array_new(FALSE, FALSE, sizeof(gdouble)); st=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1); sz=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1); nx=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);}
+			x=g_array_new(FALSE, FALSE, sizeof(gdouble));
+			y=g_array_new(FALSE, FALSE, sizeof(gdouble));
+			st=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
+			sz=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
+			nx=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
 			lc=0;
 			for (k=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jind)); k<sal; k++)
 			{

@@ -766,8 +766,8 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					if (lr1<=-1)
 					{
 						{lr2=log10(-lr1); lr3=3;}
-						if (fmod(lr2,1)<NAC) lr3=(guint)lr2;
-						else lr3=(guint)ceil(lr2);
+						if (fmod(lr2,1)<NAC) lr3+=(guint)lr2;
+						else lr3+=(guint)ceil(lr2);
 						if ((plot->xdp)!=0) lr3+=(plot->xdp)+1;
 						if (lr3<BFL) g_snprintf(lbl, lr3, "%f", lr1);
 						else g_snprintf(lbl, BFL, "%f", lr1);
