@@ -5480,6 +5480,7 @@ static gboolean gtk_plot_polar_button_release(GtkWidget *widget, GdkEventButton 
 				s=((priv->bounds.thmax)-(priv->bounds.thmin))/((priv->rescale.thmax)-(priv->rescale.thmin));
 				if (s>0) {yn=((priv->bounds.thmin)-(priv->rescale.thmin))*s; yx=((priv->bounds.thmax)-(priv->rescale.thmax))*s;}
 				else if (s<0) {yn=((priv->rescale.thmax)-(priv->bounds.thmin))*s; yx=((priv->rescale.thmin)-(priv->bounds.thmax))*s;}
+				else return FALSE;
 				{yn+=(priv->bounds.thmin); yx+=(priv->bounds.thmax);}
 				if (((plot->flagd)&GTK_PLOT_POLAR_DISP_RDN)==0) {yn*=I180_MY_PI; yx*=I180_MY_PI;}
 				gtk_plot_polar_update_scale_pretty(widget, xn, xx, yn, yx);
@@ -5664,7 +5665,6 @@ static void gtk_plot_polar_class_init(GtkPlotPolarClass *klass)
 static void gtk_plot_polar_init(GtkPlotPolar *plot)
 {
 	GtkPlotPolarPrivate *priv;
-	gdouble val;
 	GdkRGBA cl;
 
 	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);

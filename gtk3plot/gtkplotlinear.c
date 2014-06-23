@@ -4093,7 +4093,7 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 						{
 							yn=((priv->rescale.ymax)-(priv->bounds.ymin))*s;
 							yn+=(priv->bounds.ymin);
-							yn=((priv->rescale.ymin)-(priv->bounds.ymax))*s;
+							yx=((priv->rescale.ymin)-(priv->bounds.ymax))*s;
 							yx+=(priv->bounds.ymax);
 							gtk_plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
 						}
@@ -4102,14 +4102,14 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 					{
 						xn=((priv->rescale.xmax)-(priv->bounds.xmin))*s;
 						xn+=(priv->bounds.xmin);
-						xn=((priv->rescale.xmin)-(priv->bounds.xmax))*s;
+						xx=((priv->rescale.xmin)-(priv->bounds.xmax))*s;
 						xx+=(priv->bounds.xmax);
 						s=((priv->bounds.ymax)-(priv->bounds.ymin))/yn;
 						if (s>0)
 						{
 							yn=((priv->bounds.ymin)-(priv->rescale.ymin))*s;
 							yn+=(priv->bounds.ymin);
-							yn=((priv->bounds.ymax)-(priv->rescale.ymax))*s;
+							yx=((priv->bounds.ymax)-(priv->rescale.ymax))*s;
 							yx+=(priv->bounds.ymax);
 							gtk_plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
 						}
@@ -4117,7 +4117,7 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 						{
 							yn=((priv->rescale.ymax)-(priv->bounds.ymin))*s;
 							yn+=(priv->bounds.ymin);
-							yn=((priv->rescale.ymin)-(priv->bounds.ymax))*s;
+							yx=((priv->rescale.ymin)-(priv->bounds.ymax))*s;
 							yx+=(priv->bounds.ymax);
 							gtk_plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
 						}

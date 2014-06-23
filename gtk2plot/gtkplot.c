@@ -107,7 +107,6 @@ static void gtk_plot_finalise(GtkPlot *plot)
 static void gtk_plot_class_init(GtkPlotClass *klass)
 {
 	GObjectClass *obj_klass;
-	GtkWidgetClass *widget_klass;
 
 	obj_klass=G_OBJECT_CLASS(klass);
 	(obj_klass->finalize)=(GObjectFinalizeFunc) gtk_plot_finalise;

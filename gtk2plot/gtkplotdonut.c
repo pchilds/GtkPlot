@@ -164,7 +164,7 @@ gboolean gtk_plot_donut_refresh(GtkWidget *widget)
 	GdkWindow *wdw;
 
 	wdw=gtk_widget_get_window(widget);
-	if (!wdw) return;
+	if (!wdw) return FALSE;
 	region=gdk_drawable_get_clip_region(wdw);
 	gdk_window_invalidate_region(wdw, region, TRUE);
 	gdk_window_process_updates(wdw, TRUE);
