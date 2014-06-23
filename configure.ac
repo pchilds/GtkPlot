@@ -1,4 +1,4 @@
-AC_PREREQ([2.65])
+AC_PREREQ([2.63])
 AC_INIT([Gtk3Plot],[3.0.0],[pchilds@physics.org],[gtk3plot],[https://github.com/pchilds/GtkPlot])
 AC_CONFIG_HEADERS([config.h gtkplotconfig.h])
 AC_CONFIG_SRCDIR([gtk3plot/gtkplot.h])
