@@ -6,7 +6,7 @@ License:	LGPLv2+
 Group:		Development/Libraries
 Source:		%{name}-%{version}.tar.gz
 BuildRequires:	automake, autoconf, libtool, gtk2 >= 2.18, pkgconfig
-Requires:	gtk+2 >= 2.18
+Requires:	gtk2 >= 2.18
 
 %description
 %{name} makes available to gtk+2 programs, a pi/donut, 

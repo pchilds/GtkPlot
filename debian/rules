@@ -5,4 +5,4 @@ export DH_VERBOSE=1
   dh  $@ --with autoreconf
 .PHONY: override_dh_strip
 override_dh_strip:
-  dh_strip --dbg-package=libgtkplot-3-dbg
+  dh_strip --dbg-package=libgtkplot-2-dbg
