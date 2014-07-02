@@ -956,7 +956,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			if (dt<0) dwr=(priv->ticks.zin)/(2+(I_MY_PI*dt));
 			else dwr=(priv->ticks.zin)*G_PI/dt;
 			csx=fmod(dwr,1);
-			if ((csx<DZE)||((1-csx)<DZE)) /* check if angles can be rationalised */
+			if ((csx<DZE)||(csx>(1-DZE))) /* check if angles can be rationalised */
 			{
 				j0=round(dwr);
 				jl=2+floor(log10(j0));
@@ -8800,34 +8800,51 @@ static void gtk_plot_polar_set_property(GObject *object, guint prop_id, const GV
 {
 	switch (prop_id)
 	{
-		case PROP_BRN: (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin)=g_value_get_double(value);
-		break;
-		case PROP_BRX: (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax)=g_value_get_double(value);
-		break;
-		case PROP_BTN: (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin)=g_value_get_double(value);
-		break;
-		case PROP_BTX: (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax)=g_value_get_double(value);
-		break;
-		case PROP_CR: (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r)=g_value_get_double(value);
-		break;
-		case PROP_CT: (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th)=g_value_get_double(value);
-		break;
-		case PROP_RT: (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r)=g_value_get_uint(value);
-		break;
-		case PROP_ZIT: (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin)=g_value_get_uint(value);
-		break;
-		case PROP_ZTM: (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m)=g_value_get_uint(value);
-		break;
-		case PROP_ZC: (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc)=g_value_get_uint(value);
-		break;
-		case PROP_RC: (GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs)=g_value_get_uint(value);
-		break;
-		case PROP_TC: (GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs)=g_value_get_uint(value);
-		break;
-		case PROP_HV: (GTK_PLOT_POLAR_GET_PRIVATE(object)->hv)=g_value_get_boolean(value);
-		break;
-		default: G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-		break;
+		case PROP_BRN:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin=g_value_get_double(value);
+			break;
+		case PROP_BRX:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax=g_value_get_double(value);
+			break;
+		case PROP_BTN:
+			if (((GTK_PLOT_POLAR(object)->flagd)&GTK_PLOT_POLAR_DISP_RDN)==0) (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin)=MY_PI_180*g_value_get_double(value);
+			else GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin=g_value_get_double(value);
+			break;
+		case PROP_BTX:
+			if (((GTK_PLOT_POLAR(object)->flagd)&GTK_PLOT_POLAR_DISP_RDN)==0) (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax)=MY_PI_180*g_value_get_double(value);
+			else GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax=g_value_get_double(value);
+			break;
+		case PROP_CR:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r=g_value_get_double(value);
+			break;
+		case PROP_CT:
+			if (((GTK_PLOT_POLAR(object)->flagd)&GTK_PLOT_POLAR_DISP_RDN)==0) (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th)=MY_PI_180*g_value_get_double(value);
+			else GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th=g_value_get_double(value);
+			break;
+		case PROP_RT:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r=g_value_get_uint(value);
+			break;
+		case PROP_ZIT:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin=g_value_get_uint(value);
+			break;
+		case PROP_ZTM:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m=g_value_get_uint(value);
+			break;
+		case PROP_ZC:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc=g_value_get_uint(value);
+			break;
+		case PROP_RC:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs=g_value_get_uint(value);
+			break;
+		case PROP_TC:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs=g_value_get_uint(value);
+			break;
+		case PROP_HV:
+			GTK_PLOT_POLAR_GET_PRIVATE(object)->hv=g_value_get_boolean(value);
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
 	}
 }
 
@@ -8835,34 +8852,51 @@ static void gtk_plot_polar_get_property(GObject *object, guint prop_id, GValue *
 {
 	switch (prop_id)
 	{
-		case PROP_BRN: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin));
-		break;
-		case PROP_BRX: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax));
-		break;
-		case PROP_BTN: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin));
-		break;
-		case PROP_BTX: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax));
-		break;
-		case PROP_CR: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r));
-		break;
-		case PROP_CT: g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th));
-		break;
-		case PROP_RT: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r));
-		break;
-		case PROP_ZIT: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin));
-		break;
-		case PROP_ZTM: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m));
-		break;
-		case PROP_ZC: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc));
-		break;
-		case PROP_RC: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs));
-		break;
-		case PROP_TC: g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs));
-		break;
-		case PROP_HV: g_value_set_boolean(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->hv));
-		break;
-		default: G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-		break;
+		case PROP_BRN:
+			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmin));
+			break;
+		case PROP_BRX:
+			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.rmax));
+			break;
+		case PROP_BTN:
+			if (((GTK_PLOT_POLAR(object)->flagd)&GTK_PLOT_POLAR_DISP_RDN)==0) g_value_set_double(value, I180_MY_PI*(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin));
+			else g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmin));
+			break;
+		case PROP_BTX:
+			if (((GTK_PLOT_POLAR(object)->flagd)&GTK_PLOT_POLAR_DISP_RDN)==0) g_value_set_double(value, I180_MY_PI*(GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax));
+			else g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->bounds.thmax));
+			break;
+		case PROP_CR:
+			g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.r));
+			break;
+		case PROP_CT:
+			if (((GTK_PLOT_POLAR(object)->flagd)&GTK_PLOT_POLAR_DISP_RDN)==0) g_value_set_double(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th));
+			else g_value_set_double(value, I180_MY_PI*(GTK_PLOT_POLAR_GET_PRIVATE(object)->centre.th));
+			break;
+		case PROP_RT:
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.r));
+			break;
+		case PROP_ZIT:
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zin));
+			break;
+		case PROP_ZTM:
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.z2m));
+			break;
+		case PROP_ZC:
+		 	g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->ticks.zc));
+			break;
+		case PROP_RC: 
+			g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->rcs));
+			break;
+		case PROP_TC:
+		 	g_value_set_uint(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->thcs));
+			break;
+		case PROP_HV: 
+			g_value_set_boolean(value, (GTK_PLOT_POLAR_GET_PRIVATE(object)->hv));
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+			break;
 	}
 }
 
@@ -8889,16 +8923,16 @@ static void gtk_plot_polar_class_init(GtkPlotPolarClass *klass)
 	(obj_klass->finalize)=(GObjectFinalizeFunc) gtk_plot_polar_finalise;
 	(obj_klass->set_property)=gtk_plot_polar_set_property;
 	(obj_klass->get_property)=gtk_plot_polar_get_property;
-	g_object_class_install_property(obj_klass, PROP_BRN, g_param_spec_double("rmin", "Minimum r value", "Minimum value for the radial scale", G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_BRX, g_param_spec_double("rmax", "Maximum r value", "Maximum value for the radial scale", G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_BTN, g_param_spec_double("thmin", "Minimum theta value", "Minimum value for the azimuthal scale", G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_BTX, g_param_spec_double("thmax", "Maximum theta value", "Maximum value for the azimuthal scale", G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_CR, g_param_spec_double("rcnt", "Centre r value", "Radial value at the centre of the plot", G_MININT, G_MAXINT, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_CT, g_param_spec_double("thcnt", "Centre theta value", "Azimuthal value at the centre of the plot", -G_PI, G_PI, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_BRN, g_param_spec_double("rmin", "Minimum r value", "Minimum value for the radial scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_BRX, g_param_spec_double("rmax", "Maximum r value", "Maximum value for the radial scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_BTN, g_param_spec_double("thmin", "Minimum theta value", "Minimum value for the azimuthal scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_BTX, g_param_spec_double("thmax", "Maximum theta value", "Maximum value for the azimuthal scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_CR, g_param_spec_double("rcnt", "Centre r value", "Radial value at the centre of the plot", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_CT, g_param_spec_double("thcnt", "Centre theta value", "Azimuthal value at the centre of the plot", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
 	g_object_class_install_property(obj_klass, PROP_RT, g_param_spec_uint("rticks", "Radial ticks-1", "Number of grid arcs drawn-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));
 	g_object_class_install_property(obj_klass, PROP_ZIT, g_param_spec_uint("thticksin", "Inner radial lines-1", "Number of radial lines at the centre of the circle-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));
 	g_object_class_install_property(obj_klass, PROP_ZTM, g_param_spec_uint("thtickmul", "log2((ticks-1)/thticksin)+1", "Number of times rticks must be doubled to equal the number of ticks on the outer arc -1", 1, G_MAXINT, 5, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_ZC, g_param_spec_double("mulcrit", "Critical length where a new radial line is formed", "distance an arc segment between two neighbouring radial lines needs to be before a new radial line forks off", 1, G_MAXINT, 5, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_ZC, g_param_spec_double("mulcrit", "Critical length where a new radial line is formed", "distance an arc segment between two neighbouring radial lines needs to be before a new radial line forks off", 1, G_MAXDOUBLE, 5, G_PARAM_READWRITE));
 	g_object_class_install_property(obj_klass, PROP_RC, g_param_spec_uint("rchar", "radial label characters", "Number of characters to store radial label strings", 1, 10, 5, G_PARAM_READWRITE));
 	g_object_class_install_property(obj_klass, PROP_TC, g_param_spec_uint("thchar", "theta label characters", "Number of characters to store azimuthal label strings", 1, 10, 5, G_PARAM_READWRITE));
 	g_object_class_install_property(obj_klass, PROP_HV, g_param_spec_boolean("transpose", "alternate display", "Display second set from thdata", FALSE, G_PARAM_READWRITE));
@@ -8917,7 +8951,7 @@ static void gtk_plot_polar_init(GtkPlotPolar *plot)
 	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);
 	priv=GTK_PLOT_POLAR_GET_PRIVATE(plot);
 	{(priv->bounds.rmin)=0.0; (priv->bounds.rmax)=1.0; (priv->bounds.thmin)=NMY_PI; (priv->bounds.thmax)=G_PI;}
-	{(priv->centre.r)=0.0; (priv->centre.th)=0;}
+	{(priv->centre.r)=0.5; (priv->centre.th)=0;}
 	{(priv->ticks.r)=4; (priv->ticks.zin)=12; (priv->ticks.z2m)=2; (priv->ticks.zc)=40.0;}
 	{(priv->rcs)=5; (priv->thcs)=6; (plot->rdp)=2; (plot->thdp)=2;}
 	{(priv->flagr)=0; (priv->flaga)=0;}
