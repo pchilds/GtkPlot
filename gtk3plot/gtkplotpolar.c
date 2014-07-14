@@ -222,8 +222,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	dtr+=hg;
 	tt=(tt/2)+JTI;
 	dr1=(priv->bounds.rmax)-(priv->bounds.rmin);
-	drs=((priv->centre.r)-(priv->bounds.rmin))*sin(priv->centre.th);
-	drc=((priv->centre.r)-(priv->bounds.rmin))*cos(priv->centre.th);
+	if ((priv->centre.r)<(priv->bounds.rmin)) {drs=0; drc=0;}
+	else
+	{
+		drs=((priv->centre.r)-(priv->bounds.rmin))*sin(priv->centre.th);
+		drc=((priv->centre.r)-(priv->bounds.rmin))*cos(priv->centre.th);
+	}
 	thx=(priv->bounds.thmax);
 	while (thx>G_PI) thx-=MY_2PI;
 	while (thx<NMY_PI) thx+=MY_2PI;
@@ -1074,11 +1078,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				sx=rt-(wd/2);
 				dz=-JTI-hg;
 				cairo_move_to(cr, (priv->x0)+(sx*ctx)+(dz*stx), (priv->y0)+(dz*ctx)-(sx*stx));
+				cairo_save(cr);
 				cairo_set_matrix(cr, &mtr);
 				pango_cairo_update_layout(cr, lyt);
 				pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
 				g_object_unref(lyt);
-				cairo_identity_matrix(cr);
+				//cairo_identity_matrix(cr);
+				cairo_restore(cr);
 			}
 			rt+=dwr;
 			cairo_new_sub_path(cr);
@@ -1090,11 +1096,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			sx=(priv->wr)+(((dr1*(priv->s))-wd)/2);
 			cairo_move_to(cr, (priv->x0)+(sx*ctx)-(dtr*stx), (priv->y0)-(dtr*ctx)-(sx*stx));
+			cairo_save(cr);
 			cairo_set_matrix(cr, &mtr);
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_identity_matrix(cr);
+			//cairo_identity_matrix(cr);
+			cairo_restore(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
 			pango_layout_set_font_description(lyt, (plt->lfont));
 			g_object_unref(lyt);
@@ -1133,11 +1141,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				sx=rt+(wd/2);
 				cairo_move_to(cr, (priv->x0)+(sx*ctx)-(JTI*stx), (priv->y0)-(JTI*ctx)-(sx*stx));
+				cairo_save(cr);
 				cairo_set_matrix(cr, &mtr);
 				pango_cairo_update_layout(cr, lyt);
 				pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
 				g_object_unref(lyt);
-				cairo_identity_matrix(cr);
+				//cairo_identity_matrix(cr);
+				cairo_restore(cr);
 			}
 			rt+=dwr;
 			cairo_new_sub_path(cr);
@@ -1150,11 +1160,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			sx=(priv->wr)+(((dr1*(priv->s))+wd)/2);
 			dz=hg-dtr;
 			cairo_move_to(cr, (priv->x0)+(sx*ctx)+(dz*stx), (priv->y0)+(dz*ctx)-(sx*stx));
+			cairo_save(cr);
 			cairo_set_matrix(cr, &mtr);
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_identity_matrix(cr);
+			//cairo_identity_matrix(cr);
+			cairo_restore(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
 			pango_layout_set_font_description(lyt, (plt->lfont));
 			g_object_unref(lyt);
@@ -1193,11 +1205,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				pango_layout_get_pixel_size(lyt, &wd, &hg);
 				sx=rt-(wd/2);
 				cairo_move_to(cr, (priv->x0)+(sx*ctn)+(JTI*stn), (priv->y0)+(JTI*ctn)-(sx*stn));
+				cairo_save(cr);
 				cairo_set_matrix(cr, &mtr);
 				pango_cairo_update_layout(cr, lyt);
 				pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
 				g_object_unref(lyt);
-				cairo_identity_matrix(cr);
+				//cairo_identity_matrix(cr);
+				cairo_restore(cr);
 			}
 			rt+=dwr;
 			cairo_new_sub_path(cr);
@@ -1210,11 +1224,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			sx=(priv->wr)+(((dr1*(priv->s))-wd)/2);
 			dz=dtr-hg;
 			cairo_move_to(cr, (priv->x0)+(sx*ctn)+(dz*stn), (priv->y0)+(dz*ctn)-(sx*stn));
+			cairo_save(cr);
 			cairo_set_matrix(cr, &mtr);
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_identity_matrix(cr);
+			//cairo_identity_matrix(cr);
+			cairo_restore(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
 			pango_layout_set_font_description(lyt, (plt->lfont));
 			g_object_unref(lyt);
@@ -1254,11 +1270,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				sx=rt+(wd/2);
 				dz=JTI+hg;
 				cairo_move_to(cr, (priv->x0)+(sx*ctn)+(dz*stn), (priv->y0)+(dz*ctn)-(sx*stn));
+				cairo_save(cr);
 				cairo_set_matrix(cr, &mtr);
 				pango_cairo_update_layout(cr, lyt);
 				pango_cairo_show_layout(cr, lyt);/* draw radial tick labels*/
 				g_object_unref(lyt);
-				cairo_identity_matrix(cr);
+				//cairo_identity_matrix(cr);
+				cairo_restore(cr);
 			}
 			rt+=dwr;
 			cairo_new_sub_path(cr);
@@ -1270,11 +1288,13 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			pango_layout_get_pixel_size(lyt, &wd, &hg);
 			sx=(priv->wr)+(((dr1*(priv->s))+wd)/2);
 			cairo_move_to(cr, (priv->x0)+(sx*ctn)+(dtr*stn), (priv->y0)+(dtr*ctn)-(sx*stn));
+			cairo_save(cr);
 			cairo_set_matrix(cr, &mtr);
 			pango_cairo_update_layout(cr, lyt);
 			pango_cairo_show_layout(cr, lyt);
 			g_object_unref(lyt);
-			cairo_identity_matrix(cr);
+			//cairo_identity_matrix(cr);
+			cairo_restore(cr);
 			lyt=pango_cairo_create_layout(cr); /* draw azimuthal label */
 			pango_layout_set_font_description(lyt, (plt->lfont));
 			g_object_unref(lyt);
@@ -1490,7 +1510,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		pango_layout_set_font_description(lyt, (plt->lfont));
 		g_object_unref(lyt);
 	}
-	else
+	else/* this currently outputs justified right when excess vertical and disappears left when excess horizontal potentially due to the wiggle */
 	{
 		(priv->s)=dr1-drc;/* check radial x0 to xw */
 		if ((priv->s)>DZE) (priv->s)=((xw/2)-dtt-((priv->wr)*(1-cos(priv->centre.th))))/(priv->s);
@@ -8894,11 +8914,11 @@ static void gtk_plot_polar_class_init(GtkPlotPolarClass *klass)
 	(obj_klass->finalize)=(GObjectFinalizeFunc) gtk_plot_polar_finalise;
 	(obj_klass->set_property)=gtk_plot_polar_set_property;
 	(obj_klass->get_property)=gtk_plot_polar_get_property;
-	g_object_class_install_property(obj_klass, PROP_BRN, g_param_spec_double("rmin", "Minimum r value", "Minimum value for the radial scale", G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_BRX, g_param_spec_double("rmax", "Maximum r value", "Maximum value for the radial scale", G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_BTN, g_param_spec_double("thmin", "Minimum theta value", "Minimum value for the azimuthal scale", G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_BTX, g_param_spec_double("thmax", "Maximum theta value", "Maximum value for the azimuthal scale", G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_CR, g_param_spec_double("rcnt", "Centre r value", "Radial value at the centre of the plot", G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_BRN, g_param_spec_double("rmin", "Minimum r value", "Minimum value for the radial scale", 0, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_BRX, g_param_spec_double("rmax", "Maximum r value", "Maximum value for the radial scale", 0, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_BTN, g_param_spec_double("thmin", "Minimum theta value", "Minimum value for the azimuthal scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_BTX, g_param_spec_double("thmax", "Maximum theta value", "Maximum value for the azimuthal scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+	g_object_class_install_property(obj_klass, PROP_CR, g_param_spec_double("rcnt", "Centre r value", "Radial value at the centre of the plot", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
 	g_object_class_install_property(obj_klass, PROP_CT, g_param_spec_double("thcnt", "Centre theta value", "Azimuthal value at the centre of the plot", -G_PI, G_PI, 0, G_PARAM_READWRITE));
 	g_object_class_install_property(obj_klass, PROP_RT, g_param_spec_uint("rticks", "Radial ticks-1", "Number of grid arcs drawn-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));
 	g_object_class_install_property(obj_klass, PROP_ZIT, g_param_spec_uint("thticksin", "Inner radial lines-1", "Number of radial lines at the centre of the circle-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));

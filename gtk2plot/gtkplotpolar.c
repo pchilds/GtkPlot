@@ -230,8 +230,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 	tt=(tt/2)+JTI;
 /* drs and drc are the vertical and horizontal distances between rn,tc and rc,tc */
 	dr1=(priv->bounds.rmax)-(priv->bounds.rmin);
-	drs=((priv->centre.r)-(priv->bounds.rmin))*sin(priv->centre.th);
-	drc=((priv->centre.r)-(priv->bounds.rmin))*cos(priv->centre.th);
+	if ((priv->centre.r)<(priv->bounds.rmin)) {drs=0; drc=0;}
+	else
+	{
+		drs=((priv->centre.r)-(priv->bounds.rmin))*sin(priv->centre.th);
+		drc=((priv->centre.r)-(priv->bounds.rmin))*cos(priv->centre.th);
+	}
 	thx=(priv->bounds.thmax);
 	while (thx>G_PI) thx-=MY_2PI;
 	while (thx<NMY_PI) thx+=MY_2PI;
