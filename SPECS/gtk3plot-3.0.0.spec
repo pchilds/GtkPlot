@@ -6,7 +6,7 @@ License:	LGPLv3+
 Group:		Development/Libraries
 Source:		%{name}-%{version}.tar.gz
 BuildRequires:	automake, autoconf, libtool, gtk3 >= 3.8, pkgconfig
-Requires:	gtk+3 >= 3.8
+Requires:	gtk3 >= 3.8
 
 %description
 %{name} makes available to gtk+3 programs, a pi/donut, 

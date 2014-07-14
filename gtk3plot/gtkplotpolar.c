@@ -1738,9 +1738,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				{
 					for (k=0; k<(plt->ind->len); k++)
 					{
-						ft=fmod(k,(plt->rd->len));
-						{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
-						cairo_set_source_rgba(cr, vv, wv, xv, yv);
+						ft=fmod(k,(plt->cl->len));
+						vv=g_array_index((plt->cl), GdkRGBA, ft);
+						cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 						ft=g_array_index((plt->ind), gint, k);
 						if (ft>=(plot->rdata->len)) break;
 						if (ft>=(plot->thdata->len)-(plot->rdata->len)) break;
@@ -2463,9 +2463,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 				{
 					for (k=0; k<(plt->ind->len); k++)
 					{
-						ft=fmod(k,(plt->rd->len));
-						{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
-						cairo_set_source_rgba(cr, vv, wv, xv, yv);
+						ft=fmod(k,(plt->cl->len));
+						vv=g_array_index((plt->cl), GdkRGBA, ft);
+						cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 						ft=g_array_index((plt->ind), gint, k);
 						if (ft>=(plot->rdata->len)) break;
 						if (ft>=(plot->thdata->len)-(plot->rdata->len)) break;
@@ -3274,9 +3274,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				for (k=0; k<(plt->ind->len); k++)
 				{
-					ft=fmod(k,(plt->rd->len));
-					{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
-					cairo_set_source_rgba(cr, vv, wv, xv, yv);
+					ft=fmod(k,(plt->cl->len));
+					vv=g_array_index((plt->cl), GdkRGBA, ft);
+					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 					ft=g_array_index((plt->ind), gint, k);
 					if (ft>=(plot->rdata->len)) break;
 					if (ft>=(plot->thdata->len)-(plot->rdata->len)) break;
@@ -4079,9 +4079,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 			{
 				for (k=0; k<(plt->ind->len); k++)
 				{
-					ft=fmod(k,(plt->rd->len));
-					{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
-					cairo_set_source_rgba(cr, vv, wv, xv, yv);
+					ft=fmod(k,(plt->cl->len));
+					vv=g_array_index((plt->cl), GdkRGBA, ft);
+					cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 					ft=g_array_index((plt->ind), gint, k);
 					if (ft>=(plot->rdata->len)) break;
 					if (ft>=(plot->thdata->len)-(plot->rdata->len)) break;
@@ -4885,9 +4885,9 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		{
 			for (k=0; k<(plt->ind->len); k++)
 			{
-				ft=fmod(k,(plt->rd->len));
-				{vv=g_array_index((plt->rd), gdouble, ft); wv=g_array_index((plt->gr), gdouble, ft); xv=g_array_index((plt->bl), gdouble, ft); yv=g_array_index((plt->al), gdouble, ft);}
-				cairo_set_source_rgba(cr, vv, wv, xv, yv);
+				ft=fmod(k,(plt->cl->len));
+				vv=g_array_index((plt->cl), GdkRGBA, ft);
+				cairo_set_source_rgba(cr, (vv.red), (vv.green), (vv.blue), (vv.alpha));
 				ft=g_array_index((plt->ind), gint, k);
 				if (ft>=(plot->rdata->len)) break;
 				if (ft>=(plot->thdata->len)-(plot->rdata->len)) break;

@@ -241,10 +241,10 @@ echo "#!/usr/bin/make -f"
 echo "export DH_VERBOSE=1"
 echo ""
 echo "%:"
-echo "  dh  \$@ --with autoreconf"
+echo "	dh	\$@ --with autoreconf"
 echo ".PHONY: override_dh_strip"
 echo "override_dh_strip:"
-echo "  dh_strip --dbg-package=libgtkplot-${gmx}-dbg"
+echo "	dh_strip --dbg-package=libgtkplot-${gmx}-dbg"
 } >debian/rules
 {
 echo "libgtkplot ${gmx}.${gar} libgtkplot-${gmx}"
