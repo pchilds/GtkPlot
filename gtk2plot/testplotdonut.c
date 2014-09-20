@@ -40,7 +40,6 @@ void dpa(GtkWidget *widget, gpointer data)
 	GArray *car, *cag, *cab, *caa;
 	GtkPlot *pt;
 	GdkColor cl;
-	gchar *str, *str2;
 	gdouble iv;
 	gdouble *ptr;
 	guint16 alp;
@@ -121,7 +120,6 @@ void dpr(GtkWidget *widget, gpointer data)
 	GtkAdjustment *adj;
 	GdkColor cl;
 	GtkPlot *pt;
-	gdouble *ptr;
 	gint j;
 	guint alp;
 	gchar *str;
@@ -363,7 +361,7 @@ void opd(GtkWidget *widget, gpointer data)
 			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
 			g_free(str);
 			g_array_append_val(sz, lc);
-			gtk_plot_linear_set_data(GTK_PLOT_DONUT(plot), k, v, nx, sz, st);
+			gtk_plot_donut_set_data(GTK_PLOT_DONUT(plot), k, v, nx, sz, st);
 			{g_array_unref(k); g_array_unref(v); g_array_unref(nx); g_array_unref(sz); g_array_unref(st);}
 			gtk_plot_donut_refresh(plot);
 		}

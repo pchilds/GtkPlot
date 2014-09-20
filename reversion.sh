@@ -16,7 +16,7 @@ then
 	gmn=8
 	gdp="-3"
 	{
-	echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g"
+	echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g -Wall -Werror"
 	echo "MAINTAINERCLEANFILES=Makefile.in"
 	echo ""
 	echo "gtkplot_libincludedir=\$(libdir)/gtkplot-3.${gar}/include"
@@ -61,7 +61,7 @@ else
 	gmn=18
 	gdp="2.$2"
 	{
-	echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g"
+	echo "AM_CFLAGS=\$(PLOT_CFLAGS) -g -Wall -Werror"
 	echo "MAINTAINERCLEANFILES=Makefile.in"
 	echo ""
 	echo "gtkplot_libincludedir=\$(libdir)/gtkplot-2.${gar}/include"

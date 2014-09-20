@@ -130,7 +130,6 @@ void dpr(GtkWidget *widget, gpointer data)
 	GdkColor cl;
 	GtkPlot *pt;
 	GtkPlotPolar *plt;
-	gdouble *ptr;
 	gint j;
 	guint alp;
 	gchar *str;
@@ -349,7 +348,7 @@ void opd(GtkWidget *widget, gpointer data)
 	GArray *nx, *st, *sz, *x, *y;
 	gchar *contents, *fin=NULL, *str;
 	gchar **strary, **strat;
-	gdouble lcl, mny, mxy, xi, xf;
+	gdouble lcl, mny=0.0, mxy=1.0, xi, xf;
 	GError *Err;
 	gint lc;
 	GtkPlotPolar *plt;
