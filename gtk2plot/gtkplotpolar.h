@@ -52,11 +52,18 @@
 		GTK_PLOT_POLAR_DISP_PTS = 1 << 2,
 		GTK_PLOT_POLAR_DISP_PNT = 1 << 3
 	} GtkPlotPolarDisp;
+#	define GTK_PLOT_POLAR_KEY_DSO 1
+	typedef enum
+	{
+		GTK_PLOT_POLAR_KEY_CLR = 1 << 0,
+		GTK_PLOT_POLAR_KEY_DSH = 3 << GTK_PLOT_POLAR_KEY_DSO
+	} GtkPlotPolarKey;
 	struct _GtkPlotPolar
 	{
 		GtkPlot parent;
 		GArray *rdata, *thdata; /* radial and azimuthal data values */
 		gchar *rlab, *thlab; /* labels for the radial and azimuthal axis */
+		GArray *kdata; /* opacity and style flags for plots */
 		gdouble rps, thps; /* radial and azimuthal position of mouse */
 		guint ptsize, linew; /* point radii and line width */
 		guint rdp, thdp; /* number of decimal points for axes */
@@ -67,6 +74,7 @@
 	{
 		GtkPlotClass parent_class;
 		void (*moved) (GtkPlotPolar *plot);
+		void (*key_changed) (GtkPlotPolar *plot);
 	};
 	gboolean gtk_plot_polar_update_scale(GtkWidget *widget, gdouble rn, gdouble rx, gdouble thn, gdouble thx, gdouble rcn, gdouble thc);
 	gboolean gtk_plot_polar_update_scale_pretty(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
@@ -75,7 +83,7 @@
 	gboolean gtk_plot_polar_print_png(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_polar_print_svg(GtkWidget *widget, gchar *fout);
 	void gtk_plot_polar_set_label(GtkPlotPolar *plot, gchar *rl, gchar *tl);
-	void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, GArray *st);
+	void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray *nd, GArray *sz, GArray *st, GArray *kd);
 	GtkWidget *gtk_plot_polar_new(void);
 	extern GType gtk_plot_polar_get_type(void);
 	G_END_DECLS

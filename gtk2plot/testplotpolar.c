@@ -35,7 +35,7 @@
 gchar* fol=NULL;
 GdkColormap *cmp;
 GtkPrintSettings *prst=NULL;
-GtkWidget *butt1, *butt2, *colour, *entry1, *entry2, *helpwin, *jind, *jix, *plot, *statusbar, *window;
+GtkWidget *butt1, *butt2, *colour, *entry1, *entry2, *helpwin, *jind, *jix, *plot, *sbr;
 
 void dpa(GtkWidget *widget, gpointer data)
 {
@@ -57,7 +57,7 @@ void dpa(GtkWidget *widget, gpointer data)
 	{g_free(str); g_free(str2);}
 	ds1=pango_font_description_from_string(gtk_font_button_get_font_name(GTK_FONT_BUTTON(butt1)));
 	ds2=pango_font_description_from_string(gtk_font_button_get_font_name(GTK_FONT_BUTTON(butt2)));
-	gtk_plot_set_font(pt, ds1, ds2);
+	gtk_plot_set_font(pt, ds1, ds2, NULL);
 	pango_font_description_free(ds1); pango_font_description_free(ds2);
 	k=(pt->ind->len);
 	car=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), k);
@@ -91,7 +91,7 @@ void dpa(GtkWidget *widget, gpointer data)
 	ptr=&g_array_index(caa, gdouble, j);
 	iv=((gdouble) alp)/65535;
 	*ptr=iv;
-	gtk_plot_set_colour(pt, car, cag, cab, caa);
+	gtk_plot_set_colour(pt, car, cag, cab, caa, NULL);
 	{g_array_unref(car); g_array_unref(cag); g_array_unref(cab); g_array_unref(caa);}
 	g_object_get(G_OBJECT(plot), "thmin", &xi, "thmax", &xf, "rmin", &mny, "rmax", &mxy, "rcnt", &r0, "thcnt", &th0, NULL);
 	gtk_plot_polar_update_scale(plot, mny, mxy, xi, xf, r0, th0);
@@ -134,7 +134,7 @@ void dpr(GtkWidget *widget, gpointer data)
 	guint alp;
 	gchar *str;
 	
-	helpwin=gtk_dialog_new_with_buttons("Display Properties", GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, NULL);
+	helpwin=gtk_dialog_new_with_buttons("Display Properties", GTK_WINDOW(data), GTK_DIALOG_DESTROY_WITH_PARENT, NULL);
 	g_signal_connect_swapped(G_OBJECT(helpwin), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(helpwin));
 	butt=gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	gtk_widget_show(butt);
@@ -265,7 +265,7 @@ void prt(GtkWidget *widget, gpointer data)
 	if (res==GTK_PRINT_OPERATION_RESULT_ERROR)
 	{
 		str=g_strdup_printf("An error occured while printing: %s.", (Err->message));
-		gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+		gtk_statusbar_push(GTK_STATUSBAR(sbr), gtk_statusbar_get_context_id(GTK_STATUSBAR(sbr), str), str);
 		g_free(str);
 		g_error_free(Err);
 	}
@@ -283,7 +283,7 @@ void prg(GtkWidget *widget, gpointer data)
 	GtkFileFilter *epsfilt, *pngfilt, *svgfilt, *filt;
 	gchar *fout=NULL, *fout2=NULL;
 
-	wfile=gtk_file_chooser_dialog_new("Select Image File", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+	wfile=gtk_file_chooser_dialog_new("Select Image File", GTK_WINDOW(data), GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
 	g_signal_connect(G_OBJECT(wfile), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(wfile));
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(wfile), TRUE);
 	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(wfile), fol);
@@ -345,7 +345,7 @@ void prg(GtkWidget *widget, gpointer data)
 
 void opd(GtkWidget *widget, gpointer data)
 {
-	GArray *nx, *st, *sz, *x, *y;
+	GArray *ky, *nx, *st, *sz, *x, *y;
 	gchar *contents, *fin=NULL, *str;
 	gchar **strary, **strat;
 	gdouble lcl, mny=0.0, mxy=1.0, xi, xf;
@@ -355,7 +355,7 @@ void opd(GtkWidget *widget, gpointer data)
 	GtkWidget *wfile;
 	guint k, sal;
 
-	wfile=gtk_file_chooser_dialog_new("Select Data File", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	wfile=gtk_file_chooser_dialog_new("Select Data File", GTK_WINDOW(data), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	g_signal_connect(G_OBJECT(wfile), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(wfile));
 	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(wfile), FALSE);
 	gtk_file_chooser_set_show_hidden(GTK_FILE_CHOOSER(wfile), FALSE);
@@ -374,6 +374,7 @@ void opd(GtkWidget *widget, gpointer data)
 			st=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
 			sz=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
 			nx=g_array_sized_new(FALSE, FALSE, sizeof(gint), 1);
+			ky=g_array_sized_new(FALSE, FALSE, sizeof(guint), 1);
 			lc=0;
 			for (k=0; k<sal; k++)
 			{
@@ -395,24 +396,25 @@ void opd(GtkWidget *widget, gpointer data)
 			}
 			g_strfreev(strary);
 			str=g_strdup_printf("File: %s successfully loaded", fin);
-			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+			gtk_statusbar_push(GTK_STATUSBAR(sbr), gtk_statusbar_get_context_id(GTK_STATUSBAR(sbr), str), str);
 			g_free(str);
 			plt=GTK_PLOT_POLAR(plot);
 			g_array_append_val(sz, lc);
 			k=0;
 			g_array_append_val(nx, k);
+			g_array_append_val(ky, k);
 			k=1;
 			g_array_append_val(st, k);
 			xi=g_array_index(x, gdouble, 0);
 			xf=g_array_index(x, gdouble, (lc-1));
-			gtk_plot_polar_set_data(plt, x, y, nx, sz, st);
-			{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st);}
+			gtk_plot_polar_set_data(plt, x, y, nx, sz, st, ky);
+			{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st); g_array_unref(ky);}
 			gtk_plot_polar_update_scale(plot, mny, mxy, xi, xf, 0, 0);
 		}
 		else
 		{
 			str=g_strdup_printf("Loading failed for file: %s", fin);
-			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+			gtk_statusbar_push(GTK_STATUSBAR(sbr), gtk_statusbar_get_context_id(GTK_STATUSBAR(sbr), str), str);
 			g_free(str);
 		}
 		g_free(contents);
@@ -423,18 +425,18 @@ void opd(GtkWidget *widget, gpointer data)
 
 void ad(GtkWidget *widget, gpointer data)
 {
-	GArray *nx, *st, *sz, *x, *y;
+	GArray *ky, *nx, *st, *sz, *x, *y;
 	gchar *contents, *fin=NULL, *str;
 	gchar **strary, **strat;
 	gdouble lcl, mny, mxy, xi, xf;
 	GError *Err;
-	gint lc, lc2;
+	gint lc, lc2, lc3, lc4;
 	GtkPlot *pt;
 	GtkPlotPolar *plt;
 	GtkWidget *wfile;
-	guint k, sal;
+	guint k, lc5, sal;
 
-	wfile=gtk_file_chooser_dialog_new("Select Data File", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	wfile=gtk_file_chooser_dialog_new("Select Data File", GTK_WINDOW(data), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
 	g_signal_connect(G_OBJECT(wfile), "destroy", G_CALLBACK(gtk_widget_destroy), G_OBJECT(wfile));
 	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(wfile), FALSE);
 	gtk_file_chooser_set_show_hidden(GTK_FILE_CHOOSER(wfile), FALSE);
@@ -453,28 +455,35 @@ void ad(GtkWidget *widget, gpointer data)
 			st=g_array_new(FALSE, FALSE, sizeof(gint));
 			sz=g_array_new(FALSE, FALSE, sizeof(gint));
 			nx=g_array_new(FALSE, FALSE, sizeof(gint));
-			lc=1;
-			g_array_append_val(st, lc);
-			{sal=0; lc=0;}
+			ky=g_array_new(FALSE, FALSE, sizeof(guint));
+			sal=lc=0;
 			while (sal<(pt->sizes->len))
 			{
-				lc=1;
-				g_array_append_val(st, lc);
-				lc2=g_array_index((pt->ind), gint, sal);
-				g_array_append_val(nx, lc2);
-				lc=g_array_index((pt->sizes), gint, sal);
-				g_array_append_val(sz, lc);
-				lc+=lc2;
-				for (k=lc2;k<lc;k++)
+				g_array_append_val(nx, lc);
+				lc2=1;
+				g_array_append_val(st, lc2);
+				lc5=g_array_index(plt->kdata, guint, sal);
+				g_array_append_val(ky, lc5);
+				lc2=g_array_index(pt->ind, gint, sal);
+				lc3=g_array_index(pt->sizes, gint, sal);
+				lc4=g_array_index(pt->stride, gint, sal);
+				g_array_append_val(sz, lc3);
+				lc+=lc3;
+				lc3=lc2+lc3*lc4;
+				for (k=lc2;k<lc3;k+=lc4)
 				{
-					lcl=g_array_index((plt->thdata), gdouble, k);
+					lcl=g_array_index(plt->thdata, gdouble, k);
 					g_array_append_val(x, lcl);
-					lcl=g_array_index((plt->rdata), gdouble, k);
+					lcl=g_array_index(plt->rdata, gdouble, k);
 					g_array_append_val(y, lcl);
 				}
 				sal++;
 			}
 			g_array_append_val(nx, lc);
+			lc5=0;
+			g_array_append_val(ky, lc5);
+			lc2=1;
+			g_array_append_val(st, lc2);
 			g_object_get(G_OBJECT(plot), "thmin", &xi, "thmax", &xf, "rmin", &mny, "rmax", &mxy, NULL);
 			strary=g_strsplit_set(contents, "\r\n", 0);
 			sal=g_strv_length(strary);
@@ -500,17 +509,17 @@ void ad(GtkWidget *widget, gpointer data)
 			if (lcl>xf) xf=lcl;
 			g_strfreev(strary);
 			str=g_strdup_printf("File: %s successfully loaded", fin);
-			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+			gtk_statusbar_push(GTK_STATUSBAR(sbr), gtk_statusbar_get_context_id(GTK_STATUSBAR(sbr), str), str);
 			g_free(str);
 			g_array_append_val(sz, lc);
-			gtk_plot_polar_set_data(plt, x, y, nx, sz, st);
-			{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st);}
+			gtk_plot_polar_set_data(plt, x, y, nx, sz, st, ky);
+			{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st); g_array_unref(ky);}
 			gtk_plot_polar_update_scale(plot, mny, mxy, xi, xf, 0, 0);
 		}
 		else
 		{
 			str=g_strdup_printf("Loading failed for file: %s", fin);
-			gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+			gtk_statusbar_push(GTK_STATUSBAR(sbr), gtk_statusbar_get_context_id(GTK_STATUSBAR(sbr), str), str);
 			g_free(str);
 		}
 		g_free(contents);
@@ -524,7 +533,7 @@ void pltmv(GtkPlotPolar *plt, gpointer data)
 	gchar *str;
 
 	str=g_strdup_printf("r: %f, th: %f", plt->rps, plt->thps);
-	gtk_statusbar_push(GTK_STATUSBAR(statusbar), gtk_statusbar_get_context_id(GTK_STATUSBAR(statusbar), str), str);
+	gtk_statusbar_push(GTK_STATUSBAR(sbr), gtk_statusbar_get_context_id(GTK_STATUSBAR(sbr), str), str);
 	g_free(str);
 }
 
@@ -545,46 +554,47 @@ void upg(GtkWidget *widget, gpointer data)
 int main(int argc, char *argv[])
 {
 	AtkObject *atk_label, *atk_widget;
-	GArray *x, *y, *st, *sz, *nx, *car, *cab, *cag, *caa;
+	GArray *caa, *cab, *cag, *car, *ky, *nx, *st, *sz, *x, *y;
+	gchar* klb[3] = {"Spiral", "Sinusoidal", NULL};
 	gdouble fll, valx, valy;
 	GtkAccelGroup *accel_group=NULL;
 	GtkAdjustment *adj;
 	GtkPlot *pt;
 	GtkPlotPolar *plt;
-	GtkWidget *vbox, *vbox2, *mnb, *mnu, *mni, *hpane, *butt, *label;
+	GtkWidget *vbox, *vbox2, *mnb, *mnu, *mni, *hpane, *butt, *label, *wdw;
 	guint j;
 
 	gtk_init(&argc, &argv);
-	window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(window), "PlotPolar tester");
-	g_signal_connect_swapped(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	wdw=gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(wdw), "PlotPolar tester");
+	g_signal_connect_swapped(G_OBJECT(wdw), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	vbox=gtk_vbox_new(FALSE, 0); 
-	gtk_container_add(GTK_CONTAINER(window), vbox);
+	gtk_container_add(GTK_CONTAINER(wdw), vbox);
 	gtk_widget_show(vbox);
 	mnb=gtk_menu_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), mnb, FALSE, FALSE, 2);
 	gtk_widget_show(mnb);
 	mnu=gtk_menu_new();
 	accel_group=gtk_accel_group_new();
-	gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
+	gtk_window_add_accel_group(GTK_WINDOW(wdw), accel_group);
 	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
 	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_o, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(opd), NULL);
+	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(opd), (gpointer) wdw);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
 	gtk_widget_show(mni);
 	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_ADD, NULL);
 	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_a, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(ad), NULL);
+	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(ad), (gpointer) wdw);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
 	gtk_widget_show(mni);
 	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_SAVE, NULL);
 	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_s, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(prg), NULL);
+	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(prg), (gpointer) wdw);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
 	gtk_widget_show(mni);
 	mni=gtk_image_menu_item_new_from_stock(GTK_STOCK_PRINT, NULL);
 	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_p, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(prt), NULL);
+	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(prt), (gpointer) wdw);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
 	gtk_widget_show(mni);
 	mni=gtk_separator_menu_item_new();
@@ -602,7 +612,7 @@ int main(int argc, char *argv[])
 	mnu=gtk_menu_new();
 	mni=gtk_menu_item_new_with_label("Display Properties:");
 	gtk_widget_add_accelerator(mni, "activate", accel_group, GDK_F2, 0, GTK_ACCEL_VISIBLE);
-	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(dpr), NULL);
+	g_signal_connect(G_OBJECT(mni), "activate", G_CALLBACK(dpr), (gpointer) wdw);
 	gtk_menu_shell_append(GTK_MENU_SHELL(mnu), mni);
 	gtk_widget_show(mni);
 	mni=gtk_menu_item_new_with_mnemonic("_Properties");
@@ -625,7 +635,7 @@ int main(int argc, char *argv[])
 	label=gtk_label_new("Header Lines:");
 	gtk_box_pack_start(GTK_BOX(vbox2), label, FALSE, FALSE, 2);
 	gtk_widget_show(label);
-	adj=(GtkAdjustment *) gtk_adjustment_new(5, 0, G_MAXINT, 1.0, 5.0, 0.0);
+	adj=(GtkAdjustment*) gtk_adjustment_new(5, 0, G_MAXINT, 1.0, 5.0, 0.0);
 	jind=gtk_spin_button_new(adj, 0, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), jind, FALSE, FALSE, 2);
 	gtk_widget_show(jind);
@@ -633,59 +643,84 @@ int main(int argc, char *argv[])
 	atk_label=gtk_widget_get_accessible(GTK_WIDGET(label));
 	atk_object_add_relationship(atk_label, ATK_RELATION_LABEL_FOR, atk_widget);
 	atk_object_add_relationship(atk_widget, ATK_RELATION_LABELLED_BY, atk_label);
-	gtk_paned_add1(GTK_PANED(hpane), vbox2);
-	plot=gtk_plot_polar_new();
-	g_signal_connect(plot, "moved", G_CALLBACK(pltmv), NULL);
-	x=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 51);
-	y=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 51);
-	st=g_array_sized_new(FALSE, FALSE, sizeof(gint), 2);
-	sz=g_array_sized_new(FALSE, FALSE, sizeof(gint), 2);
-	nx=g_array_sized_new(FALSE, FALSE, sizeof(gint), 2);
-	plt=GTK_PLOT_POLAR(plot);
-	pt=GTK_PLOT(plot);
-	(plt->flagd)=7;
-	j=1;
-	g_array_append_val(st, j);
-	g_array_append_val(st, j);
-	j=0;
-	g_array_append_val(nx, j);
-	while (j<=50)
-	{
-		valx=((gdouble)(j++)-25)*G_PI/25;
-		g_array_append_val(x, valx);
-		valy=cos(32*valx);
-		valy++;
-		valy*=(3+cos(16*valx));
-		valy*=(1+cos(4*valx))/8;
-		valy++;
-		valy/=3;
-		g_array_append_val(y, valy);
-	}
-	g_array_append_val(sz, j);
-	gtk_plot_polar_set_data(plt, y, x, nx, sz, st);
-	{g_array_unref(x); g_array_unref(y); g_array_unref(nx); g_array_unref(sz); g_array_unref(st);}
-	(plt->ptsize)=4;
-	car=g_array_new(FALSE, FALSE, sizeof(gdouble));
-	cag=g_array_new(FALSE, FALSE, sizeof(gdouble));
-	cab=g_array_new(FALSE, FALSE, sizeof(gdouble));
-	caa=g_array_new(FALSE, FALSE, sizeof(gdouble));
-	fll=0;
-	{g_array_append_val(car, fll); g_array_append_val(cag, fll); g_array_append_val(cab, fll); g_array_append_val(cag, fll); g_array_append_val(cab, fll); g_array_append_val(cab, fll);}
-	fll++;
-	{g_array_append_val(car, fll); g_array_append_val(cag, fll); g_array_append_val(cab, fll);}
-	fll--;
-	{g_array_append_val(car, fll); g_array_append_val(cag, fll); g_array_append_val(car, fll);}
-	fll=0.8;
-	{g_array_append_val(caa, fll); g_array_append_val(caa, fll); g_array_append_val(caa, fll); g_array_append_val(caa, fll);}
-	gtk_plot_set_colour(pt, car, cag, cab, caa);
-	{g_array_unref(car); g_array_unref(cag); g_array_unref(cab); g_array_unref(caa);}
-	gtk_widget_show(plot);
-	gtk_paned_add2(GTK_PANED(hpane), plot);
-	statusbar=gtk_statusbar_new();
-	gtk_box_pack_start(GTK_BOX(vbox), statusbar, FALSE, FALSE, 2);
-	gtk_widget_show(statusbar);
-	gtk_widget_show(window);
-	fol=g_strdup("/home");
-	gtk_main();
-	return 0;
+  gtk_paned_add1(GTK_PANED(hpane), vbox2);
+  plot=gtk_plot_polar_new();
+  g_signal_connect(plot, "moved", G_CALLBACK(pltmv), NULL);
+  x=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 51);
+  y=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), 51);
+  st=g_array_sized_new(FALSE, FALSE, sizeof(gint), 2);
+  sz=g_array_sized_new(FALSE, FALSE, sizeof(gint), 2);
+  nx=g_array_sized_new(FALSE, FALSE, sizeof(gint), 2);
+  ky=g_array_sized_new(FALSE, FALSE, sizeof(guint), 2);
+  plt=GTK_PLOT_POLAR(plot);
+  pt=GTK_PLOT(plot);
+  plt->flagd=7;
+  j=2;
+  g_array_append_val(st, j);
+  g_array_append_val(st, j);
+  j=1<<1;
+  g_array_append_val(ky, j);
+  j=2<<1;
+  g_array_append_val(ky, j);
+  j=0;
+  g_array_append_val(nx, j);
+  j=1;
+  g_array_append_val(nx, j);
+  for (j=0;j<=50;j++) {
+    valx=(gdouble)j/50.0;
+    g_array_append_val(y, valx);
+    valx=G_PI*(2*valx-1);
+    g_array_append_val(x, valx);
+    g_array_append_val(x, valx);
+    valy=(1+(1+cos(32*valx))*(3+cos(16*valx))*(1+cos(4*valx))/8)/3.0;
+    g_array_append_val(y, valy);
+  }
+  g_array_append_val(sz, j);
+  g_array_append_val(sz, j);
+  gtk_plot_polar_set_data(plt, y, x, nx, sz, st, ky);
+  g_array_unref(x);
+  g_array_unref(y);
+  g_array_unref(nx);
+  g_array_unref(sz);
+  g_array_unref(st);
+  g_array_unref(ky);
+  plt->ptsize=4;
+  car=g_array_new(FALSE, FALSE, sizeof(gdouble));
+  cag=g_array_new(FALSE, FALSE, sizeof(gdouble));
+  cab=g_array_new(FALSE, FALSE, sizeof(gdouble));
+  caa=g_array_new(FALSE, FALSE, sizeof(gdouble));
+  fll=0;
+  g_array_append_val(car, fll);
+  g_array_append_val(cag, fll);
+  g_array_append_val(cab, fll);
+  g_array_append_val(cag, fll);
+  g_array_append_val(cab, fll);
+  g_array_append_val(cab, fll);
+  fll++;
+  g_array_append_val(car, fll);
+  g_array_append_val(cag, fll);
+  g_array_append_val(cab, fll);
+  fll--;
+  g_array_append_val(car, fll);
+  g_array_append_val(cag, fll);
+  g_array_append_val(car, fll);
+  fll=0.8;
+  g_array_append_val(caa, fll);
+  g_array_append_val(caa, fll);
+  g_array_append_val(caa, fll);
+  g_array_append_val(caa, fll);
+  gtk_plot_set_colour(pt, car, cag, cab, caa, klb);
+  g_array_unref(car);
+  g_array_unref(cag);
+  g_array_unref(cab);
+  g_array_unref(caa);
+  gtk_widget_show(plot);
+  gtk_paned_add2(GTK_PANED(hpane), plot);
+  sbr=gtk_statusbar_new();
+  gtk_box_pack_start(GTK_BOX(vbox), sbr, FALSE, FALSE, 2);
+  gtk_widget_show(sbr);
+  gtk_widget_show(wdw);
+  fol=g_strdup("/home");
+  gtk_main();
+  return 0;
 }

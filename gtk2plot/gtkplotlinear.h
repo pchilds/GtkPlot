@@ -50,11 +50,17 @@
 		GTK_PLOT_LINEAR_DISP_LIN = 1 << 0,
 		GTK_PLOT_LINEAR_DISP_PTS = 1 << 1
 	} GtkPlotLinearDisp;
+	typedef enum
+	{
+		GTK_PLOT_LINEAR_KEY_CLR = 1 << 0,
+		GTK_PLOT_LINEAR_KEY_DSH = 3 << 1
+	} GtkPlotLinearKey;
 	struct _GtkPlotLinear
 	{
 		GtkPlot parent;
 		GArray *xdata, *ydata; /* x and y data sets */
 		gchar *xlab, *ylab; /* labels for the x and y axes */
+		GArray *kdata; /* opacity and style flags for plots */
 		guint ptsize, linew; /* radii of the points and line width of the plot line */
 		guint xdp, ydp; /* number of decimal points for axes */
 		gint zmode; /* zoom mode flags */
@@ -65,6 +71,7 @@
 	{
 		GtkPlotClass parent_class;
 		void (*moved) (GtkPlotLinear *plot);
+		void (*key_changed) (GtkPlotLinear *plot);
 	};
 	gboolean gtk_plot_linear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx);
 	gboolean gtk_plot_linear_update_scale_pretty(GtkWidget *widget, gdouble xl, gdouble xu, gdouble yl, gdouble yu);
@@ -73,7 +80,7 @@
 	gboolean gtk_plot_linear_print_png(GtkWidget *widget, gchar *fout);
 	gboolean gtk_plot_linear_print_svg(GtkWidget *widget, gchar *fout);
 	void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl);
-	void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st);
+	void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st, GArray *kd);
 	GtkWidget *gtk_plot_linear_new(void);
 	extern GType gtk_plot_linear_get_type(void);
 	G_END_DECLS

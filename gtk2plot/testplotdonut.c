@@ -49,7 +49,7 @@ void dpa(GtkWidget *widget, gpointer data)
 	pt=GTK_PLOT(plot);
 	ds1=pango_font_description_from_string(gtk_font_button_get_font_name(GTK_FONT_BUTTON(butt1)));
 	ds2=pango_font_description_from_string(gtk_font_button_get_font_name(GTK_FONT_BUTTON(butt2)));
-	gtk_plot_set_font(pt, ds1, ds2);
+	gtk_plot_set_font(pt, ds1, ds2, NULL);
 	pango_font_description_free(ds1); pango_font_description_free(ds2);
 	k=(pt->ind->len);
 	car=g_array_sized_new(FALSE, FALSE, sizeof(gdouble), k);
@@ -83,7 +83,7 @@ void dpa(GtkWidget *widget, gpointer data)
 	ptr=&g_array_index(caa, gdouble, j);
 	iv=((gdouble) alp)/65535;
 	*ptr=iv;
-	gtk_plot_set_colour(pt, car, cag, cab, caa);
+	gtk_plot_set_colour(pt, car, cag, cab, caa, NULL);
 	{g_array_unref(car); g_array_unref(cag); g_array_unref(cab); g_array_unref(caa);}
 	gtk_plot_donut_refresh(plot);
 }
@@ -634,7 +634,7 @@ int main(int argc, char *argv[])
 	{g_array_append_val(cag, fll);}
 	fll=0.8;
 	{g_array_append_val(caa, fll); g_array_append_val(caa, fll); g_array_append_val(caa, fll); g_array_append_val(caa, fll); g_array_append_val(caa, fll); g_array_append_val(caa, fll);}
-	gtk_plot_set_colour(pt, car, cag, cab, caa);
+	gtk_plot_set_colour(pt, car, cag, cab, caa, NULL);
 	{g_array_unref(car); g_array_unref(cag); g_array_unref(cab); g_array_unref(caa);}
 	gtk_widget_show(plot);
 	gtk_paned_add2(GTK_PANED(hpane), plot);

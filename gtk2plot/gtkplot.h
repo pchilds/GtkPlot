@@ -28,27 +28,26 @@
 #	define __GTK_PLOT_H__
 #	include <gtk/gtk.h>
 	G_BEGIN_DECLS
-#	define GTK_TYPE_PLOT (gtk_plot_get_type())
-#	define GTK_PLOT(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_TYPE_PLOT, GtkPlot))
-#	define GTK_IS_PLOT(obj) (G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_TYPE_PLOT))
-#	define GTK_PLOT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST((klass), GTK_TYPE_PLOT, GtkPlotClass))
-#	define GTK_IS_PLOT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), GTK_TYPE_PLOT))
-#	define GTK_PLOT_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS((obj), GTK_TYPE_PLOT, GtkPlotClass))
+#	define GTK_TYPE_PLOT			gtk_plot_get_type()
+#	define GTK_PLOT(obj)			G_TYPE_CHECK_INSTANCE_CAST(obj, GTK_TYPE_PLOT, GtkPlot)
+#	define GTK_IS_PLOT(obj)			G_TYPE_CHECK_INSTANCE_TYPE(obj, GTK_TYPE_PLOT)
+#	define GTK_PLOT_CLASS(klass)	G_TYPE_CHECK_CLASS_CAST(klass, GTK_TYPE_PLOT, GtkPlotClass)
+#	define GTK_IS_PLOT_CLASS(klass)	G_TYPE_CHECK_CLASS_TYPE(klass, GTK_TYPE_PLOT)
+#	define GTK_PLOT_GET_CLASS(obj)	G_TYPE_INSTANCE_GET_CLASS(obj, GTK_TYPE_PLOT, GtkPlotClass)
 	typedef struct _GtkPlot GtkPlot;
 	typedef struct _GtkPlotClass GtkPlotClass;
-	struct _GtkPlot
-	{
+	struct _GtkPlot {
 		GtkDrawingArea parent;
 		GArray *ind, *sizes, *stride; /* indices of first element, number of elements for each trace and spacing in array between elements of the same plot*/
 		GArray *rd, *gr, *bl, *al; /* colour and alpha of the plots */
-		PangoFontDescription *afont, *lfont; /* font descriptions for the tick mark and axis labels */
+		gchar **ky; /* name for the key */
+		PangoFontDescription *afont, *kfont, *lfont; /* font descriptions for the tick mark and axis labels */
 	};
-	struct _GtkPlotClass
-	{
+	struct _GtkPlotClass {
 		GtkDrawingAreaClass parent_class;
 	};
-	void gtk_plot_set_font(GtkPlot *plot, PangoFontDescription *lf, PangoFontDescription *af);
-	void gtk_plot_set_colour(GtkPlot *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al);
+	void gtk_plot_set_font(GtkPlot *plot, PangoFontDescription *lf, PangoFontDescription *af, PangoFontDescription *kf);
+	void gtk_plot_set_colour(GtkPlot *plot, GArray *rd, GArray *gr, GArray *bl, GArray *al, gchar **ky);
 	void gtk_plot_set_indices(GtkPlot *plot, GArray *nd, GArray *sz, GArray *st);
 	void gtk_plot_set_index(GtkPlot *plot, GArray *nd);
 	GtkWidget *gtk_plot_new(void);

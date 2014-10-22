@@ -77,110 +77,153 @@ typedef enum
 } GtkPlotLinearAxes;
 G_DEFINE_TYPE (GtkPlotLinear, gtk_plot_linear, GTK_TYPE_PLOT);
 enum {PROP_0, PROP_BXN, PROP_BXX, PROP_BYN, PROP_BYX, PROP_XTJ, PROP_YTJ, PROP_XTN, PROP_YTN, PROP_FA};
-enum {MOVED, LAST_SIGNAL};
+enum {MOVED, KEY_CHANGED, LAST_SIGNAL};
 static guint gtk_plot_linear_signals[LAST_SIGNAL]={0};
 typedef struct _GtkPlotLinearPrivate GtkPlotLinearPrivate;
 struct xs {gdouble xmin, ymin, xmax, ymax;};
 struct tk {guint xj, yj, xn, yn;};
 struct _GtkPlotLinearPrivate {struct xs bounds, rescale; struct tk ticks, range; guint flaga, flagr;};
+static const gdouble dsh1[1] = {3.0};
+static const gdouble dsh2[2] = {4.0,2.0};
+static const gdouble SZ[3]   = {5.0,7.5,10.0};
 
-static void drawz(GtkWidget *widget, cairo_t *cr)
-{
-	gint xw;
-	gdouble dt;
-//	GtkAllocation alloc;
-	GtkPlotLinear *plot;
+static void drawz(GtkWidget *widget, cairo_t *cr) {
+  gdouble dt;
+  gint j, xw;
+  GtkPlotLinear *plot;
+  static const gdouble AR[3]={0.5,1.0,1.5};
 
-//	gtk_widget_get_allocation(widget, &alloc);
-//	xw=alloc.width;
-	xw=widget->allocation.width;
-	plot=GTK_PLOT_LINEAR(widget);
-	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-	cairo_set_line_width(cr, 1);
-	cairo_rectangle(cr, xw-21.5, 0.5, 10, 10);
-	cairo_rectangle(cr, xw-10.5, 0.5, 10, 10);
-	cairo_move_to(cr, xw-9, 5.5);
-	cairo_line_to(cr, xw-2, 5.5);
-	if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_DRG)!=0)
-	{
-		cairo_move_to(cr, xw-2.5, 4.5);
-		cairo_line_to(cr, xw-2, 5.5);
-		cairo_line_to(cr, xw-2.5, 6.5);
-	}
-	else
-	{
-		cairo_move_to(cr, xw-5.5, 2);
-		cairo_line_to(cr, xw-5.5, 9);
-		if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_OUT)==0)
-		{
-			cairo_move_to(cr, xw-6.5, 2.5);
-			cairo_line_to(cr, xw-5.5, 2);
-			cairo_line_to(cr, xw-4.5, 2.5);
-			cairo_move_to(cr, xw-2.5, 4.5);
-			cairo_line_to(cr, xw-2, 5.5);
-			cairo_line_to(cr, xw-2.5, 6.5);
-			cairo_move_to(cr, xw-6.5, 8.5);
-			cairo_line_to(cr, xw-5.5, 9);
-			cairo_line_to(cr, xw-4.5, 8.5);
-			cairo_move_to(cr, xw-8.5, 4.5);
-			cairo_line_to(cr, xw-9, 5.5);
-			cairo_line_to(cr, xw-8.5, 6.5);
-		}
-		else
-		{
-			cairo_move_to(cr, xw-7.5, 3.5);
-			cairo_line_to(cr, xw-3.5, 7.5);
-			cairo_move_to(cr, xw-7.5, 7.5);
-			cairo_line_to(cr, xw-3.5, 3.5);
-		}
-	}
-	cairo_stroke(cr);
-	if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_SGL)==0)
-	{
-		cairo_save(cr);
-		dt=1;
-		cairo_set_dash(cr, &dt, 1, 0);
-		if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_VRT)!=0)
-		{
-			cairo_move_to(cr, xw-20, 2.5);
-			cairo_line_to(cr, xw-13, 2.5);
-			cairo_move_to(cr, xw-20, 8.5);
-			cairo_line_to(cr, xw-13, 8.5);
-			cairo_stroke(cr);
-		}
-		if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_HZT)!=0)
-		{
-			cairo_move_to(cr, xw-19.5, 2);
-			cairo_line_to(cr, xw-19.5, 9);
-			cairo_move_to(cr, xw-13.5, 2);
-			cairo_line_to(cr, xw-13.5, 9);
-			cairo_stroke(cr);
-		}
-		cairo_restore(cr);
-	}
+  plot=GTK_PLOT_LINEAR(widget);
+  cairo_save(cr);
+  cairo_set_source_rgba(cr, 0, 0, 0, 1);
+  cairo_set_line_width(cr, 1);
+  cairo_set_dash(cr, NULL, 0, 0.0);
+  xw=widget->allocation.width;
+  j=(xw<400)?0:(xw<1000)?1:2;
+  cairo_rectangle(cr,   xw-4*SZ[j]-1.5, 0.5   , 2*SZ[j], 2*SZ[j]);
+  cairo_rectangle(cr,   xw-2*SZ[j]-0.5, 0.5   , 2*SZ[j], 2*SZ[j]);
+  cairo_move_to(cr,     xw-2*SZ[j]+1.0        ,   SZ[j]+0.5);
+  cairo_line_to(cr,     xw        -2.0        ,   SZ[j]+0.5);
+  if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_DRG)!=0) {
+    cairo_move_to(cr,   xw        -2.0  -AR[j],   SZ[j]+0.5-2*AR[j]);
+    cairo_line_to(cr,   xw        -2.0        ,   SZ[j]+0.5);
+    cairo_line_to(cr,   xw        -2.0  -AR[j],   SZ[j]+0.5+2*AR[j]);
+  } else {
+    cairo_move_to(cr,   xw  -SZ[j]-0.5        ,         2.0);
+    cairo_line_to(cr,   xw  -SZ[j]-0.5        , 2*SZ[j]-1.0);
+    if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_OUT)==0) {
+      cairo_move_to(cr, xw  -SZ[j]-0.5-2*AR[j],         2.0  +AR[j]);
+      cairo_line_to(cr, xw  -SZ[j]-0.5        ,         2.0);
+      cairo_line_to(cr, xw  -SZ[j]-0.5+2*AR[j],         2.0  +AR[j]);
+      cairo_move_to(cr, xw        -2.0  -AR[j],   SZ[j]+0.5-2*AR[j]);
+      cairo_line_to(cr, xw        -2.0        ,   SZ[j]+0.5);
+      cairo_line_to(cr, xw        -2.0  -AR[j],   SZ[j]+0.5+2*AR[j]);
+      cairo_move_to(cr, xw  -SZ[j]-0.5-2*AR[j], 2*SZ[j]-1.0  -AR[j]);
+      cairo_line_to(cr, xw  -SZ[j]-0.5        , 2*SZ[j]-1.0);
+      cairo_line_to(cr, xw  -SZ[j]-0.5+2*AR[j], 2*SZ[j]-1.0  -AR[j]);
+      cairo_move_to(cr, xw-2*SZ[j]+1.0  +AR[j],   SZ[j]+0.5-2*AR[j]);
+      cairo_line_to(cr, xw-2*SZ[j]+1.0        ,   SZ[j]+0.5);
+      cairo_line_to(cr, xw-2*SZ[j]+1.0  +AR[j],   SZ[j]+0.5+2*AR[j]);
+    } else {
+      cairo_move_to(cr, xw-  SZ[j]-0.5-4*AR[j],   SZ[j]+0.5-4*AR[j]);
+      cairo_line_to(cr, xw-  SZ[j]-0.5+4*AR[j],   SZ[j]+0.5+4*AR[j]);
+      cairo_move_to(cr, xw-  SZ[j]-0.5-4*AR[j],   SZ[j]+0.5+4*AR[j]);
+      cairo_line_to(cr, xw-  SZ[j]-0.5+4*AR[j],   SZ[j]+0.5-4*AR[j]);
+    }
+  }
+  cairo_stroke(cr);
+  if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_SGL)==0) {
+    dt=1;
+    cairo_set_dash(cr, &dt, 1, 0);
+    if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_VRT)!=0) {
+      cairo_move_to(cr, xw-4*SZ[j]    ,         2.5);
+      cairo_line_to(cr, xw-2*SZ[j]-3.0,         2.5);
+      cairo_move_to(cr, xw-4*SZ[j]    , 2*SZ[j]-1.5);
+      cairo_line_to(cr, xw-2*SZ[j]-3.0, 2*SZ[j]-1.5);
+      cairo_stroke(cr);
+    }
+    if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_HZT)!=0) {
+      cairo_move_to(cr, xw-4*SZ[j]+0.5,         2.0);
+      cairo_line_to(cr, xw-4*SZ[j]+0.5, 2*SZ[j]-1.0);
+      cairo_move_to(cr, xw-2*SZ[j]-3.5,         2.0);
+      cairo_line_to(cr, xw-2*SZ[j]-3.5, 2*SZ[j]-1.0);
+      cairo_stroke(cr);
+    }
+  }
+  cairo_restore(cr);
 }
 
-static void draw(GtkWidget *widget, cairo_t *cr)
-{
-	GtkPlotLinearPrivate *priv;
-	GtkPlotLinear *plot;
-	GtkPlot *plt;
-//	GtkAllocation alloc;
-	gint dtt, ft, hg, j, k, lt, st, tf, to, tn, tnn, tx, tz, wd, xa, xl, xr, xr2, xt, xu, xv, xvn, xw, ya, yl, yr, yr2, yu, yv, yvn, yw;
-	gdouble av, delx, dely, dt, lr1, lr2, vv, wv, zv;
-	guint lr3;
-	gchar *str1=NULL;
-	gchar lbl[BFL];
-	PangoLayout *lyt;
-	cairo_matrix_t mtr2, mtr3;
+static void drawk(GtkWidget *widget, cairo_t *cr) {
+  gdouble hc, vv, wv, xv, yv;
+  gint ft, hg, j, k=0, wd, xw;
+  GtkPlot *plt;
+  GtkPlotLinear *plot;
+  guint fg;
+  PangoLayout *lyt;
+
+  plt=GTK_PLOT(widget);
+  if (!plt->ky || !*(plt->ky)) return;
+  cairo_save(cr);
+  xw=widget->allocation.width;
+  j=(xw<400)?0:(xw<1000)?1:2;
+  hc=2*SZ[j]+3.0;
+  plot=GTK_PLOT_LINEAR(widget);
+  cairo_set_line_width(cr, plot->linew);
+  do {
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
+	lyt=pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(lyt, plt->lfont);
+	pango_layout_set_text(lyt, (plt->ky)[k], -1);
+	pango_layout_get_pixel_size(lyt, &wd, &hg);
+    cairo_move_to(cr, xw-wd-2*SZ[j]-1.0, hc);
+    pango_cairo_show_layout(cr, lyt);
+    g_object_unref(lyt);
+	hc+=hg/2+1.0;
+    cairo_set_dash(cr, NULL, 0, 0);
+    ft=fmod(k,plt->rd->len);
+    vv=g_array_index(plt->rd, gdouble, ft);
+    wv=g_array_index(plt->gr, gdouble, ft);
+    xv=g_array_index(plt->bl, gdouble, ft);
+    yv=g_array_index(plt->al, gdouble, ft);
+    if (plot->kdata && k<(plot->kdata->len)) {
+      fg=g_array_index(plot->kdata, guint, k);
+      if (fg&GTK_PLOT_LINEAR_KEY_CLR) yv=0.0;
+      switch ((fg&GTK_PLOT_LINEAR_KEY_DSH)>>1) {
+        case 2:
+          cairo_set_dash(cr, dsh2, sizeof(dsh2)/sizeof(dsh2[0]), 0);
+          break;
+        case 1:
+          cairo_set_dash(cr, dsh1, sizeof(dsh1)/sizeof(dsh1[0]), 0);
+          break;
+        default:
+          break;
+      }
+    }
+    cairo_set_source_rgba(cr, vv, wv, xv, yv);
+    cairo_move_to(cr, xw-2*SZ[j], hc);
+    cairo_line_to(cr, xw-0.5, hc);
+    cairo_stroke(cr);
+	hc+=hg/2+1.0;
+  } while ((plt->ky)[++k]);
+  cairo_restore(cr);
+}
+
+static void draw(GtkWidget *widget, cairo_t *cr) {
+  cairo_matrix_t mtr2, mtr3;
+  gchar *str1=NULL;
+  gchar lbl[BFL];
+  gdouble av, delx, dely, dt, lr1, lr2, vv, wv, zv;
+  gint dtt, ft, hg, j, k, lt, st, tf, to, tn, tnn, tx, tz, wd, xa, xl, xr, xr2, xt, xu, xv, xvn, xw, ya, yl, yr, yr2, yu, yv, yvn, yw;
+  GtkPlot *plt;
+  GtkPlotLinear *plot;
+  GtkPlotLinearPrivate *priv;
+  guint fg, lr3;
+  PangoLayout *lyt;
 
 	{mtr2.xx=0; mtr2.xy=1; mtr2.yx=-1; mtr2.yy=0; mtr2.x0=0; mtr2.y0=0;}/* initialise */
 	{mtr3.xx=0; mtr3.xy=-1; mtr3.yx=1; mtr3.yy=0; mtr3.x0=0; mtr3.y0=0;}
 	plot=GTK_PLOT_LINEAR(widget);
 	plt=GTK_PLOT(widget);
-//	gtk_widget_get_allocation(widget, &alloc);
-//	xw=alloc.width;
-//	yw=(alloc.height);
 	xw=widget->allocation.width;
 	yw=widget->allocation.height;
 	priv=GTK_PLOT_LINEAR_GET_PRIVATE(plot);
@@ -2934,89 +2977,98 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 		}
 	}
 	cairo_stroke(cr);
-	if ((plot->xdata)&&(plot->ydata)) /* plot data */
-	{
-		if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_LIN)!=0)
-		{
-			cairo_set_line_width(cr, (plot->linew));
-			if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_PTS)!=0) /* lines and points */
-			{
-				for (k=0; k<(plt->ind->len); k++)
-				{
-					dtt=fmod(k,(plt->rd->len));
-					{vv=g_array_index((plt->rd), gdouble, dtt); wv=g_array_index((plt->gr), gdouble, dtt); zv=g_array_index((plt->bl), gdouble, dtt); av=g_array_index((plt->al), gdouble, dtt);}
-					cairo_set_source_rgba(cr, vv, wv, zv, av);
-					ft=g_array_index((plt->ind), gint, k);
-					if (ft>=(plot->ydata->len)) break;
-					st=g_array_index((plt->stride), gint, k);
-					lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
-					if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
-					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-					yv=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-					if (xv<xl)
-					{
-						if (yv>yl) xt=(GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_DN);
-						else if (yv<yu) xt=(GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_UP);
-						else xt=GTK_PLOT_LINEAR_BORDERS_LT;
-					}
-					else if (xv>xu)
-					{
-						if (yv>yl) xt=(GTK_PLOT_LINEAR_BORDERS_RT|GTK_PLOT_LINEAR_BORDERS_DN);
-						else if (yv<yu) xt=(GTK_PLOT_LINEAR_BORDERS_RT|GTK_PLOT_LINEAR_BORDERS_DN);
-						else xt=GTK_PLOT_LINEAR_BORDERS_RT;
-					}
-					else if (yv>yl)xt=GTK_PLOT_LINEAR_BORDERS_DN;
-					else if (yv<yu) xt=GTK_PLOT_LINEAR_BORDERS_UP;
-					else
-					{
+  if ((plot->xdata)&&(plot->ydata)) { /* plot data */
+    if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_LIN)!=0) {
+      cairo_set_line_width(cr, (plot->linew));
+      if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_PTS)!=0) { /* lines and points */
+        for (k=0; k<plt->ind->len; k++) {
+          cairo_set_dash(cr, NULL, 0, 0);
+          if (plot->kdata && k<(plot->kdata->len)) {
+            fg=g_array_index(plot->kdata, guint, k);
+            if (fg&GTK_PLOT_LINEAR_KEY_CLR) continue;
+            switch ((fg&GTK_PLOT_LINEAR_KEY_DSH)>>1) {
+              case 2:
+                cairo_set_dash(cr, dsh2, sizeof(dsh2)/sizeof(dsh2[0]), 0);
+                break;
+              case 1:
+                cairo_set_dash(cr, dsh1, sizeof(dsh1)/sizeof(dsh1[0]), 0);
+                break;
+              default:
+                break;
+            }
+          }
+          dtt=fmod(k,plt->rd->len);
+          vv=g_array_index(plt->rd, gdouble, dtt);
+          wv=g_array_index(plt->gr, gdouble, dtt);
+          zv=g_array_index(plt->bl, gdouble, dtt);
+          av=g_array_index(plt->al, gdouble, dtt);
+          cairo_set_source_rgba(cr, vv, wv, zv, av);
+          ft=g_array_index(plt->ind, gint, k);
+          if (ft>=(plot->ydata->len)) break;
+          st=g_array_index(plt->stride, gint, k);
+          lt=g_array_index(plt->sizes, gint, k)*st+ft;
+          if (lt>(plot->ydata->len)) lt=plot->ydata->len;
+          xv=xl+(xu-xl)*(g_array_index(plot->xdata, gdouble, ft)-priv->bounds.xmin)/(priv->bounds.xmax-priv->bounds.xmin);
+          yv=yl+(yu-yl)*(g_array_index(plot->ydata, gdouble, ft)-priv->bounds.ymin)/(priv->bounds.ymax-priv->bounds.ymin);
+          if (xv<xl) {
+            if (yv>yl) xt=GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_DN;
+            else if (yv<yu) xt=GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_UP;
+            else xt=GTK_PLOT_LINEAR_BORDERS_LT;
+          } else if (xv>xu) {
+            if (yv>yl) xt=GTK_PLOT_LINEAR_BORDERS_RT|GTK_PLOT_LINEAR_BORDERS_DN;
+            else if (yv<yu) xt=GTK_PLOT_LINEAR_BORDERS_RT|GTK_PLOT_LINEAR_BORDERS_DN;
+            else xt=GTK_PLOT_LINEAR_BORDERS_RT;
+          } else if (yv>yl) xt=GTK_PLOT_LINEAR_BORDERS_DN;
+          else if (yv<yu) xt=GTK_PLOT_LINEAR_BORDERS_UP;
+          else {
 						xt=0;
-						cairo_arc(cr, xv, yv, (plot->ptsize), 0, MY_2PI);
+						cairo_arc(cr, xv, yv, plot->ptsize, 0, MY_2PI);
 						cairo_fill(cr);
 						cairo_move_to(cr, xv, yv);
-					}
+          }
 					for (j=st+ft; j<lt; j+=st)
 					{
-						xvn=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-						yvn=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+						xvn=xl+(xu-xl)*(g_array_index(plot->xdata, gdouble, j)-priv->bounds.xmin)/(priv->bounds.xmax-priv->bounds.xmin);
+						yvn=yl+(yu-yl)*(g_array_index(plot->ydata, gdouble, j)-priv->bounds.ymin)/(priv->bounds.ymax-priv->bounds.ymin);
 						if (xvn<xl)
 						{
 							if (yvn>yl)
 							{
 								if (xt==0)
 								{
-									tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xvn)/(xvn-xv);
 									tx+=yvn;
 									if (tx>yl)
 									{
-										tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+										tx=(xvn-xv)*(yl-yvn)/(yvn-yv);
 										tx+=xvn;
 										cairo_line_to(cr, tx, yl);
 									}
 									else cairo_line_to(cr, xl, tx);
 									cairo_stroke(cr);
 								}
-								xt=(GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_DN);
+								xt=GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_DN;
 							}
 							else if (yvn<yu)
 							{
 								if (xt==0)
 								{
-									tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xvn)/(xvn-xv);
 									tx+=yvn;
 									if (tx<yu)
 									{
-										tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+										tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 										tx+=xvn;
 										cairo_line_to(cr, tx, yu);
 									}
 									else cairo_line_to(cr, xl, tx);
 									cairo_stroke(cr);
 								}
-								xt=(GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_UP);
+								xt=GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_UP;
 							}
 							else if (xt==0)
 							{
-								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+								tx=(yvn-yv)*(xl-xvn)/(xvn-xv);
 								tx+=yvn;
 								cairo_line_to(cr, xl, tx);
 								cairo_stroke(cr);
@@ -3024,12 +3076,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_DN)
 							{
-								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+								tx=(yvn-yv)*(xl-xvn)/(xvn-xv);
 								tx+=yvn;
 								if (tx>yl)
 								{
 									cairo_move_to(cr, xl, tx);
-									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+									tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 									tx+=xv;
 									cairo_line_to(cr, tx, yl);
 									cairo_stroke(cr);
@@ -3038,12 +3090,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_UP)
 							{
-								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+								tx=(yvn-yv)*(xl-xvn)/(xvn-xv);
 								tx+=yvn;
 								if (tx<yu)
 								{
 									cairo_move_to(cr, xl, tx);
-									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+									tx=(xvn-xv)*(yu-yv)/(yvn-yv);
 									tx+=xv;
 									cairo_line_to(cr, tx, yu);
 									cairo_stroke(cr);
@@ -3058,11 +3110,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							{
 								if (xt==0)
 								{
-									tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 									tx+=yv;
 									if (tx>yl)
 									{
-										tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+										tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 										tx+=xv;
 										cairo_line_to(cr, tx, yl);
 									}
@@ -3075,11 +3127,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							{
 								if (xt==0)
 								{
-									tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 									tx+=yv;
 									if (tx<yu)
 									{
-										tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+										tx=(xvn-xv)*(yu-yv)/(yvn-yv);
 										tx+=xv;
 										cairo_line_to(cr, tx, yu);
 									}
@@ -3090,7 +3142,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							if (xt==0)
 							{
-								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 								tx+=yv;
 								cairo_line_to(cr, xu, tx);
 								cairo_stroke(cr);
@@ -3098,12 +3150,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_DN)
 							{
-								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 								tx+=yv;
 								if (tx>yl)
 								{
 									cairo_move_to(cr, xu, tx);
-									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+									tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 									tx+=xv;
 									cairo_line_to(cr, tx, yl);
 									cairo_stroke(cr);
@@ -3112,12 +3164,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_UP)
 							{
-								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 								tx+=yv;
 								if (tx>yu)
 								{
 									cairo_move_to(cr, xu, tx);
-									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+									tx=(xvn-xv)*(yu-yv)/(yvn-yv);
 									tx+=xv;
 									cairo_line_to(cr, tx, yu);
 									cairo_stroke(cr);
@@ -3130,19 +3182,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						{
 							if (xt==0)
 							{
-								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yl-yvn)/(yvn-yv);
 								tx+=xvn;
 								cairo_line_to(cr, tx, yl);
 								cairo_stroke(cr);
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_LT)
 							{
-								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yl-yvn)/(yvn-yv);
 								tx+=xvn;
 								if (tx<xl)
 								{
 									cairo_move_to(cr, tx, yl);
-									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xv)/(xvn-xv);
 									tx+=yv;
 									cairo_line_to(cr, xl, tx);
 									cairo_stroke(cr);
@@ -3150,12 +3202,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_RT)
 							{
-								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);/* SIGFPE here. change? */
+								tx=(xvn-xv)*(yl-yvn)/(yvn-yv);/* SIGFPE here. change? */
 								tx+=xvn;
 								if (tx>xu)
 								{
 									cairo_move_to(cr, tx, yl);
-									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xvn)/(xvn-xv);
 									tx+=yvn;
 									cairo_line_to(cr, xu, tx);
 									cairo_stroke(cr);
@@ -3167,19 +3219,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						{
 							if (xt==0)
 							{
-								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 								tx+=xvn;
 								cairo_line_to(cr, tx, yu);	
 								cairo_stroke(cr);
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_LT)
 							{
-								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 								tx+=xvn;
 								if (tx<xl)
 								{
 									cairo_move_to(cr, tx, yu);
-									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xv)/(xvn-xv);
 									tx+=yv;
 									cairo_line_to(cr, xl, tx);
 									cairo_stroke(cr);
@@ -3187,12 +3239,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_RT)
 							{
-								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 								tx+=xvn;
 								if (tx>xu)
 								{
 									cairo_move_to(cr, tx, yu);
-									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xvn)/(xvn-xv);
 									tx+=yvn;
 									cairo_line_to(cr, xu, tx);
 									cairo_stroke(cr);
@@ -3206,11 +3258,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							{
 								if ((xt&GTK_PLOT_LINEAR_BORDERS_DN)!=0)
 								{
-									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xv)/(xvn-xv);
 									tx+=yv;
 									if (tx>yl)
 									{
-										tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+										tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 										tx+=xv;
 										cairo_move_to(cr, tx, yl);
 									}
@@ -3218,11 +3270,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								}
 								else if ((xt&GTK_PLOT_LINEAR_BORDERS_UP)!=0)
 								{
-									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xv)/(xvn-xv);
 									tx+=yv;
 									if (tx<yu)
 									{
-										tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+										tx=(xvn-xv)*(yu-yv)/(yvn-yv);
 										tx+=xv;
 										cairo_move_to(cr, tx, yu);
 									}
@@ -3230,7 +3282,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								}
 								else
 									{
-									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xv)/(xvn-xv);
 									tx+=yv;
 									cairo_move_to(cr, xl, tx);
 								}
@@ -3239,11 +3291,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							{
 								if ((xt&GTK_PLOT_LINEAR_BORDERS_DN)!=0)
 								{
-									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xvn)/(xvn-xv);
 									tx+=yvn;
 									if (tx>yl)
 									{
-										tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+										tx=(xvn-xv)*(yl-yvn)/(yvn-yv);
 										tx+=xvn;
 										cairo_move_to(cr, tx, yl);
 									}
@@ -3251,11 +3303,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								}
 								else if ((xt&GTK_PLOT_LINEAR_BORDERS_DN)!=0)
 								{
-									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xvn)/(xvn-xv);
 									tx+=yvn;
 									if (tx<yu)
 									{
-										tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+										tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 										tx+=xvn;
 										cairo_move_to(cr, tx, yu);
 									}
@@ -3263,26 +3315,26 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								}
 								else
 								{
-									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xvn)/(xvn-xv);
 									tx+=yvn;
 									cairo_move_to(cr, xu, tx);
 								}
 							}
 							else if ((xt&GTK_PLOT_LINEAR_BORDERS_DN)!=0)
 							{
-								tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+								tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 								tx+=xv;
 								cairo_move_to(cr, tx, yl);
 							}
 							else if ((xt&GTK_PLOT_LINEAR_BORDERS_UP)!=0)
 							{
-								tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+								tx=(xvn-xv)*(yu-yv)/(yvn-yv);
 								tx+=xv;
 								cairo_move_to(cr, tx, yu);
 							}
 							cairo_line_to(cr, xvn, yvn);
 							cairo_stroke(cr);
-							cairo_arc(cr, xvn, yvn, (plot->ptsize), 0, MY_2PI);
+							cairo_arc(cr, xvn, yvn, plot->ptsize, 0, MY_2PI);
 							cairo_fill(cr);
 							cairo_move_to(cr, xvn, yvn);
 							xt=0;
@@ -3290,32 +3342,47 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						xv=xvn;
 						yv=yvn;
 					}
-				}
-			}
-			else /* lines only */
-			{
-				for (k=0;k<(plt->ind->len);k++)
-				{
-					dtt=fmod(k,(plt->rd->len));
-					{vv=g_array_index((plt->rd), gdouble, dtt); wv=g_array_index((plt->gr), gdouble, dtt); zv=g_array_index((plt->bl), gdouble, dtt); av=g_array_index((plt->al), gdouble, dtt);}
-					cairo_set_source_rgba(cr, vv, wv, zv, av);
-					ft=g_array_index((plt->ind), gint, k);
+        }
+      } else { /* lines only */
+        for (k=0;k<(plt->ind->len);k++) {
+          cairo_set_dash(cr, NULL, 0, 0);
+          if (plot->kdata && k<(plot->kdata->len)) {
+            fg=g_array_index(plot->kdata, guint, k);
+            if (fg&GTK_PLOT_LINEAR_KEY_CLR) continue;
+            switch ((fg&GTK_PLOT_LINEAR_KEY_DSH)>>1) {
+              case 2:
+                cairo_set_dash(cr, dsh2, sizeof(dsh2)/sizeof(dsh2[0]), 0);
+                break;
+              case 1:
+                cairo_set_dash(cr, dsh1, sizeof(dsh1)/sizeof(dsh1[0]), 0);
+                break;
+              default:
+                break;
+            }
+          }
+          dtt=fmod(k,plt->rd->len);
+          vv=g_array_index(plt->rd, gdouble, dtt);
+          wv=g_array_index(plt->gr, gdouble, dtt);
+          zv=g_array_index(plt->bl, gdouble, dtt);
+          av=g_array_index(plt->al, gdouble, dtt);
+          cairo_set_source_rgba(cr, vv, wv, zv, av);
+					ft=g_array_index(plt->ind, gint, k);
 					if (ft>=(plot->ydata->len)) break;
-					st=g_array_index((plt->stride), gint, k);
-					lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
+					st=g_array_index(plt->stride, gint, k);
+					lt=g_array_index(plt->sizes, gint, k)*st+ft;
 					if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
-					xv=xl+((xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));/*segfault here when adding a plot*/
-					yv=yl+((yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+					xv=xl+(xu-xl)*(g_array_index((plot->xdata), gdouble, ft)-priv->bounds.xmin)/(priv->bounds.xmax-priv->bounds.xmin);/*segfault here when adding a plot*/
+					yv=yl+(yu-yl)*(g_array_index((plot->ydata), gdouble, ft)-priv->bounds.ymin)/(priv->bounds.ymax-priv->bounds.ymin);
 					if (xv<xl)
 					{
-						if (yv>yl) xt=(GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_DN);
-						else if (yv<yu) xt=(GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_UP);
+						if (yv>yl) xt=GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_DN;
+						else if (yv<yu) xt=GTK_PLOT_LINEAR_BORDERS_LT|GTK_PLOT_LINEAR_BORDERS_UP;
 						else xt=GTK_PLOT_LINEAR_BORDERS_LT;
 					}
 					else if (xv>xu)
 					{
-						if (yv>yl) xt=(GTK_PLOT_LINEAR_BORDERS_RT|GTK_PLOT_LINEAR_BORDERS_DN);
-						else if (yv<yu) xt=(GTK_PLOT_LINEAR_BORDERS_RT|GTK_PLOT_LINEAR_BORDERS_UP);
+						if (yv>yl) xt=GTK_PLOT_LINEAR_BORDERS_RT|GTK_PLOT_LINEAR_BORDERS_DN;
+						else if (yv<yu) xt=GTK_PLOT_LINEAR_BORDERS_RT|GTK_PLOT_LINEAR_BORDERS_UP;
 						else xt=GTK_PLOT_LINEAR_BORDERS_RT;
 					}
 					else if (yv>yl)xt=GTK_PLOT_LINEAR_BORDERS_DN;
@@ -3323,8 +3390,8 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 					else {xt=0; cairo_move_to(cr, xv, yv);}
 					for (j=st+ft; j<lt; j+=st)
 					{
-						xvn=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-						yvn=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
+						xvn=xl+(xu-xl)*(g_array_index(plot->xdata, gdouble, j)-priv->bounds.xmin)/(priv->bounds.xmax-priv->bounds.xmin);
+						yvn=yl+(yu-yl)*(g_array_index(plot->ydata, gdouble, j)-priv->bounds.ymin)/(priv->bounds.ymax-priv->bounds.ymin);
 						if (xvn<xl)
 						{
 							if (yvn>yl)
@@ -3335,11 +3402,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xvn, yl);
 									else
 									{
-										tx=((yvn-yv)*(xl-xvn))/tx;
+										tx=(yvn-yv)*(xl-xvn)/tx;
 										tx+=yvn;
 										if (tx>yl)
 										{
-											tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+											tx=(xvn-xv)*(yl-yvn)/(yvn-yv);
 											tx+=xvn;
 											cairo_line_to(cr, tx, yl);
 										}
@@ -3357,11 +3424,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xvn, yu);
 									else
 									{
-										tx=((yvn-yv)*(xl-xvn))/tx;
+										tx=(yvn-yv)*(xl-xvn)/tx;
 										tx+=yvn;
 										if (tx<yu)
 										{
-											tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+											tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 											tx+=xvn;
 											cairo_line_to(cr, tx, yu);
 										}
@@ -3377,7 +3444,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								if ((tx<DZE)&&(tx>NZE)) cairo_line_to(cr, xl, yvn);
 								else
 								{
-									tx=((yvn-yv)*(xl-xvn))/tx;
+									tx=(yvn-yv)*(xl-xvn)/tx;
 									tx+=yvn;
 									cairo_line_to(cr, xl, tx);
 								}
@@ -3386,12 +3453,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_DN)
 							{
-								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+								tx=(yvn-yv)*(xl-xvn)/(xvn-xv);
 								tx+=yvn;
 								if (tx>yl)
 								{
 									cairo_move_to(cr, xl, tx);
-									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+									tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 									tx+=xv;
 									cairo_line_to(cr, tx, yl);
 									cairo_stroke(cr);
@@ -3400,12 +3467,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_UP)
 							{
-								tx=((yvn-yv)*(xl-xvn))/(xvn-xv);
+								tx=(yvn-yv)*(xl-xvn)/(xvn-xv);
 								tx+=yvn;
 								if (tx<yu)
 								{
 									cairo_move_to(cr, xl, tx);
-									tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+									tx=(xvn-xv)*(yu-yv)/(yvn-yv);
 									tx+=xv;
 									cairo_line_to(cr, tx, yu);
 									cairo_stroke(cr);
@@ -3420,11 +3487,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							{
 								if (xt==0)
 								{
-									tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 									tx+=yv;
 									if (tx>yl)
 									{
-										tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+										tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 										tx+=xv;
 										cairo_line_to(cr, tx, yl);
 									}
@@ -3437,11 +3504,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							{
 								if (xt==0)
 								{
-									tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 									tx+=yv;
 									if (tx<yu)
 									{
-										tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+										tx=(xvn-xv)*(yu-yv)/(yvn-yv);
 										tx+=xv;
 										cairo_line_to(cr, tx, yu);
 									}
@@ -3452,7 +3519,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							if (xt==0)
 							{
-								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 								tx+=yv;
 								cairo_line_to(cr, xu, tx);
 								cairo_stroke(cr);
@@ -3460,12 +3527,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_DN)
 							{
-								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 								tx+=yv;
 								if (tx>yl)
 								{
 									cairo_move_to(cr, xu, tx);
-									tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+									tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 									tx+=xv;
 									cairo_line_to(cr, tx, yl);
 									cairo_stroke(cr);
@@ -3474,7 +3541,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_UP)
 							{
-								tx=((yvn-yv)*(xu-xv))/(xvn-xv);
+								tx=(yvn-yv)*(xu-xv)/(xvn-xv);
 								tx+=yv;
 								if (tx>yu)
 								{
@@ -3492,14 +3559,14 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						{
 							if (xt==0)
 							{
-								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yl-yvn)/(yvn-yv);
 								tx+=xvn;
 								cairo_line_to(cr, tx, yl);
 								cairo_stroke(cr);
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_LT)
 							{
-								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yl-yvn)/(yvn-yv);
 								tx+=xvn;
 								if (tx<xl)
 								{
@@ -3512,7 +3579,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_RT)
 							{
-								tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yl-yvn)/(yvn-yv);
 								tx+=xvn;
 								if (tx>xu)
 								{
@@ -3529,19 +3596,19 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						{
 							if (xt==0)
 							{
-								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 								tx+=xvn;
 								cairo_line_to(cr, tx, yu);	
 								cairo_stroke(cr);
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_LT)
 							{
-								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 								tx+=xvn;
 								if (tx<xl)
 								{
 									cairo_move_to(cr, tx, yu);
-									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xv)/(xvn-xv);
 									tx+=yv;
 									cairo_line_to(cr, xl, tx);
 									cairo_stroke(cr);
@@ -3549,12 +3616,12 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							}
 							else if (xt==GTK_PLOT_LINEAR_BORDERS_RT)
 							{
-								tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+								tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 								tx+=xvn;
 								if (tx>xu)
 								{
 									cairo_move_to(cr, tx, yu);
-									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xvn)/(xvn-xv);
 									tx+=yvn;
 									cairo_line_to(cr, xu, tx);
 									cairo_stroke(cr);
@@ -3568,11 +3635,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							{
 								if ((xt&GTK_PLOT_LINEAR_BORDERS_DN)!=0)
 								{
-									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xv)/(xvn-xv);
 									tx+=yv;
 									if (tx>yl)
 									{
-										tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+										tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 										tx+=xv;
 										cairo_move_to(cr, tx, yl);
 									}
@@ -3580,11 +3647,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								}
 								else if ((xt&GTK_PLOT_LINEAR_BORDERS_UP)!=0)
 								{
-									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xv)/(xvn-xv);
 									tx+=yv;
 									if (tx<yu)
 									{
-										tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+										tx=(xvn-xv)*(yu-yv)/(yvn-yv);
 										tx+=xv;
 										cairo_move_to(cr, tx, yu);
 									}
@@ -3592,7 +3659,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								}
 								else
 								{
-									tx=((yvn-yv)*(xl-xv))/(xvn-xv);
+									tx=(yvn-yv)*(xl-xv)/(xvn-xv);
 									tx+=yv;
 									cairo_move_to(cr, xl, tx);
 								}
@@ -3601,11 +3668,11 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 							{
 								if ((xt&GTK_PLOT_LINEAR_BORDERS_DN)!=0)
 								{
-									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xvn)/(xvn-xv);
 									tx+=yvn;
 									if (tx>yl)
 									{
-										tx=((xvn-xv)*(yl-yvn))/(yvn-yv);
+										tx=(xvn-xv)*(yl-yvn)/(yvn-yv);
 										tx+=xvn;
 										cairo_move_to(cr, tx, yl);
 									}
@@ -3617,7 +3684,7 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 									tx+=yvn;
 									if (tx<yu)
 									{
-										tx=((xvn-xv)*(yu-yvn))/(yvn-yv);
+										tx=(xvn-xv)*(yu-yvn)/(yvn-yv);
 										tx+=xvn;
 										cairo_move_to(cr, tx, yu);
 									}
@@ -3625,20 +3692,20 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 								}
 								else
 								{
-									tx=((yvn-yv)*(xu-xvn))/(xvn-xv);
+									tx=(yvn-yv)*(xu-xvn)/(xvn-xv);
 									tx+=yvn;
 									cairo_move_to(cr, xu, tx);
 								}
 							}
 							else if ((xt&GTK_PLOT_LINEAR_BORDERS_DN)!=0)
 							{
-								tx=((xvn-xv)*(yl-yv))/(yvn-yv);
+								tx=(xvn-xv)*(yl-yv)/(yvn-yv);
 								tx+=xv;
 								cairo_move_to(cr, tx, yl);
 							}
 							else if ((xt&GTK_PLOT_LINEAR_BORDERS_UP)!=0)
 							{
-								tx=((xvn-xv)*(yu-yv))/(yvn-yv);
+								tx=(xvn-xv)*(yu-yv)/(yvn-yv);
 								tx+=xv;
 								cairo_move_to(cr, tx, yu);
 							}
@@ -3649,41 +3716,39 @@ static void draw(GtkWidget *widget, cairo_t *cr)
 						yv=yvn;
 					}
 					cairo_stroke(cr);
-				}
-			}
-		}
-		else if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_PTS)!=0) /* points only */
-		{
-			for (k=0;k<(plt->ind->len);k++)
-			{
-				dtt=fmod(k,(plt->rd->len));
-				{vv=g_array_index((plt->rd), gdouble, dtt); wv=g_array_index((plt->gr), gdouble, dtt); zv=g_array_index((plt->bl), gdouble, dtt); av=g_array_index((plt->al), gdouble, dtt);}
-				cairo_set_source_rgba(cr, vv, wv, zv, av);
-				ft=g_array_index((plt->ind), gint, k);
-				if (ft>=(plot->ydata->len)) break;
-				st=g_array_index((plt->stride), gint, k);
-				lt=(g_array_index((plt->sizes), gint, k)*st)+ft;
-				if (lt>(plot->ydata->len)) lt=(plot->ydata->len);
-				xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, ft)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-				yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, ft)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-				if ((yv<=yl)&&(yv>=yu)&&(xv>=xl)&&(xv<=xu))
-				{
-					cairo_arc(cr, xv, yv, (plot->ptsize), 0, MY_2PI);
-					cairo_fill(cr);
-				}
-				for (j=st+ft; j<lt; j+=st)
-				{
-					xv=xl+((xu-xl)*(g_array_index(plot->xdata, gdouble, j)-(priv->bounds.xmin))/((priv->bounds.xmax)-(priv->bounds.xmin)));
-					yv=yl+((yu-yl)*(g_array_index(plot->ydata, gdouble, j)-(priv->bounds.ymin))/((priv->bounds.ymax)-(priv->bounds.ymin)));
-					if ((yv<=yl)&&(yv>=yu)&&(xv>=xl)&&(xv<=xu))
-					{
-						cairo_arc(cr, xv, yv, (plot->ptsize), 0, MY_2PI);
-						cairo_fill(cr);
-					}
-				}
-			}
-		}
-	}
+        }
+      }
+    } else if (((plot->flagd)&GTK_PLOT_LINEAR_DISP_PTS)!=0) { /* points only */
+      for (k=0;k<(plt->ind->len);k++) {
+        if (plot->kdata && k<(plot->kdata->len) && (g_array_index(plot->kdata, guint, k)&GTK_PLOT_LINEAR_KEY_CLR)) continue;
+        dtt=fmod(k,plt->rd->len);
+        vv=g_array_index(plt->rd, gdouble, dtt);
+        wv=g_array_index(plt->gr, gdouble, dtt);
+        zv=g_array_index(plt->bl, gdouble, dtt);
+        av=g_array_index(plt->al, gdouble, dtt);
+        cairo_set_source_rgba(cr, vv, wv, zv, av);
+        ft=g_array_index((plt->ind), gint, k);
+        if (ft>=(plot->ydata->len)) break;
+        st=g_array_index(plt->stride, gint, k);
+        lt=g_array_index(plt->sizes, gint, k)*st+ft;
+        if (lt>(plot->ydata->len)) lt=plot->ydata->len;
+        xv=xl+(xu-xl)*(g_array_index(plot->xdata, gdouble, ft)-priv->bounds.xmin)/(priv->bounds.xmax-priv->bounds.xmin);
+        yv=yl+(yu-yl)*(g_array_index(plot->ydata, gdouble, ft)-priv->bounds.ymin)/(priv->bounds.ymax-priv->bounds.ymin);
+        if ((yv<=yl)&&(yv>=yu)&&(xv>=xl)&&(xv<=xu)) {
+          cairo_arc(cr, xv, yv, plot->ptsize, 0, MY_2PI);
+          cairo_fill(cr);
+        }
+        for (j=st+ft; j<lt; j+=st) {
+          xv=xl+(xu-xl)*(g_array_index(plot->xdata, gdouble, j)-priv->bounds.xmin)/(priv->bounds.xmax-priv->bounds.xmin);
+          yv=yl+(yu-yl)*(g_array_index(plot->ydata, gdouble, j)-priv->bounds.ymin)/(priv->bounds.ymax-priv->bounds.ymin);
+          if ((yv<=yl)&&(yv>=yu)&&(xv>=xl)&&(xv<=xu)) {
+            cairo_arc(cr, xv, yv, plot->ptsize, 0, MY_2PI);
+            cairo_fill(cr);
+          }
+        }
+      }
+    }
+  }
 }
 
 static void gtk_plot_linear_redraw(GtkWidget *widget)
@@ -3936,133 +4001,157 @@ gboolean gtk_plot_linear_update_scale_pretty(GtkWidget *widget, gdouble xl, gdou
 	return FALSE;
 }
 
-gboolean gtk_plot_linear_print(GtkPrintOperation *operation, GtkPrintContext *context, gint page_nr, gpointer data)
-{
-	cairo_t* cr=gtk_print_context_get_cairo_context(context);
-	draw(GTK_WIDGET(data), cr);
-	return FALSE;
+gboolean gtk_plot_linear_print(GtkPrintOperation *operation, GtkPrintContext *context, gint page_nr, gpointer data) {
+  cairo_t* cr;
+
+  cr=gtk_print_context_get_cairo_context(context);
+  drawk(GTK_WIDGET(data), cr);
+  draw(GTK_WIDGET(data), cr);
+  return FALSE;
 }
 
-gboolean gtk_plot_linear_print_eps(GtkWidget *plot, gchar* fout)
-{
-	cairo_t *cr;
-	cairo_surface_t *surface;
-//	GtkAllocation alloc;
+gboolean gtk_plot_linear_print_eps(GtkWidget *plot, gchar* fout) {
+  cairo_t *cr;
+  cairo_surface_t *surface;
 
-//	gtk_widget_get_allocation(plot, &alloc);
-//	surface=cairo_ps_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
-	surface=cairo_ps_surface_create(fout, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
-	cairo_ps_surface_set_eps(surface, TRUE);
-	cairo_ps_surface_restrict_to_level(surface, CAIRO_PS_LEVEL_2);
-	cr=cairo_create(surface);
-	draw(plot, cr);
-	cairo_surface_show_page(surface);
-	cairo_destroy(cr);
-	cairo_surface_finish(surface);
-	cairo_surface_destroy(surface);
-	return FALSE;
+  surface=cairo_ps_surface_create(fout, (gdouble) plot->allocation.width, (gdouble) plot->allocation.height);
+  cairo_ps_surface_set_eps(surface, TRUE);
+  cairo_ps_surface_restrict_to_level(surface, CAIRO_PS_LEVEL_2);
+  cr=cairo_create(surface);
+  drawk(plot, cr);
+  draw(plot, cr);
+  cairo_surface_show_page(surface);
+  cairo_destroy(cr);
+  cairo_surface_finish(surface);
+  cairo_surface_destroy(surface);
+  return FALSE;
 }
 
-gboolean gtk_plot_linear_print_png(GtkWidget *plot, gchar* fout)
-{
-	cairo_t *cr;
-	cairo_surface_t *surface;
-//	GtkAllocation alloc;
+gboolean gtk_plot_linear_print_png(GtkWidget *plot, gchar* fout) {
+  cairo_t *cr;
+  cairo_surface_t *surface;
 
-//	gtk_widget_get_allocation(plot, &alloc);
-//	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) (alloc.width), (gdouble) (alloc.height));
-	surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
-	cr=cairo_create(surface);
-	draw(plot, cr);
-	cairo_surface_write_to_png(surface, fout);
-	cairo_destroy(cr);
-	cairo_surface_destroy(surface);
-	return FALSE;
+  surface=cairo_image_surface_create(CAIRO_FORMAT_ARGB32, (gdouble) plot->allocation.width, (gdouble) plot->allocation.height);
+  cr=cairo_create(surface);
+  drawk(plot, cr);
+  draw(plot, cr);
+  cairo_surface_write_to_png(surface, fout);
+  cairo_destroy(cr);
+  cairo_surface_destroy(surface);
+  return FALSE;
 }
 
-gboolean gtk_plot_linear_print_svg(GtkWidget *plot, gchar* fout)
-{
-	cairo_t *cr;
-	cairo_surface_t *surface;
-//	GtkAllocation alloc;
+gboolean gtk_plot_linear_print_svg(GtkWidget *plot, gchar* fout) {
+  cairo_t *cr;
+  cairo_surface_t *surface;
 
-//	gtk_widget_get_allocation(plot, &alloc);
-//	surface=cairo_svg_surface_create(fout, (gdouble) (alloc.width), (gdouble) (alloc.height));
-	surface=cairo_svg_surface_create(fout, (gdouble) (plot->allocation.width), (gdouble) (plot->allocation.height));
-	cr=cairo_create(surface);
-	draw(plot, cr);
-	cairo_destroy(cr);
-	cairo_surface_destroy(surface);
-	return FALSE;
+  surface=cairo_svg_surface_create(fout, (gdouble) plot->allocation.width, (gdouble) plot->allocation.height);
+  cr=cairo_create(surface);
+  drawk(plot, cr);
+  draw(plot, cr);
+  cairo_destroy(cr);
+  cairo_surface_destroy(surface);
+  return FALSE;
 }
 
-static gboolean gtk_plot_linear_button_press(GtkWidget *widget, GdkEventButton *event)
-{
-	GtkPlotLinearPrivate *priv;
-	GtkPlotLinear *plot;
-	gint d;
+static gboolean gtk_plot_linear_button_press(GtkWidget *widget, GdkEventButton *event) {
+  gdouble s;
+  gint d, hg, j, wd, xw;
+  GtkPlot *plt;
+  GtkPlotLinear *plot;
+  GtkPlotLinearPrivate *priv;
+  PangoLayout *lyt;
 
-	priv=GTK_PLOT_LINEAR_GET_PRIVATE(widget);
-	plot=GTK_PLOT_LINEAR(widget);
-	if ((priv->flagr)==0)
-	{
-		(priv->rescale.xmin)=(priv->bounds.xmin);
-		(priv->rescale.ymin)=(priv->bounds.ymin);
-		if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL|GTK_PLOT_LINEAR_ZOOM_HZT))!=0)
-		{
-			if ((event->x)>=(priv->range.xn)) (priv->rescale.xmin)=(priv->bounds.xmax);
-			else
-			{
-				d=(event->x)-(priv->range.xj);
-				if (d>0) {(priv->rescale.xmin)+=(((priv->bounds.xmax)-(priv->bounds.xmin))*d)/((priv->range.xn)-(priv->range.xj)); (priv->flagr)=1;}
-			}
-		}
-		if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL|GTK_PLOT_LINEAR_ZOOM_VRT))!=0)
-		{
-			if ((event->y)<=(priv->range.yj)) (priv->rescale.ymin)=(priv->bounds.ymax);
-			else
-			{
-				d=(priv->range.yn)-(event->y);
-				if (d>0) {(priv->rescale.ymin)+=(((priv->bounds.ymax)-(priv->bounds.ymin))*d)/((priv->range.yn)-(priv->range.yj)); (priv->flagr)=1;}
-			}
-		}
-	}
-	return FALSE;
+  priv=GTK_PLOT_LINEAR_GET_PRIVATE(widget);
+  if ((priv->flagr)==0) {
+    xw=widget->allocation.width;
+    j=(xw<400)?0:(xw<1000)?1:2;
+    plt=GTK_PLOT(widget);
+    plot=GTK_PLOT_LINEAR(widget);
+    if ((event->y)<=2*SZ[j]+1.0) {
+      if ((event->x)>=xw-2*SZ[j]-1.0) {
+        priv->flagr=2;
+	    return FALSE;
+      }
+      if ((event->x)>=xw-4*SZ[j]-2.0) {
+        priv->flagr=3;
+	    return FALSE;
+      }
+    } else if ((plot->kdata)&&(plot->kdata->len>0)&&(plt->ky)&&(*(plt->ky))&&((event->x)>=xw-2*SZ[j]-1.0)) {
+      d=0;
+      s=2*SZ[j]+3.0;
+      do {
+	    lyt=pango_layout_new(gtk_widget_get_pango_context(widget));
+	    pango_layout_set_font_description(lyt, plt->lfont);
+	    pango_layout_set_text(lyt, (plt->ky)[d], -1);
+	    pango_layout_get_pixel_size(lyt, &wd, &hg);
+	    g_object_unref(lyt);
+	    s+=hg+2.0;
+	    if (s>(event->y)) {
+	      priv->flagr=d+4;
+	      return FALSE;
+	    }
+      } while (((++d)<plot->kdata->len)&&((plt->ky)[d]));
+    }
+    priv->rescale.xmin=priv->bounds.xmin;
+    priv->rescale.ymin=priv->bounds.ymin;
+    if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL|GTK_PLOT_LINEAR_ZOOM_HZT))!=0) {
+      if (event->x>=priv->range.xn) priv->rescale.xmin=priv->bounds.xmax;
+      else {
+        d=event->x-priv->range.xj;
+        if (d>0) {
+          priv->rescale.xmin+=(priv->bounds.xmax-priv->bounds.xmin)*d/(priv->range.xn-priv->range.xj);
+          priv->flagr=1;
+        }
+      }
+    }
+    if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL|GTK_PLOT_LINEAR_ZOOM_VRT))!=0) {
+      if (event->y<=priv->range.yj) priv->rescale.ymin=priv->bounds.ymax;
+      else {
+        d=priv->range.yn-event->y;
+        if (d>0) {
+          priv->rescale.ymin+=(priv->bounds.ymax-priv->bounds.ymin)*d/(priv->range.yn-priv->range.yj);
+          priv->flagr=1;
+        }
+      }
+    }
+  }
+  return FALSE;
 }
 
-static gboolean gtk_plot_linear_motion_notify(GtkWidget *widget, GdkEventMotion *event)
-{
-	GtkPlotLinearPrivate *priv;
-	GtkPlotLinear *plot;
-	gdouble dx, dy;
+static gboolean gtk_plot_linear_motion_notify(GtkWidget *widget, GdkEventMotion *event) {
+  gdouble dx, dy;
+  GtkPlotLinear *plot;
+  GtkPlotLinearPrivate *priv;
 
-	priv=GTK_PLOT_LINEAR_GET_PRIVATE(widget);
-	plot=GTK_PLOT_LINEAR(widget);
-	dx=((event->x)-(priv->range.xj))/((priv->range.xn)-(priv->range.xj));
-	dy=((priv->range.yn)-(event->y))/((priv->range.yn)-(priv->range.yj));
-	if ((dx>=0)&&(dy>=0)&&(dx<=1)&&(dy<=1))
-	{
-		(plot->xps)=((priv->bounds.xmax)*dx)+((priv->bounds.xmin)*(1-dx));
-		(plot->yps)=((priv->bounds.ymax)*dy)+((priv->bounds.ymin)*(1-dy));
-		g_signal_emit(plot, gtk_plot_linear_signals[MOVED], 0);
-	}
-	return FALSE;
+  priv=GTK_PLOT_LINEAR_GET_PRIVATE(widget);
+  dx=(event->x-priv->range.xj)/(priv->range.xn-priv->range.xj);
+  dy=(priv->range.yn-event->y)/(priv->range.yn-priv->range.yj);
+  if ((dx>=0)&&(dy>=0)&&(dx<=1)&&(dy<=1)) {
+    plot=GTK_PLOT_LINEAR(widget);
+    plot->xps=priv->bounds.xmax*dx+priv->bounds.xmin*(1-dx);
+    plot->yps=priv->bounds.ymax*dy+priv->bounds.ymin*(1-dy);
+    g_signal_emit(plot, gtk_plot_linear_signals[MOVED], 0);
+  }
+  return FALSE;
 }
 
-static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton *event)
-{
-	GtkPlotLinearPrivate *priv;
-	GtkPlotLinear *plot;
-//	GtkAllocation alloc;
-	gint d, xw;
-	gdouble xn, xx, yn, yx, s;
+static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton *event) {
+  gdouble xn, xx, yn, yx, s;
+  gint d, hg, j, wd, xw;
+  GtkPlot *plt;
+  GtkPlotLinear *plot;
+  GtkPlotLinearPrivate *priv;
+  guint *ptr;
+  PangoLayout *lyt;
 
-	priv=GTK_PLOT_LINEAR_GET_PRIVATE(widget);
-	plot=GTK_PLOT_LINEAR(widget);
-	if ((priv->flagr)==1)
-	{
-		if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_SGL)==0)
-		{
+  priv=GTK_PLOT_LINEAR_GET_PRIVATE(widget);
+  plot=GTK_PLOT_LINEAR(widget);
+  xw=widget->allocation.width;
+  j=(xw<400)?0:(xw<1000)?1:2;
+  switch (priv->flagr) {
+    case 1:
+      if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_SGL)==0) {
 			(priv->rescale.xmax)=(priv->bounds.xmax);
 			(priv->rescale.ymax)=(priv->bounds.ymax);
 			if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_HZT)!=0)
@@ -4167,76 +4256,95 @@ static gboolean gtk_plot_linear_button_release(GtkWidget *widget, GdkEventButton
 			yx+=UZ*(priv->bounds.ymax);
 			gtk_plot_linear_update_scale_pretty(widget, xn, xx, yn, yx);
 		}
-		(priv->flagr)=0;
-	}
-	else if ((event->y)<=11)
-	{
-//		gtk_widget_get_allocation(widget, &alloc);
-//		xw=(alloc.width);
-		xw=(widget->allocation.width);
-		if ((event->x)>=xw-22)
-		{
-			if ((event->x)>=xw-11)
-			{
-				if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_DRG|GTK_PLOT_LINEAR_ZOOM_OUT))==0)
-				{
-					if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL))!=0) (plot->zmode)>>=1;
-					(plot->zmode)|=GTK_PLOT_LINEAR_ZOOM_DRG;
-				}
-				else (plot->zmode)--;
-			}
-			else
-			{
-				(plot->zmode)-=GTK_PLOT_LINEAR_ZOOM_HZT;
-				if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL|GTK_PLOT_LINEAR_ZOOM_HZT|GTK_PLOT_LINEAR_ZOOM_VRT))==0)
-				{
-					if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_DRG)!=0) (plot->zmode)|=(GTK_PLOT_LINEAR_ZOOM_VRT|GTK_PLOT_LINEAR_ZOOM_HZT);
-					else (plot->zmode)|=GTK_PLOT_LINEAR_ZOOM_SGL;
-				}
-			}
-			gtk_widget_queue_draw_area(widget, xw-22, 0, 22, 11);
-		}
-	}
-	return FALSE;
+      break;
+    case 2:
+      if (((event->y)<=2*SZ[j]+1.0)&&((event->x)>=xw-2*SZ[j]-1.0)) {
+        if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_DRG|GTK_PLOT_LINEAR_ZOOM_OUT))==0) {
+          if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL))!=0) plot->zmode>>=1;
+          plot->zmode|=GTK_PLOT_LINEAR_ZOOM_DRG;
+        } else (plot->zmode)--;
+        gtk_widget_queue_draw_area(widget, xw-2*SZ[j]-1.0, 0, 2*SZ[j]+1.0, 2*SZ[j]+1.0);
+      }
+      break;
+    case 3:
+      if (((event->y)<=2*SZ[j]+1.0)&&((event->x)>=xw-4*SZ[j]-2.0)&&((event->x)<=xw-2*SZ[j]-1.0)) {
+        plot->zmode-=GTK_PLOT_LINEAR_ZOOM_HZT;
+        if (((plot->zmode)&(GTK_PLOT_LINEAR_ZOOM_SGL|GTK_PLOT_LINEAR_ZOOM_HZT|GTK_PLOT_LINEAR_ZOOM_VRT))==0) {
+          if (((plot->zmode)&GTK_PLOT_LINEAR_ZOOM_DRG)!=0) plot->zmode|=GTK_PLOT_LINEAR_ZOOM_VRT|GTK_PLOT_LINEAR_ZOOM_HZT;
+          else plot->zmode|=GTK_PLOT_LINEAR_ZOOM_SGL;
+        }
+        gtk_widget_queue_draw_area(widget, xw-4*SZ[j]-2.0, 0, 2*SZ[j]+1.0, 2*SZ[j]+1.0);
+      }
+      break;
+    case 0:
+      break;
+    default:
+      plt=GTK_PLOT(widget);
+      if ((plt->ky)&&(*(plt->ky))&&((event->x)>=xw-2*SZ[j]-1.0)&&((event->y)>=2*SZ[j]+1.0)) {
+        d=0;
+        s=2*SZ[j]+3.0;
+        do {
+	      lyt=pango_layout_new(gtk_widget_get_pango_context(widget));
+	      pango_layout_set_font_description(lyt, plt->lfont);
+	      pango_layout_set_text(lyt, (plt->ky)[d], -1);
+	      pango_layout_get_pixel_size(lyt, &wd, &hg);
+	      g_object_unref(lyt);
+	      s+=hg+2.0;
+	      if (s>(event->y)) {
+	        if (d+4==priv->flagr) {
+	          ptr=&g_array_index(plot->kdata, guint, d);
+	          (*ptr)^=GTK_PLOT_LINEAR_KEY_CLR;
+              g_signal_emit(plot, gtk_plot_linear_signals[KEY_CHANGED], 0);
+              gtk_plot_linear_redraw(widget);
+	        }
+	        break;
+	      }
+        } while ((plt->ky)[d++]);
+      }
+      break;
+  }
+  priv->flagr=0;
+  return FALSE;
 }
 
-void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl)
-{
-	if (plot->xlab) g_free(plot->xlab);
-	if (plot->ylab) g_free(plot->ylab);
-	{(plot->xlab)=g_strdup(xl); (plot->ylab)=g_strdup(yl);}
+void gtk_plot_linear_set_label(GtkPlotLinear *plot, gchar *xl, gchar *yl) {
+  if (plot->xlab) g_free(plot->xlab);
+  if (plot->ylab) g_free(plot->ylab);
+  plot->xlab = g_strdup(xl);
+  plot->ylab = g_strdup(yl);
 }
 
-void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st)
-{
-	if (plot->xdata) g_array_unref(plot->xdata);
-	if (plot->ydata) g_array_unref(plot->ydata);
-	{(plot->xdata)=g_array_ref(xd); (plot->ydata)=g_array_ref(yd);}
-	gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
+void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st, GArray *kd) {
+  if (plot->xdata) g_array_unref(plot->xdata);
+  plot->xdata = g_array_ref(xd);
+  if (plot->ydata) g_array_unref(plot->ydata);
+  plot->ydata = g_array_ref(yd);
+  if (plot->kdata) g_array_unref(plot->kdata);
+  plot->kdata = g_array_ref(kd);
+  gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
 }
 
-static void gtk_plot_linear_finalise(GtkPlotLinear *plot)
-{
-	if (plot->xlab)
-	{
-		g_free(plot->xlab);
-		plot->xlab=NULL;
-	}
-	if (plot->ylab)
-	{
-		g_free(plot->ylab);
-		plot->ylab=NULL;
-	}
-	if (plot->xdata)
-	{
-		g_array_unref(plot->xdata);
-		plot->xdata=NULL;
-	}
-	if (plot->ydata)
-	{
-		g_array_unref(plot->ydata);
-		plot->ydata=NULL;
-	}
+static void gtk_plot_linear_finalise(GtkPlotLinear *plot) {
+  if (plot->xlab) {
+    g_free(plot->xlab);
+    plot->xlab=NULL;
+  }
+  if (plot->ylab) {
+    g_free(plot->ylab);
+    plot->ylab=NULL;
+  }
+  if (plot->xdata) {
+    g_array_unref(plot->xdata);
+    plot->xdata=NULL;
+  }
+  if (plot->ydata) {
+    g_array_unref(plot->ydata);
+    plot->ydata=NULL;
+  }
+  if (plot->kdata) {
+    g_array_unref(plot->kdata);
+    plot->kdata=NULL;
+  }
 }
 
 static void gtk_plot_linear_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
@@ -4293,62 +4401,67 @@ static void gtk_plot_linear_get_property(GObject *object, guint prop_id, GValue 
 	}
 }
 
-static gboolean gtk_plot_linear_expose(GtkWidget *widget, GdkEventExpose *event)
-{
-	cairo_t *cr;
+static gboolean gtk_plot_linear_expose(GtkWidget *widget, GdkEventExpose *event) {
+  cairo_t *cr;
 
-	cr=gdk_cairo_create(gtk_widget_get_window(widget));
-	cairo_rectangle(cr, event->area.x, event->area.y, event->area.width, event->area.height);
-	cairo_clip(cr);
-	draw(widget, cr);
-	drawz(widget, cr);
-	cairo_destroy(cr);
-	return FALSE;
+  cr=gdk_cairo_create(gtk_widget_get_window(widget));
+  cairo_rectangle(cr, event->area.x, event->area.y, event->area.width, event->area.height);
+  cairo_clip(cr);
+  drawk(widget, cr);
+  draw(widget, cr);
+  drawz(widget, cr);
+  cairo_destroy(cr);
+  return FALSE;
 }
 
-static void gtk_plot_linear_class_init(GtkPlotLinearClass *klass)
-{
-	GObjectClass *obj_klass;
-	GtkWidgetClass *widget_klass;
+static void gtk_plot_linear_class_init(GtkPlotLinearClass *klass) {
+  GObjectClass *obj_klass;
+  GtkWidgetClass *widget_klass;
 
-	obj_klass=G_OBJECT_CLASS(klass);
-	g_type_class_add_private(obj_klass, sizeof(GtkPlotLinearPrivate));
-	(obj_klass->finalize)=(GObjectFinalizeFunc) gtk_plot_linear_finalise;
-	(obj_klass->set_property)=gtk_plot_linear_set_property;
-	(obj_klass->get_property)=gtk_plot_linear_get_property;
-	g_object_class_install_property(obj_klass, PROP_BXN, g_param_spec_double("xmin", "Minimum x value", "Minimum value for the horizontal scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_BXX, g_param_spec_double("xmax", "Maximum x value", "Maximum value for the horizontal scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_BYN, g_param_spec_double("ymin", "Minimum y value", "Minimum value for the vertical scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_BYX, g_param_spec_double("ymax", "Maximum y value", "Maximum value for the vertical scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_XTJ, g_param_spec_uint("xbigticks", "Major x ticks-1", "Number of gaps between major ticks for the horizontal scale-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_YTJ, g_param_spec_uint("ybigticks", "Major y ticks-1", "Number of gaps between major ticks for the vertical scale-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_XTN, g_param_spec_uint("xsmallticks", "Minor x ticks+1", "Number of unlabelled tick divisions between major ticks for the horizontal scale+1", 1, G_MAXINT, 5, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_YTN, g_param_spec_uint("ysmallticks", "Minor y ticks+1", "Number of unlabelled ticks divisions between major ticks for the vertical scale+1", 1, G_MAXINT, 5, G_PARAM_READWRITE));
-	g_object_class_install_property(obj_klass, PROP_FA, g_param_spec_flags("aflag", "Axis Flags", "Flags for axes behaviour: 32 = Labels right, 16 = Labels above, 8 = Wiggle on top, 4 = Wiggle underneath, 2 = Wiggle on Right, 1 = Wiggle on left", G_TYPE_FLAGS, 0, G_PARAM_READWRITE));
-	widget_klass=GTK_WIDGET_CLASS(klass);
-	(widget_klass->button_press_event)=gtk_plot_linear_button_press;
-	(widget_klass->motion_notify_event)=gtk_plot_linear_motion_notify;
-	(widget_klass->button_release_event)=gtk_plot_linear_button_release;
-	(widget_klass->expose_event)=gtk_plot_linear_expose;
-	gtk_plot_linear_signals[MOVED]=g_signal_new("moved", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET (GtkPlotLinearClass, moved), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+  obj_klass=G_OBJECT_CLASS(klass);
+  g_type_class_add_private(obj_klass, sizeof(GtkPlotLinearPrivate));
+  obj_klass->finalize     = (GObjectFinalizeFunc) gtk_plot_linear_finalise;
+  obj_klass->set_property = gtk_plot_linear_set_property;
+  obj_klass->get_property = gtk_plot_linear_get_property;
+  g_object_class_install_property(obj_klass, PROP_BXN, g_param_spec_double("xmin", "Minimum x value", "Minimum value for the horizontal scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+  g_object_class_install_property(obj_klass, PROP_BXX, g_param_spec_double("xmax", "Maximum x value", "Maximum value for the horizontal scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+  g_object_class_install_property(obj_klass, PROP_BYN, g_param_spec_double("ymin", "Minimum y value", "Minimum value for the vertical scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+  g_object_class_install_property(obj_klass, PROP_BYX, g_param_spec_double("ymax", "Maximum y value", "Maximum value for the vertical scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
+  g_object_class_install_property(obj_klass, PROP_XTJ, g_param_spec_uint(  "xbtk", "Major x ticks-1", "Number of gaps between major ticks for the horizontal scale-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));
+  g_object_class_install_property(obj_klass, PROP_YTJ, g_param_spec_uint(  "ybtk", "Major y ticks-1", "Number of gaps between major ticks for the vertical scale-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));
+  g_object_class_install_property(obj_klass, PROP_XTN, g_param_spec_uint(  "xstk", "Minor x ticks+1", "Number of unlabelled tick divisions between major ticks for the horizontal scale+1", 1, G_MAXINT, 5, G_PARAM_READWRITE));
+  g_object_class_install_property(obj_klass, PROP_YTN, g_param_spec_uint(  "ystk", "Minor y ticks+1", "Number of unlabelled ticks divisions between major ticks for the vertical scale+1", 1, G_MAXINT, 5, G_PARAM_READWRITE));
+  g_object_class_install_property(obj_klass, PROP_FA, g_param_spec_flags(  "aflg", "Axis Flags",      "Flags for axes behaviour: 32 = Labels right, 16 = Labels above, 8 = Wiggle on top, 4 = Wiggle underneath, 2 = Wiggle on Right, 1 = Wiggle on left", G_TYPE_FLAGS, 0, G_PARAM_READWRITE));
+  widget_klass=GTK_WIDGET_CLASS(klass);
+  widget_klass->button_press_event   = gtk_plot_linear_button_press;
+  widget_klass->motion_notify_event  = gtk_plot_linear_motion_notify;
+  widget_klass->button_release_event = gtk_plot_linear_button_release;
+  widget_klass->expose_event         = gtk_plot_linear_expose;
+  gtk_plot_linear_signals[MOVED]       = g_signal_new("moved",       G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET(GtkPlotLinearClass, moved),       NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+  gtk_plot_linear_signals[KEY_CHANGED] = g_signal_new("key_changed", G_OBJECT_CLASS_TYPE(obj_klass), G_SIGNAL_RUN_FIRST, G_STRUCT_OFFSET(GtkPlotLinearClass, key_changed), NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
-static void gtk_plot_linear_init(GtkPlotLinear *plot)
-{
-	GtkPlotLinearPrivate *priv;
+static void gtk_plot_linear_init(GtkPlotLinear *plot) {
+  GtkPlotLinearPrivate *priv;
 
-	gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);
-	priv=GTK_PLOT_LINEAR_GET_PRIVATE(plot);
-	{(priv->bounds.xmin)=0; (priv->bounds.xmax)=1; (priv->bounds.ymin)=0; (priv->bounds.ymax)=1;}
-	{(priv->ticks.xj)=4; (priv->ticks.yj)=4; (priv->ticks.xn)=5; (priv->ticks.yn)=5;}
-	{(priv->range.xj)=0; (priv->range.yj)=0; (priv->range.xn)=1; (priv->range.yn)=1;}
-	{(plot->xdp)=2; (plot->ydp)=2;}
-	{(priv->flaga)=0; (priv->flagr)=0;}
-	{(plot->xdata)=NULL; (plot->ydata)=NULL;}
-	{(plot->xlab)=g_strdup("Domain"); (plot->ylab)=g_strdup("Amplitude");}
-	{(plot->flagd)=GTK_PLOT_LINEAR_DISP_LIN; (plot->ptsize)=5; (plot->linew)=2;}
-	(plot->zmode)=(GTK_PLOT_LINEAR_ZOOM_VRT|GTK_PLOT_LINEAR_ZOOM_HZT);
-	{(plot->xps)=0; (plot->yps)=0;}
+  gtk_widget_add_events(GTK_WIDGET(plot), GDK_BUTTON_PRESS_MASK|GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK);
+  plot->xdata=plot->ydata=plot->kdata=NULL;
+  plot->xlab=g_strdup("Domain");
+  plot->ylab=g_strdup("Amplitude");
+  plot->flagd=GTK_PLOT_LINEAR_DISP_LIN;
+  plot->ptsize=5;
+  plot->linew=2;
+  plot->zmode=GTK_PLOT_LINEAR_ZOOM_VRT|GTK_PLOT_LINEAR_ZOOM_HZT;
+  plot->xdp=plot->ydp=2;
+  plot->xps=plot->yps=0;
+  priv=GTK_PLOT_LINEAR_GET_PRIVATE(plot);
+  priv->bounds.xmin=priv->bounds.ymin=0;
+  priv->bounds.xmax=priv->bounds.ymax=1;
+  priv->ticks.xj=priv->ticks.yj=4;
+  priv->ticks.xn=priv->ticks.yn=5;
+  priv->range.xj=priv->range.yj=0;
+  priv->range.xn=priv->range.yn=1;
+  priv->flaga=priv->flagr=0;
 }
 
 GtkWidget *gtk_plot_linear_new(void) {return g_object_new(GTK_PLOT_TYPE_LINEAR, NULL);}
