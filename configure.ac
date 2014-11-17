@@ -21,6 +21,14 @@ esac
 AC_SUBST([lt_enable_auto_import])
 AC_ARG_ENABLE([testbinaries],AS_HELP_STRING([--disable-testbinaries],[Disable building test examples -incompatible with some packaging  @<:@yes/no@:>@]),,[enable_testbinaries=yes])
 AM_CONDITIONAL([TEST_BIN], [test "$enable_testbinaries" = "yes"])
+AC_ARG_ENABLE([base],AS_HELP_STRING([--disable-base],[Do not include the base plotlinear widget  @<:@yes/no@:>@]),,[enable_base=yes])
+AM_CONDITIONAL([BASE], [test "$enable_base" = "yes"])
+AC_ARG_ENABLE([polars],AS_HELP_STRING([--disable-polar],[Do not include polar plots  @<:@yes/no@:>@]),,[enable_polars=yes])
+AM_CONDITIONAL([POLARS], [test "$enable_polars" = "yes"])
+AC_ARG_ENABLE([logarithms],AS_HELP_STRING([--disable-logarithms],[Do not include logarithmic plots  @<:@yes/no@:>@]),,[enable_logarithms=yes])
+AM_CONDITIONAL([LOGARS], [test "$enable_logarithms" = "yes"])
+AC_ARG_ENABLE([miscs],AS_HELP_STRING([--disable-miscs],[Do not include other miscelaneous plots  @<:@yes/no@:>@]),,[enable_miscs=yes])
+AM_CONDITIONAL([MISCS], [test "$enable_miscs" = "yes"])
 PKG_CHECK_MODULES([PLOT], [gtk+-2.0 >= 2.18])
 AC_CONFIG_FILES([Makefile gtk2plot/Makefile	\
 	gtkplot-2.0.pc:gtkplot.pc.in		\

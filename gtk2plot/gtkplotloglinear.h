@@ -1,5 +1,5 @@
 /***************************************************************************
- *            gtkplotlinear.h
+ *            gtkplotloglinear.h
  *
  *  A GTK+ widget that plots data
  *

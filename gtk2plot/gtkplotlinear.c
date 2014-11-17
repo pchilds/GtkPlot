@@ -38,42 +38,40 @@
 #include "gtkplotlinear.h"
 
 #define GTK_PLOT_LINEAR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), GTK_PLOT_TYPE_LINEAR, GtkPlotLinearPrivate))
-#define ARP 0.05 /* Proportion of the graph occupied by arrows */
-#define IRTR 0.577350269 /* 1/square root 3 */
+#define ARP 0.05            /* Proportion of the graph occupied by arrows */
+#define IRTR 0.577350269    /* 1/square root 3 */
 #define MY_2PI 6.2831853071795864769252867665590057683943387987502
-#define WGP 0.08 /* Proportion of the graph the wiggles occupy */
-#define WFP 0.01 /* Proportion of wiggle that is flat to axis */
-#define WMP 0.045 /* the mean of these */
-#define WHP 0.020207259 /* wiggle height proportion */
-#define DZE 0.00001 /* divide by zero threshold */
-#define NZE -0.00001 /* negative of this */
-#define FAC 0.05 /* floating point accuracy check for logarithms etc */
-#define NAC 0.95 /* conjugate of this */
-#define JT 5 /* major tick length */
-#define JTI 6 /* this incremented */
-#define NT 3 /* minor tick length */
-#define ZS 0.5 /* zoom scale */
-#define ZSC 0.5 /* 1 minus this */
-#define UZ 2 /* inverse of this */
-#define UZC 1 /* this minus 1 */
-#define BFL 10 /*buffer length for axes*/
-#define BF3 7 /*buffer length -3*/
-#define BF4 6 /*buffer length -4*/
-typedef enum
-{
-	GTK_PLOT_LINEAR_BORDERS_LT = 1 << 0,
-	GTK_PLOT_LINEAR_BORDERS_RT = 1 << 1,
-	GTK_PLOT_LINEAR_BORDERS_DN = 1 << 2,
-	GTK_PLOT_LINEAR_BORDERS_UP = 1 << 3
+#define WGP 0.08            /* Proportion of the graph the wiggles occupy */
+#define WFP 0.01            /* Proportion of wiggle that is flat to axis */
+#define WMP (WGP+WFP)/2     /* the mean of these */
+#define WHP 0.020207259     /* wiggle height proportion */
+#define DZE 0.00001         /* divide by zero threshold */
+#define NZE -DZE            /* negative of this */
+#define FAC 0.05            /* floating point accuracy check for logarithms etc */
+#define NAC 1-FAC           /* conjugate of this */
+#define JT 5                /* major tick length */
+#define JTI JT+1            /* this incremented */
+#define NT 3                /* minor tick length */
+#define ZS 0.5              /* zoom scale */
+#define ZSC 1-ZS            /* 1 minus this */
+#define UZ 1/ZSC            /* inverse of this */
+#define UZC 1-UZ            /* this minus 1 */
+#define BFL 10              /*buffer length for axes*/
+#define BF3 BFL-3           /*buffer length -3*/
+#define BF4 BFL-4           /*buffer length -4*/
+typedef enum {
+  GTK_PLOT_LINEAR_BORDERS_LT = 1 << 0,
+  GTK_PLOT_LINEAR_BORDERS_RT = 1 << 1,
+  GTK_PLOT_LINEAR_BORDERS_DN = 1 << 2,
+  GTK_PLOT_LINEAR_BORDERS_UP = 1 << 3
 } GtkPlotLinearBorders;
-typedef enum
-{
-	GTK_PLOT_LINEAR_AXES_LW = 1 << 0,
-	GTK_PLOT_LINEAR_AXES_RW = 1 << 1,
-	GTK_PLOT_LINEAR_AXES_DW = 1 << 2,
-	GTK_PLOT_LINEAR_AXES_UW = 1 << 3,
-	GTK_PLOT_LINEAR_AXES_LR = 1 << 4,
-	GTK_PLOT_LINEAR_AXES_LT = 1 << 5
+typedef enum {
+  GTK_PLOT_LINEAR_AXES_LW = 1 << 0,
+  GTK_PLOT_LINEAR_AXES_RW = 1 << 1,
+  GTK_PLOT_LINEAR_AXES_DW = 1 << 2,
+  GTK_PLOT_LINEAR_AXES_UW = 1 << 3,
+  GTK_PLOT_LINEAR_AXES_LR = 1 << 4,
+  GTK_PLOT_LINEAR_AXES_LT = 1 << 5
 } GtkPlotLinearAxes;
 G_DEFINE_TYPE (GtkPlotLinear, gtk_plot_linear, GTK_TYPE_PLOT);
 enum {PROP_0, PROP_BXN, PROP_BXX, PROP_BYN, PROP_BYX, PROP_XTJ, PROP_YTJ, PROP_XTN, PROP_YTN, PROP_FA};

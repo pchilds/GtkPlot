@@ -38,44 +38,43 @@
 #include "gtkplotloglinear.h"
 
 #define GTK_PLOT_LOG_LINEAR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), GTK_PLOT_TYPE_LOG_LINEAR, GtkPlotLogLinearPrivate))
-#define ARP 0.05 /* Proportion of the graph occupied by arrows */
-#define IRTR 0.577350269 /* 1/square root 3 */
+#define ARP 0.05            /* Proportion of the graph occupied by arrows */
+#define IRTR 0.577350269    /* 1/square root 3 */
 #define MY_2PI 6.2831853071795864769252867665590057683943387987502
-#define LTN /* log_10(9) */
-#define WGP 0.08 /* Proportion of the graph the wiggles occupy */
-#define WFP 0.01 /* Proportion of wiggle that is flat to axis */
-#define WMP 0.045 /* the mean of these */
-#define WHP 0.020207259 /* wiggle height proportion */
-#define DZE 0.00001 /* divide by zero threshold */
-#define NZE -0.00001 /* negative of this */
-#define FAC 0.05 /* floating point accuracy check for logarithms etc */
-#define NAC 0.95 /* conjugate of this */
-#define JT 5 /* major tick length */
-#define JTI 6 /* this incremented */
-#define NT 3 /* minor tick length */
-#define ZS 0.5 /* zoom scale */
-#define ZSC 0.5 /* 1 minus this */
-#define UZ 2 /* inverse of this */
-#define UZC 1 /* this minus 1 */
-#define BFL 10 /*buffer length for axes*/
-#define BF3 7 /*buffer length -3*/
-#define BF4 6 /*buffer length -4*/
+#define WGP 0.08            /* Proportion of the graph the wiggles occupy */
+#define WFP 0.01            /* Proportion of wiggle that is flat to axis */
+#define WMP (WGP+WFP)/2     /* the mean of these */
+#define WHP 0.020207259     /* wiggle height proportion */
+#define DZE 0.00001         /* divide by zero threshold */
+#define NZE -DZE            /* negative of this */
+#define FAC 0.05            /* floating point accuracy check for logarithms etc */
+#define NAC 1-FAC           /* conjugate of this */
+#define JT 5                /* major tick length */
+#define JTI JT+1            /* this incremented */
+#define NT 3                /* minor tick length */
+#define ZS 0.5              /* zoom scale */
+#define ZSC 1-ZS            /* 1 minus this */
+#define UZ 1/ZSC            /* inverse of this */
+#define UZC 1-UZ            /* this minus 1 */
+#define BFL 10              /*buffer length for axes*/
+#define BF3 BFL-3           /*buffer length -3*/
+#define BF4 BFL-4           /*buffer length -4*/
 typedef enum {
-	GTK_PLOT_LOG_LINEAR_BORDERS_LT = 1 << 0,
-	GTK_PLOT_LOG_LINEAR_BORDERS_RT = 1 << 1,
-	GTK_PLOT_LOG_LINEAR_BORDERS_DN = 1 << 2,
-	GTK_PLOT_LOG_LINEAR_BORDERS_UP = 1 << 3
+  GTK_PLOT_LOG_LINEAR_BORDERS_LT = 1 << 0,
+  GTK_PLOT_LOG_LINEAR_BORDERS_RT = 1 << 1,
+  GTK_PLOT_LOG_LINEAR_BORDERS_DN = 1 << 2,
+  GTK_PLOT_LOG_LINEAR_BORDERS_UP = 1 << 3
 } GtkPlotLogLinearBorders;
 typedef enum {
-	GTK_PLOT_LOG_LINEAR_AXES_LW = 1 << 0,
-	GTK_PLOT_LOG_LINEAR_AXES_RW = 1 << 1,
-	GTK_PLOT_LOG_LINEAR_AXES_DW = 1 << 2,
-	GTK_PLOT_LOG_LINEAR_AXES_UW = 1 << 3,
-	GTK_PLOT_LOG_LINEAR_AXES_LR = 1 << 4,
-	GTK_PLOT_LOG_LINEAR_AXES_LT = 1 << 5
+  GTK_PLOT_LOG_LINEAR_AXES_LW = 1 << 0,
+  GTK_PLOT_LOG_LINEAR_AXES_RW = 1 << 1,
+  GTK_PLOT_LOG_LINEAR_AXES_DW = 1 << 2,
+  GTK_PLOT_LOG_LINEAR_AXES_UW = 1 << 3,
+  GTK_PLOT_LOG_LINEAR_AXES_LR = 1 << 4,
+  GTK_PLOT_LOG_LINEAR_AXES_LT = 1 << 5
 } GtkPlotLogLinearAxes;
 G_DEFINE_TYPE (GtkPlotLogLinear, gtk_plot_log_linear, GTK_TYPE_PLOT);
-enum {PROP_0, PROP_BXN, PROP_BXX, PROP_BYN, PROP_BYX, PROP_XTJ, PROP_YTJ, PROP_XTN, PROP_YTN, PROP_FA};
+enum {PROP_0, PROP_BXN, PROP_BXX, PROP_BYN, PROP_BYX, PROP_YTJ, PROP_XTN, PROP_YTN, PROP_FA};
 enum {MOVED, KEY_CHANGED, LAST_SIGNAL};
 static guint gtk_plot_log_linear_signals[LAST_SIGNAL]={0};
 typedef struct _GtkPlotLogLinearPrivate GtkPlotLogLinearPrivate;
@@ -369,7 +368,7 @@ static void draw(GtkWidget *widget, cairo_t *cr) {
     cairo_move_to(cr, tnn, yu);
     cairo_line_to(cr, tnn, yl);
   }
-  for (j=ceil(priv->bounds.xmin); j<=floor(priv->bounds.xmax); j++) for (k=2; k<priv->ticks.xn+2; k++) {
+  for (j=ceil(priv->bounds.xmin); j<floor(priv->bounds.xmax); j++) for (k=2; k<priv->ticks.xn+2; k++) {
     tnn=xl+(j+log10(k)-priv->bounds.xmin)*(xu-xl)/(priv->bounds.xmax-priv->bounds.xmin);
     cairo_move_to(cr, tnn, yu);
     cairo_line_to(cr, tnn, yl);
@@ -377,7 +376,7 @@ static void draw(GtkWidget *widget, cairo_t *cr) {
   if ((tn=priv->bounds.xmax-floor(priv->bounds.xmax))>DZE) {
     k=2;
     while ((k<priv->ticks.xn+2)&&(k<ceil(exp(G_LN10*tn)))) {
-      tnn=xu+(log10(k)-tn)*(xu-xl)/(priv->bounds.xmax-priv->bounds.xmin);
+      tnn=xu+(tn-log10(k))*(xu-xl)/(priv->bounds.xmax-priv->bounds.xmin);
       cairo_move_to(cr, tnn, yu);
       cairo_line_to(cr, tnn, yl);
       k++;
@@ -2014,18 +2013,17 @@ gboolean gtk_plot_log_linear_update_scale_pretty(GtkWidget *widget, gdouble xl, 
   ut=(gint) ceil(log10(xx));
   if (xn<=DZE) {
     lt=ut-6;
-    priv->ticks.xj=6;
+    priv->ticks.xn=4;
   } else {
     lt=(gint) floor(log10(xn));
     tk=ut-lt;
-    if (tk<=0) priv->ticks.xj=1;
+    if (tk<=0) return TRUE;
     else if (tk>6) {
-      priv->ticks.xj=6;
+      priv->ticks.xn=4;
       lt=ut-6;
-    } else priv->ticks.xj=tk;
+    } else if (tk>4) priv->ticks.xn=4;
+    else priv->ticks.xn=8;
   }
-  if (priv->ticks.xj<4) priv->ticks.xn=8;
-  else priv->ticks.xn=4;
   priv->bounds.xmin=(gdouble) lt;
   priv->bounds.xmax=(gdouble) ut;
   if (yl>yu) {yn=yu; yx=yl;}
@@ -2459,9 +2457,6 @@ static void gtk_plot_log_linear_set_property(GObject *object, guint prop_id, con
     case PROP_BYX:
       GTK_PLOT_LOG_LINEAR_GET_PRIVATE(object)->bounds.ymax=g_value_get_double(value);
       break;
-    case PROP_XTJ:
-      GTK_PLOT_LOG_LINEAR_GET_PRIVATE(object)->ticks.xj=g_value_get_uint(value);
-      break;
     case PROP_YTJ:
       GTK_PLOT_LOG_LINEAR_GET_PRIVATE(object)->ticks.yj=g_value_get_uint(value);
       break;
@@ -2493,9 +2488,6 @@ static void gtk_plot_log_linear_get_property(GObject *object, guint prop_id, GVa
       break;
     case PROP_BYX:
       g_value_set_double(value, GTK_PLOT_LOG_LINEAR_GET_PRIVATE(object)->bounds.ymax);
-      break;
-    case PROP_XTJ:
-      g_value_set_uint(value, GTK_PLOT_LOG_LINEAR_GET_PRIVATE(object)->ticks.xj);
       break;
     case PROP_YTJ:
       g_value_set_uint(value, GTK_PLOT_LOG_LINEAR_GET_PRIVATE(object)->ticks.yj);
@@ -2541,7 +2533,6 @@ static void gtk_plot_log_linear_class_init(GtkPlotLogLinearClass *klass) {
   g_object_class_install_property(obj_klass, PROP_BXX, g_param_spec_double("xmax", "Maximum x value", "Maximum value for the horizontal scale", DZE, G_MAXDOUBLE, 100.0, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_BYN, g_param_spec_double("ymin", "Minimum y value", "Minimum value for the vertical scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_BYX, g_param_spec_double("ymax", "Maximum y value", "Maximum value for the vertical scale", -G_MAXDOUBLE, G_MAXDOUBLE, 0, G_PARAM_READWRITE));
-  g_object_class_install_property(obj_klass, PROP_XTJ, g_param_spec_uint(  "xbtk", "Major x ticks-1", "Number of gaps between major ticks for the horizontal scale-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_YTJ, g_param_spec_uint(  "ybtk", "Major y ticks-1", "Number of gaps between major ticks for the vertical scale-1", 1, G_MAXINT, 4, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_XTN, g_param_spec_uint(  "xstk", "Minor x ticks+1", "Number of unlabelled tick divisions between major ticks for the horizontal scale+1", 1, G_MAXINT, 5, G_PARAM_READWRITE));
   g_object_class_install_property(obj_klass, PROP_YTN, g_param_spec_uint(  "ystk", "Minor y ticks+1", "Number of unlabelled ticks divisions between major ticks for the vertical scale+1", 1, G_MAXINT, 5, G_PARAM_READWRITE));
@@ -2570,7 +2561,6 @@ static void gtk_plot_log_linear_init(GtkPlotLogLinear *plot) {
   priv->bounds.xmin=-2.0;
   priv->bounds.xmax=2.0;
   plot->xps=1.0;
-  priv->ticks.xj=4;
   priv->ticks.xn=8;
   plot->ydp=2;
   plot->yps=0;
