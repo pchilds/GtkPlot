@@ -4771,7 +4771,7 @@ void gtk_plot_polar_set_data(GtkPlotPolar *plot, GArray *rd, GArray *td, GArray 
   if (plot->thdata) g_array_unref(plot->thdata);
   plot->thdata = g_array_ref(td);
   if (plot->kdata)  g_array_unref(plot->kdata);
-  plot->kdata  = g_array_ref(kd);
+  plot->kdata  = kd?g_array_ref(kd):NULL;
   gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
 }
 

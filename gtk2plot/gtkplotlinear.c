@@ -4320,7 +4320,7 @@ void gtk_plot_linear_set_data(GtkPlotLinear *plot, GArray *xd, GArray *yd, GArra
   if (plot->ydata) g_array_unref(plot->ydata);
   plot->ydata = g_array_ref(yd);
   if (plot->kdata) g_array_unref(plot->kdata);
-  plot->kdata = g_array_ref(kd);
+  plot->kdata = kd?g_array_ref(kd):NULL;
   gtk_plot_set_indices(GTK_PLOT(plot), nd, sz, st);
 }
 
