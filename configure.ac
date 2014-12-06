@@ -27,9 +27,11 @@ AC_ARG_ENABLE([polars],AS_HELP_STRING([--disable-polar],[Do not include polar pl
 AM_CONDITIONAL([POLARS], [test "$enable_polars" = "yes"])
 AC_ARG_ENABLE([logarithms],AS_HELP_STRING([--disable-logarithms],[Do not include logarithmic plots  @<:@yes/no@:>@]),,[enable_logarithms=yes])
 AM_CONDITIONAL([LOGARS], [test "$enable_logarithms" = "yes"])
+AC_ARG_ENABLE([plot_3d],AS_HELP_STRING([--disable-plot-3d],[Do not include 3D plots  @<:@yes/no@:>@]),,[enable_plot_3d=yes])
+AM_CONDITIONAL([PL3D], [test "$enable_plot_3d" = "yes"])
 AC_ARG_ENABLE([miscs],AS_HELP_STRING([--disable-miscs],[Do not include other miscelaneous plots  @<:@yes/no@:>@]),,[enable_miscs=yes])
 AM_CONDITIONAL([MISCS], [test "$enable_miscs" = "yes"])
-PKG_CHECK_MODULES([PLOT], [gtk+-2.0 >= 2.18])
+AS_IF([test "$enable_plot_3d" = "yes"],[PKG_CHECK_MODULES([PLOT], [gtk+-2.0 >= 2.18 gtkglext-1.0])],[PKG_CHECK_MODULES([PLOT], [gtk+-2.0 >= 2.18])])
 AC_CONFIG_FILES([Makefile gtk2plot/Makefile	\
 	gtkplot-2.0.pc:gtkplot.pc.in		\
 	COPYING:COPYING-2.0.in])

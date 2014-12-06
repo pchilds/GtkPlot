@@ -55,7 +55,6 @@ rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
 %files devel
 %defattr(-,root,root)
 %{_includedir}/gtkplot-2.0/gtkplot*.h
-%{_libdir}/gtkplot-2.0/include/gtkplotconfig.h
 %{_libdir}/libgtkplot-2.0.so
 %{_libdir}/pkgconfig/gtkplot-2.0.pc
 
