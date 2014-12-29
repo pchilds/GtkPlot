@@ -1,6 +1,9 @@
 AM_CFLAGS=$(PLOT_CFLAGS) -g -Wall -Werror
 MAINTAINERCLEANFILES=Makefile.in
 
+#gtkplot_libincludedir=$(libdir)/gtkplot-2.0/include
+#nodist_gtkplot_libinclude_HEADERS=../gtkplotconfig.h
+
 lib_LTLIBRARIES=libgtkplot-@PLOT_API_VERSION@.la
 libgtkplot_@PLOT_API_VERSION@_la_SOURCES=	\
 	gtkplot.c

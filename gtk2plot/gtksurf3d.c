@@ -23,7 +23,7 @@ typedef struct _GtkSurf3dPrivate GtkSurf3dPrivate;
 struct _GtkSurf3dPrivate {gdouble rsx, rsy, rsz, sc; guint flagr;};
 
 static void draw(GtkSurf3d *surf) {
-  gdouble           r, t, p, x, y, z;
+  gdouble           r, r2, t, p, x1, x2, x3, x4, y1, y2, y3, y4, z1, z2, z3, z4;
   guint             j, k;
   GtkSurf3dPrivate  *priv;
 
@@ -56,7 +56,6 @@ static void draw(GtkSurf3d *surf) {
     glPushAttrib (GL_POLYGON_BIT);
     if (!(surf->mode&GTK_SURF_3D_MODE_FILL)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     if (surf->mode&GTK_SURF_3D_MODE_POLAR) {
-      glColor3f(0.0, 0.0, 1.0);
       for (k=0;k<surf->sz2;k++) {
         if (surf->nd+surf->st1+(k+1)*surf->st2+(surf->dim-1)*surf->st3>=surf->data->len) break;
         glBegin(GL_QUAD_STRIP);
@@ -65,46 +64,158 @@ static void draw(GtkSurf3d *surf) {
           t=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+k*surf->st2);
           p=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+k*surf->st2+surf->st3);
           r=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+k*surf->st2+2*surf->st3);
-          x=r*cos(p)*cos(t);
-          y=r*cos(p)*sin(t);
-          z=r*sin(p);
+          x1=r*cos(p)*cos(t);
+          y1=r*cos(p)*sin(t);
+          z1=r*sin(p);
           if (r<0) r=-r;
           if (r>=1.0) glColor3f(0.75, 0, 0.25);
           else if (r>0.9) glColor3f(2.5*(1.3-r), 0, 2.5*(r-0.9));
           else if (r>0.5) glColor3f(2.5*(r-0.5), 2.5*(0.9-r), 0);
           else if (r>0.1) glColor3f(0, 2.5*(r-0.1), 2.5*(0.5-r));
           else glColor3f(2.5*(0.1-r), 0, 2.5*(r+0.3));
-          glVertex3f(x, y, z);
           t=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2);
           p=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2+surf->st3);
-          r=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2+2*surf->st3);
-          x=r*cos(p)*cos(t);
-          y=r*cos(p)*sin(t);
-          z=r*sin(p);
-          if (r<0) r=-r;
-          if (r>=1.0) glColor3f(0.75, 0, 0.25);
-          else if (r>0.9) glColor3f(2.5*(1.3-r), 0, 2.5*(r-0.9));
-          else if (r>0.5) glColor3f(2.5*(r-0.5), 2.5*(0.9-r), 0);
-          else if (r>0.1) glColor3f(0, 2.5*(r-0.1), 2.5*(0.5-r));
-          else glColor3f(2.5*(0.1-r), 0, 2.5*(r+0.3));
-          glVertex3f(x, y, z);
+          r2=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2+2*surf->st3);
+          x2=r2*cos(p)*cos(t);
+          y2=r2*cos(p)*sin(t);
+          z2=r2*sin(p);
+          if (j==0) {
+            t=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2);
+            p=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2+surf->st3);
+            r=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2+2*surf->st3);
+            x3=r*cos(p)*cos(t);
+            y3=r*cos(p)*sin(t);
+            z3=r*sin(p);
+            glNormal3f((y2-y1)*(z3-z1)+(y3-y1)*(z1-z2), (z2-z1)*(x3-x1)+(z3-z1)*(x1-x2), (x2-x1)*(y3-y1)+(x3-x1)*(y1-y2));
+          } else if (j+1==surf->sz1) {
+            t=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2);
+            p=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2+surf->st3);
+            r=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2+2*surf->st3);
+            x4=r*cos(p)*cos(t);
+            y4=r*cos(p)*sin(t);
+            z4=r*sin(p);
+            glNormal3f((y2-y1)*(z1-z4)+(y1-y4)*(z1-z2), (z2-z1)*(x1-x4)+(z1-z4)*(x1-x2), (x2-x1)*(y1-y4)+(x1-x4)*(y1-y2));
+          } else {
+            t=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2);
+            p=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2+surf->st3);
+            r=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2+2*surf->st3);
+            x3=r*cos(p)*cos(t);
+            y3=r*cos(p)*sin(t);
+            z3=r*sin(p);
+            t=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2);
+            p=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2+surf->st3);
+            r=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2+2*surf->st3);
+            x4=r*cos(p)*cos(t);
+            y4=r*cos(p)*sin(t);
+            z4=r*sin(p);
+            glNormal3f((y2-y1)*(z3-z4)+(y3-y4)*(z1-z2), (z2-z1)*(x3-x4)+(z3-z4)*(x1-x2), (x2-x1)*(y3-y4)+(x3-x4)*(y1-y2));
+          }
+          glVertex3f(x1, y1, z1);
+          if (r2<0) r2=-r2;
+          if (r2>=1.0) glColor3f(0.75, 0, 0.25);
+          else if (r2>0.9) glColor3f(2.5*(1.3-r2), 0, 2.5*(r2-0.9));
+          else if (r2>0.5) glColor3f(2.5*(r2-0.5), 2.5*(0.9-r2), 0);
+          else if (r2>0.1) glColor3f(0, 2.5*(r2-0.1), 2.5*(0.5-r2));
+          else glColor3f(2.5*(0.1-r2), 0, 2.5*(r2+0.3));
+          if (j==0) {
+            t=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2);
+            p=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2+surf->st3);
+            r=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2+2*surf->st3);
+            x3=r*cos(p)*cos(t);
+            y3=r*cos(p)*sin(t);
+            z3=r*sin(p);
+            glNormal3f((y2-y1)*(z3-z2)+(y3-y2)*(z1-z2), (z2-z1)*(x3-x2)+(z3-z2)*(x1-x2), (x2-x1)*(y3-y2)+(x3-x2)*(y1-y2));
+          } else if (j+1==surf->sz1) {
+            t=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2);
+            p=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2+surf->st3);
+            r=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2+2*surf->st3);
+            x4=r*cos(p)*cos(t);
+            y4=r*cos(p)*sin(t);
+            z4=r*sin(p);
+            glNormal3f((y2-y1)*(z2-z4)+(y2-y4)*(z1-z2), (z2-z1)*(x2-x4)+(z2-z4)*(x1-x2), (x2-x1)*(y2-y4)+(x2-x4)*(y1-y2));
+          } else {
+            t=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2);
+            p=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2+surf->st3);
+            r=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2+2*surf->st3);
+            x3=r*cos(p)*cos(t);
+            y3=r*cos(p)*sin(t);
+            z3=r*sin(p);
+            t=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2);
+            p=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2+surf->st3);
+            r=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2+2*surf->st3);
+            x4=r*cos(p)*cos(t);
+            y4=r*cos(p)*sin(t);
+            z4=r*sin(p);
+            glNormal3f((y2-y1)*(z3-z4)+(y3-y4)*(z1-z2), (z2-z1)*(x3-x4)+(z3-z4)*(x1-x2), (x2-x1)*(y3-y4)+(x3-x4)*(y1-y2));
+          }
+          glVertex3f(x2, y2, z2);
         }
         glEnd();
       }
     } else {
-      glBegin(GL_QUAD_STRIP);
       for (k=0;k<surf->sz2;k++) {
         if (surf->nd+surf->st1+(k+1)*surf->st2+(surf->dim-1)*surf->st3>=surf->data->len) break;
+        glBegin(GL_QUAD_STRIP);
         for (j=0;j<surf->sz1;j++) {
           if (surf->nd+(j+1)*surf->st1+(k+1)*surf->st2+(surf->dim-1)*surf->st3>=surf->data->len) break;
-          x=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+k*surf->st2);
-          y=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+k*surf->st2+surf->st3);
-          z=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+k*surf->st2+2*surf->st3);
-          glVertex3f(x, y, z);
-          x=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2);
-          y=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2+surf->st3);
-          z=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2+2*surf->st3);
-          glVertex3f(x, y, z);
+          x1=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+k*surf->st2);
+          y1=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+k*surf->st2+surf->st3);
+          z1=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+k*surf->st2+2*surf->st3);
+          x2=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2);
+          y2=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2+surf->st3);
+          z2=g_array_index(surf->data, gdouble, surf->nd+j*surf->st1+(k+1)*surf->st2+2*surf->st3);
+          r=sqrt(x1*x1+y1*y1+z1*z1);
+          if (r>=1.0) glColor3f(0.75, 0, 0.25);
+          else if (r>0.9) glColor3f(2.5*(1.3-r), 0, 2.5*(r-0.9));
+          else if (r>0.5) glColor3f(2.5*(r-0.5), 2.5*(0.9-r), 0);
+          else if (r>0.1) glColor3f(0, 2.5*(r-0.1), 2.5*(0.5-r));
+          else glColor3f(2.5*(0.1-r), 0, 2.5*(r+0.3));
+          if (j==0) {
+            x3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2);
+            y3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2+surf->st3);
+            z3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2+2*surf->st3);
+            glNormal3f((y2-y1)*(z3-z1)+(y3-y1)*(z1-z2), (z2-z1)*(x3-x1)+(z3-z1)*(x1-x2), (x2-x1)*(y3-y1)+(x3-x1)*(y1-y2));
+          } else if (j+1==surf->sz1) {
+            x4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2);
+            y4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2+surf->st3);
+            z4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2+2*surf->st3);
+            glNormal3f((y2-y1)*(z1-z4)+(y1-y4)*(z1-z2), (z2-z1)*(x1-x4)+(z1-z4)*(x1-x2), (x2-x1)*(y1-y4)+(x1-x4)*(y1-y2));
+          } else {
+            x3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2);
+            y3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2+surf->st3);
+            z3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+k*surf->st2+2*surf->st3);
+            x4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2);
+            y4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2+surf->st3);
+            z4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+k*surf->st2+2*surf->st3);
+            glNormal3f((y2-y1)*(z3-z4)+(y3-y4)*(z1-z2), (z2-z1)*(x3-x4)+(z3-z4)*(x1-x2), (x2-x1)*(y3-y4)+(x3-x4)*(y1-y2));
+          }
+          glVertex3f(x1, y1, z1);
+          r=sqrt(x2*x2+y2*y2+z2*z2);
+          if (r>=1.0) glColor3f(0.75, 0, 0.25);
+          else if (r>0.9) glColor3f(2.5*(1.3-r), 0, 2.5*(r-0.9));
+          else if (r>0.5) glColor3f(2.5*(r-0.5), 2.5*(0.9-r), 0);
+          else if (r>0.1) glColor3f(0, 2.5*(r-0.1), 2.5*(0.5-r));
+          else glColor3f(2.5*(0.1-r), 0, 2.5*(r+0.3));
+          if (j==0) {
+            x3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2);
+            y3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2+surf->st3);
+            z3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2+2*surf->st3);
+            glNormal3f((y2-y1)*(z3-z2)+(y3-y2)*(z1-z2), (z2-z1)*(x3-x2)+(z3-z2)*(x1-x2), (x2-x1)*(y3-y2)+(x3-x2)*(y1-y2));
+          } else if (j+1==surf->sz1) {
+            x4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2);
+            y4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2+surf->st3);
+            z4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2+2*surf->st3);
+            glNormal3f((y2-y1)*(z2-z4)+(y2-y4)*(z1-z2), (z2-z1)*(x2-x4)+(z2-z4)*(x1-x2), (x2-x1)*(y2-y4)+(x2-x4)*(y1-y2));
+          } else {
+            x3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2);
+            y3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2+surf->st3);
+            z3=g_array_index(surf->data, gdouble, surf->nd+(j+1)*surf->st1+(k+1)*surf->st2+2*surf->st3);
+            x4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2);
+            y4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2+surf->st3);
+            z4=g_array_index(surf->data, gdouble, surf->nd+(j-1)*surf->st1+(k+1)*surf->st2+2*surf->st3);
+            glNormal3f((y2-y1)*(z3-z4)+(y3-y4)*(z1-z2), (z2-z1)*(x3-x4)+(z3-z4)*(x1-x2), (x2-x1)*(y3-y4)+(x3-x4)*(y1-y2));
+          }
+          glVertex3f(x2, y2, z2);
         }
         glEnd();
       }
@@ -166,7 +277,7 @@ static gboolean gtk_surf_3d_button_release(GtkWidget *widget, GdkEventButton *ev
       glMatrixMode(GL_PROJECTION);
       glGetFloatv(GL_PROJECTION_MATRIX, &mtx[0]);
       glLoadIdentity();
-      glRotatef(MY_180_PI*acos(dx*priv->rsx+dy*priv->rsy+dz*priv->rsz), dz*priv->rsy-dy*priv->rsz, dx*priv->rsz-dz*priv->rsx, dy*priv->rsx-dx*priv->rsy);
+      glRotatef(MY_180_PI*acos(dx*priv->rsx+dy*priv->rsy+dz*priv->rsz), dy*priv->rsz-dz*priv->rsy, dz*priv->rsx-dx*priv->rsz, dy*priv->rsx-dx*priv->rsy);
       glMultMatrixf(mtx);
       gtk_surf_3d_refresh(widget);
     }
@@ -215,7 +326,7 @@ static gboolean gtk_surf_3d_expose(GtkWidget *widget, GdkEventExpose *event) {
 static gboolean gtk_surf_3d_configure(GtkWidget *widget, GdkEventConfigure *event) {
   GdkGLContext          *glc;
   GdkGLDrawable         *gld;
-  static const GLfloat  mtx[16]={-0.707106781,-0.353553391,0.612372436,0.,0.707106781,-0.353553391,0.612372436,0.,0.,0.866025404,0.5,0.,0.,0.,0.,1.};
+  static const GLfloat  mtx[16]={-0.707106781,-0.353553391,-0.612372436,0.,0.707106781,-0.353553391,-0.612372436,0.,0.,0.866025404,-0.5,0.,0.,0.,0.,1.};
 
   glc=gtk_widget_get_gl_context(widget);
   gld=gtk_widget_get_gl_drawable(widget);
