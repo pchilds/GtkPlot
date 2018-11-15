@@ -22,16 +22,25 @@
   typedef struct _GtkSurf3dClass GtkSurf3dClass;
   typedef enum {
     GTK_SURF_3D_MODE_POLAR  = 1 << 0,
-    GTK_SURF_3D_MODE_FILL   = 1 << 1
+    GTK_SURF_3D_MODE_EDGES  = 1 << 1,
+    GTK_SURF_3D_MODE_FILL   = 1 << 2,
+// encode a 4th dimension by:,
+    GTK_SURF_3D_MODE_DIM4_MASK = 3 << 3,
+    GTK_SURF_3D_MODE_SIZE   = 1 << 3,
+    GTK_SURF_3D_MODE_COLOUR = 2 << 3,
+    GTK_SURF_3D_MODE_ALPHA  = 3 << 3
   } GtkSurf3dMode;
   struct _GtkSurf3d {
     GtkDrawingArea  parent;
     GArray          *data;
     guint           dim, nd, st1, st2, st3, sz1, sz2;
     guint           mode;
+    guint           szp;
   };
   struct _GtkSurf3dClass {GtkDrawingAreaClass parent_class;};
   gboolean      gtk_surf_3d_refresh(GtkWidget *widget);
+  gboolean      gtk_surf_3d_print_png(GtkWidget *widget, gchar *fout);
+  gboolean      gtk_surf_3d_print_ppm(GtkWidget *widget, gchar *fout);
   void          gtk_surf_3d_set_data(GtkSurf3d *surf, GArray *pd);
   void          gtk_surf_3d_init_gl(int *argc, char ***argv);
   GtkWidget*    gtk_surf_3d_new(void);

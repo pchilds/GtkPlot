@@ -30,7 +30,7 @@ endif
 if LOGARS
 libgtkplot_@PLOT_API_VERSION@_la_SOURCES+=	\
 	gtkplotloglinear.c						\
-	gtkplotloglog.h
+	gtkplotloglog.c
 gtkplotinclude_HEADERS+=					\
 	gtkplotloglinear.h						\
 	gtkplotloglog.h
@@ -62,8 +62,11 @@ testPlotPolar_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
 endif
 if LOGARS
 bin_PROGRAMS+=testPlotLogLinear
+bin_PROGRAMS+=testPlotLogLog
 testPlotLogLinear_SOURCES=testplotloglinear.c
 testPlotLogLinear_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
+testPlotLogLog_SOURCES=testplotloglog.c
+testPlotLogLog_LDADD=$(PLOT_LIBS) -lm libgtkplot-@PLOT_API_VERSION@.la
 endif
 if MISCS
 bin_PROGRAMS+=testPlotDonut

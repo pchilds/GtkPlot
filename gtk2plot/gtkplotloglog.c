@@ -217,8 +217,8 @@ static void draw(GtkWidget *widget, cairo_t *cr) {
   guint fg;
   PangoLayout *lyt;
 
-	{mtr2.xx=0; mtr2.xy=1; mtr2.yx=-1; mtr2.yy=0; mtr2.x0=0; mtr2.y0=0;}/* initialise */
-	{mtr3.xx=0; mtr3.xy=-1; mtr3.yx=1; mtr3.yy=0; mtr3.x0=0; mtr3.y0=0;}
+  {mtr2.xx=0; mtr2.xy=1; mtr2.yx=-1; mtr2.yy=0; mtr2.x0=0; mtr2.y0=0;}/* initialise */
+  {mtr3.xx=0; mtr3.xy=-1; mtr3.yx=1; mtr3.yy=0; mtr3.x0=0; mtr3.y0=0;}
   plot=GTK_PLOT_LOG_LOG(widget);
   plt=GTK_PLOT(widget);
   xw=widget->allocation.width;
@@ -312,20 +312,20 @@ static void draw(GtkWidget *widget, cairo_t *cr) {
   }
   if ((tn=priv->bounds.ymin-floor(priv->bounds.ymin))>DZE) for (k=ceil(exp(G_LN10*tn)); k<priv->ticks.yn+2; k++) {
     tnn=yl-(log10(k)-tn)*(yl-yu)/(priv->bounds.ymax-priv->bounds.ymin);
-    cairo_move_to(cr, yl, tnn);
-    cairo_line_to(cr, yu, tnn);
+    cairo_move_to(cr, xl, tnn);
+    cairo_line_to(cr, xu, tnn);
   }
   for (j=ceil(priv->bounds.ymin); j<floor(priv->bounds.ymax); j++) for (k=2; k<priv->ticks.yn+2; k++) {
     tnn=yl-(j+log10(k)-priv->bounds.ymin)*(yl-yu)/(priv->bounds.ymax-priv->bounds.ymin);
-    cairo_move_to(cr, yl, tnn);
-    cairo_line_to(cr, yu, tnn);
+    cairo_move_to(cr, xl, tnn);
+    cairo_line_to(cr, xu, tnn);
   }
   if ((tn=priv->bounds.ymax-floor(priv->bounds.ymax))>DZE) {
     k=2;
     while ((k<priv->ticks.yn+2)&&(k<ceil(exp(G_LN10*tn)))) {
       tnn=yu+(tn-log10(k))*(yl-yu)/(priv->bounds.ymax-priv->bounds.ymin);
-      cairo_move_to(cr, yl, tnn);
-      cairo_line_to(cr, yu, tnn);
+      cairo_move_to(cr, xl, tnn);
+      cairo_line_to(cr, xu, tnn);
       k++;
     }
   }
@@ -919,12 +919,14 @@ static void gtk_plot_log_log_redraw(GtkWidget *widget) {
 gboolean gtk_plot_log_log_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx) {
   GtkPlotLogLogPrivate *priv;
 
-  priv=GTK_PLOT_LOG_LOG_GET_PRIVATE(widget);
-  priv->bounds.xmin=xn;
-  priv->bounds.xmax=xx;
-  priv->bounds.ymin=yn;
-  priv->bounds.ymax=yx;
-  gtk_plot_log_log_redraw(widget);
+  if (xn<xx && xn>0 && yn<yx && yn>0) {
+    priv=GTK_PLOT_LOG_LOG_GET_PRIVATE(widget);
+    priv->bounds.xmin=log10(xn);
+    priv->bounds.xmax=log10(xx);
+    priv->bounds.ymin=log10(yn);
+    priv->bounds.ymax=log10(yx);
+    gtk_plot_log_log_redraw(widget);
+  }
   return FALSE;
 }
 

@@ -1985,12 +1985,14 @@ static void gtk_plot_log_linear_redraw(GtkWidget *widget) {
 gboolean gtk_plot_log_linear_update_scale(GtkWidget *widget, gdouble xn, gdouble xx, gdouble yn, gdouble yx) {
   GtkPlotLogLinearPrivate *priv;
 
-  priv=GTK_PLOT_LOG_LINEAR_GET_PRIVATE(widget);
-  priv->bounds.xmin=xn;
-  priv->bounds.xmax=xx;
-  priv->bounds.ymin=yn;
-  priv->bounds.ymax=yx;
-  gtk_plot_log_linear_redraw(widget);
+  if (xn<xx && xn>0) {
+    priv=GTK_PLOT_LOG_LINEAR_GET_PRIVATE(widget);
+    priv->bounds.xmin=log10(xn);
+    priv->bounds.xmax=log10(xx);
+    priv->bounds.ymin=yn;
+    priv->bounds.ymax=yx;
+    gtk_plot_log_linear_redraw(widget);
+  }
   return FALSE;
 }
 

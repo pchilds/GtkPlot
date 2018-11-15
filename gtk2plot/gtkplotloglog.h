@@ -73,8 +73,8 @@
   gboolean gtk_plot_log_log_print_eps(GtkWidget *widget, gchar *fout);
   gboolean gtk_plot_log_log_print_png(GtkWidget *widget, gchar *fout);
   gboolean gtk_plot_log_log_print_svg(GtkWidget *widget, gchar *fout);
-  void gtk_plot_linear_log_set_label(GtkPlotLogLog *plot, gchar *xl, gchar *yl);
-  void gtk_plot_linear_log_set_data(GtkPlotLogLog *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st, GArray *kd);
+  void gtk_plot_log_log_set_label(GtkPlotLogLog *plot, gchar *xl, gchar *yl);
+  void gtk_plot_log_log_set_data(GtkPlotLogLog *plot, GArray *xd, GArray *yd, GArray *nd, GArray *sz, GArray *st, GArray *kd);
   GtkWidget *gtk_plot_log_log_new(void);
   extern GType gtk_plot_log_log_get_type(void);
   G_END_DECLS
